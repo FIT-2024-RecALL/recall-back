@@ -5,11 +5,8 @@ import os
 import utils
 
 
-class Item(BaseModel):
+class SecretScheme(BaseModel):
     secret_text: str
-    password: str
-
-class Password(BaseModel):
     password: str
 
 
@@ -30,17 +27,20 @@ data_base = [
 ]
 
 
-@app.get("/secret")
-async def check_secret():
-    return {"secret": "very secret"}
-
 @app.get("/secrets/{secret_key}")
-async def take_secret(secret_key: str, password: Password):
+async def take_secret(secret_key: str, password: str):
     if data_base:
         for secret in data_base:
-            if secret["secret_key"] == secret_key and secret["password"] == password.password:
+            if secret["secret_key"] == secret_key and secret["password"] == password:
                 return utils.encrypt_text(secret["secret_text"])
 
+
 @app.post("/generate")
-async def create_secret(item: Item):
-    pass
+async def create_secret(secret: SecretScheme):
+    generated_secret_key: str = utils.generate_secrete_key()
+    data_base.append({
+        "secret_key": generated_secret_key,
+        "secret_text": secret.secret_text,
+        "password": secret.password
+    })
+    return generated_secret_key
