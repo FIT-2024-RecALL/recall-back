@@ -1,4 +1,5 @@
 from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 
 import os
@@ -12,6 +13,13 @@ class SecretScheme(BaseModel):
 
 app = FastAPI()
 
+allowed_hosts = ["http://localhost:5173"]
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins = allowed_hosts,
+    allow_methods = ["*"],
+    allow_headers = ["*"]
+)
 
 data_base = [
     {
