@@ -2,7 +2,6 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 
-import os
 import utils
 
 
@@ -21,7 +20,7 @@ app.add_middleware(
     allow_headers = ["*"]
 )
 
-data_base = [
+data_base: list[dict[str, str]] = [
     {
         "secret_key": "niera7arti",
         "secret_text": "Blah, blah\nBlah, blah, blah...",
@@ -36,19 +35,23 @@ data_base = [
 
 
 @app.get("/secrets/{secret_key}")
-async def take_secret(secret_key: str, password: str):
+async def take_secret(secret_key: str, password: str) -> dict[str, str] | dict[str, None]:
     if data_base:
-        for secret in data_base:
-            if secret["secret_key"] == secret_key and secret["password"] == password:
-                return utils.encrypt_text(secret["secret_text"])
+        for secret_id, secret in enumerate(data_base):
+            if (secret["secret_key"] == secret_key and
+                    utils.decrypt_text(secret["password"]) == password):
+                secret_text: str = utils.encrypt_text(secret["secret_text"])
+                data_base.pop(secret_id)
+                return {"secret_text": secret_text}
+    return {"secret_text": None}
 
 
 @app.post("/generate")
-async def create_secret(secret: SecretScheme):
+async def create_secret(secret: SecretScheme) -> dict[str, str]:
     generated_secret_key: str = utils.generate_secrete_key()
     data_base.append({
         "secret_key": generated_secret_key,
-        "secret_text": secret.secret_text,
-        "password": secret.password
+        "secret_text": utils.encrypt_text(secret.secret_text),
+        "password": utils.encrypt_text(secret.password)
     })
-    return generated_secret_key
+    return {"secret_key": generated_secret_key}
