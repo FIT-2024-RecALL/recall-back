@@ -1,4 +1,4 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, Response
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 
@@ -8,6 +8,14 @@ import utils
 class SecretScheme(BaseModel):
     secret_text: str
     password: str
+
+
+class TakeSecretResponseScheme(BaseModel):
+    secret_text: str
+
+
+class CreateSecretResponseScheme(BaseModel):
+    secret_key: str
 
 
 app = FastAPI()
@@ -34,8 +42,8 @@ data_base: list[dict[str, str]] = [
 ]
 
 
-@app.get("/secrets/{secret_key}")
-async def take_secret(secret_key: str, password: str) -> dict[str, str] | dict[str, None]:
+@app.get("/secrets/{secret_key}", response_model=TakeSecretResponseScheme)
+async def take_secret(secret_key: str, password: str):
     if data_base:
         for secret_id, secret in enumerate(data_base):
             if (secret["secret_key"] == secret_key and
@@ -43,11 +51,11 @@ async def take_secret(secret_key: str, password: str) -> dict[str, str] | dict[s
                 secret_text: str = utils.encrypt_text(secret["secret_text"])
                 data_base.pop(secret_id)
                 return {"secret_text": secret_text}
-    return {"secret_text": None}
+    return Response(status_code=404)
 
 
-@app.post("/generate")
-async def create_secret(secret: SecretScheme) -> dict[str, str]:
+@app.post("/generate", response_model=CreateSecretResponseScheme)
+async def create_secret(secret: SecretScheme):
     generated_secret_key: str = utils.generate_secrete_key()
     data_base.append({
         "secret_key": generated_secret_key,
