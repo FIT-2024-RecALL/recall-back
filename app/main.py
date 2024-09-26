@@ -9,10 +9,8 @@ class SecretScheme(BaseModel):
     secret_text: str
     password: str
 
-
 class TakeSecretResponseScheme(BaseModel):
     secret_text: str
-
 
 class CreateSecretResponseScheme(BaseModel):
     secret_key: str
@@ -27,6 +25,7 @@ app.add_middleware(
     allow_methods = ["*"],
     allow_headers = ["*"]
 )
+
 
 data_base: list[dict[str, str]] = [
     {
