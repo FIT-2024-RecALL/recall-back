@@ -9,10 +9,8 @@ class SecretScheme(BaseModel):
     secret_text: str
     password: str
 
-
 class TakeSecretResponseScheme(BaseModel):
     secret_text: str
-
 
 class CreateSecretResponseScheme(BaseModel):
     secret_key: str
@@ -27,6 +25,7 @@ app.add_middleware(
     allow_methods = ["*"],
     allow_headers = ["*"]
 )
+
 
 data_base: list[dict[str, str]] = [
     {
@@ -48,7 +47,7 @@ async def take_secret(secret_key: str, password: str):
         for secret_id, secret in enumerate(data_base):
             if (secret["secret_key"] == secret_key and
                     utils.decrypt_text(secret["password"]) == password):
-                secret_text: str = utils.encrypt_text(secret["secret_text"])
+                secret_text: str = utils.decrypt_text(secret["secret_text"])
                 data_base.pop(secret_id)
                 return {"secret_text": secret_text}
     return Response(status_code=404)
