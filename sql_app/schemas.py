@@ -1,8 +1,10 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 
 class ItemBase(BaseModel):
-    title: str
+    title: str = Field(
+        title="The description of the item", min_length=6
+    )
     description: str | None = None
 
 
@@ -23,7 +25,9 @@ class UserBase(BaseModel):
 
 
 class UserCreate(UserBase):
-    password: str
+    password: str = Field(
+        title="The description of the password properties", min_length=13, max_length=50
+    )
 
 
 class User(UserBase):
