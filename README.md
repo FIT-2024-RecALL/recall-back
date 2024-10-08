@@ -17,8 +17,10 @@ cd recall-back
 python -m venv .venv
 
 # Activate the new virtual environment
-# On Windows PowerShell, run
+# - On Windows PowerShell, run
 .venv\Scripts\activate
+# - On Unix or MacOs, run
+source .venv/bin/activate
 # Upgrade pip
 python -m pip install --upgrade pip
 
