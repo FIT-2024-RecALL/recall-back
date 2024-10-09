@@ -18,7 +18,7 @@ def get_db():
         db.close()
 
 
-@app.post("/users/", response_model=schemas.User)
+@app.post("/users/", response_model=schemas.User, tags=["user"])
 def create_user(user: schemas.UserCreate, db: Session = Depends(get_db)):
     db_user_email = crud.get_user_by_email(db, email=user.email)
     db_user_name = crud.get_user_by_name(db, name=user.name)
@@ -28,13 +28,13 @@ def create_user(user: schemas.UserCreate, db: Session = Depends(get_db)):
 
 
 
-@app.get("/users/", response_model=list[schemas.User])
+@app.get("/users/", response_model=list[schemas.User], tags=["user"])
 def read_users(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
     users = crud.get_users(db, skip=skip, limit=limit)
     return users
 
 
-@app.get("/users/{user_id}", response_model=schemas.User)
+@app.get("/users/{user_id}", response_model=schemas.User, tags=["user"])
 def read_user(user_id: int, db: Session = Depends(get_db)):
     db_user = crud.get_user(db, user_id=user_id)
     if db_user is None:
@@ -42,7 +42,15 @@ def read_user(user_id: int, db: Session = Depends(get_db)):
     return db_user
 
 
-@app.post("/users/{user_id}/collections/", response_model=schemas.Collection)
+@app.get("/users/{user_id}/collections/", response_model=list[schemas.Collection], tags=["collection"])
+def read_user_collections(user_id: int, db: Session = Depends(get_db)):
+    db_user = crud.get_user(db, user_id=user_id)
+    if db_user is None:
+        raise HTTPException(status_code=404, detail="User not found")
+    return db_user.collections
+
+
+@app.post("/users/{user_id}/collections/", response_model=schemas.Collection, tags=["collection"])
 def create_collection_for_user(
     user_id: int, collection: schemas.CollectionCreate, db: Session = Depends(get_db)
 ):
@@ -52,7 +60,7 @@ def create_collection_for_user(
     return crud.create_user_collection(db=db, collection=collection, user_id=user_id)
 
 
-@app.get("/collections/", response_model=list[schemas.Collection])
+@app.get("/collections/", response_model=list[schemas.Collection], tags=["collection"])
 def read_collections(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
     collections = crud.get_collections(db, skip=skip, limit=limit)
     return collections
