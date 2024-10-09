@@ -42,14 +42,6 @@ def read_user(user_id: int, db: Session = Depends(get_db)):
     return db_user
 
 
-@app.get("/users/{user_id}/collections/", response_model=list[schemas.Collection], tags=["collection"])
-def read_user_collections(user_id: int, db: Session = Depends(get_db)):
-    db_user = crud.get_user(db, user_id=user_id)
-    if db_user is None:
-        raise HTTPException(status_code=404, detail="User not found")
-    return db_user.collections
-
-
 @app.post("/users/{user_id}/collections/", response_model=schemas.Collection, tags=["collection"])
 def create_collection_for_user(
     user_id: int, collection: schemas.CollectionCreate, db: Session = Depends(get_db)
@@ -64,3 +56,11 @@ def create_collection_for_user(
 def read_collections(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
     collections = crud.get_collections(db, skip=skip, limit=limit)
     return collections
+
+
+@app.get("/collections/{collection_id}", response_model=schemas.Collection, tags=["collection"])
+def read_collection(collection_id: int, db: Session = Depends(get_db)):
+    db_collection = crud.get_collection(db, collection_id=collection_id)
+    if db_collection is None:
+        raise HTTPException(status_code=404, detail="Collection not found")
+    return db_collection

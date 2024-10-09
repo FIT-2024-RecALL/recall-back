@@ -20,11 +20,15 @@ def get_users(db: Session, *, skip: int = 0, limit: int = 100):
 
 
 def create_user(db: Session, user: schemas.UserCreate):
-    db_user = models.User(email=user.email, hashed_password=user.password, name=user.name)
+    db_user = models.User(**user.model_dump())
     db.add(db_user)
     db.commit()
     db.refresh(db_user)
     return db_user
+
+
+def get_collection(db: Session, collection_id: int):
+    return db.query(models.Collection).filter(models.Collection.id == collection_id).first()
 
 
 def get_collections(db: Session, *, skip: int = 0, limit: int = 100):
@@ -32,7 +36,7 @@ def get_collections(db: Session, *, skip: int = 0, limit: int = 100):
 
 
 def create_user_collection(db: Session, collection: schemas.CollectionCreate, user_id: int):
-    db_collection = models.Collection(owner_id=user_id, title=collection.title)
+    db_collection = models.Collection(**collection.model_dump(),  owner_id=user_id)
     db.add(db_collection)
     db.commit()
     db.refresh(db_collection)

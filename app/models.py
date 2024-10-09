@@ -10,7 +10,7 @@ class User(Base):
     id = Column(Integer, primary_key=True)
     email = Column(String, unique=True, index=True)
     name = Column(String(50), unique=True, index=True)
-    hashed_password = Column(String)
+    password = Column(String(100))
 
     collections = relationship("Collection")
 
@@ -21,3 +21,4 @@ class Collection(Base):
     id = Column(Integer, primary_key=True)
     owner_id = Column(Integer, ForeignKey("users.id"))
     title = Column(String(100), index=True)
+    description = Column(String, index=True)

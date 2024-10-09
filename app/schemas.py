@@ -2,7 +2,8 @@ from pydantic import BaseModel, Field
 
 
 class CollectionBase(BaseModel):
-    title: str
+    title: str = Field(max_length=100)
+    description: str | None = None
 
 class CollectionCreate(CollectionBase):
     pass
@@ -17,12 +18,10 @@ class Collection(CollectionBase):
 
 class UserBase(BaseModel):
     email: str
-    name: str
+    name: str = Field(max_length=50)
 
 class UserCreate(UserBase):
-    password: str = Field(
-        min_length=13, max_length=50
-    )
+    password: str = Field(min_length=13, max_length=50)
 
 class User(UserBase):
     id: int
