@@ -11,7 +11,7 @@ def get_train_records(db: Session, *, skip: int = 0, limit: int = 100):
     return db.query(models.TrainRecord).offset(skip).limit(limit).all()
 
 
-def create_user_train_record(db: Session, train_record: schemas.TrainRecordCreate, user_id: int):
+def create_user_train_record(db: Session, train_record: schemas.train_record.TrainRecordCreate, user_id: int):
     db_train_record = models.TrainRecord(**train_record.model_dump(), user_id=user_id)
     db.add(db_train_record)
     db.commit()
