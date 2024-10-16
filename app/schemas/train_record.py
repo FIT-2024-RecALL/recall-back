@@ -7,6 +7,7 @@ class TrainRecordCreate(BaseModel):
 
 class TrainRecord(TrainRecordCreate):
     id: int
+    card_id: int
     user_id: int
 
     class Config:

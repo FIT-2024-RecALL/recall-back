@@ -3,14 +3,6 @@ from sqlalchemy.orm import relationship, Mapped, mapped_column
 
 from app.database import Base
 
-"""
-class Card(Base):
-    __tablename__ = "cards"
-
-    id: Mapped[int] = mapped_column(primary_key=True)
-    train_record_id: Mapped[int] | None = mapped_column(ForeignKey("train_records.id"), )
-    content: Mapped[str]
-"""
 
 class Collection(Base):
     __tablename__ = "collections"
@@ -25,8 +17,18 @@ class TrainRecord(Base):
     __tablename__ = "train_records"
 
     id: Mapped[int] = mapped_column(primary_key=True)
+    card_id: Mapped[int] = mapped_column(ForeignKey("cards.id"))
     user_id: Mapped[int] = mapped_column(ForeignKey("users.id"))
     meta_data: Mapped[str]
+
+
+class Card(Base):
+    __tablename__ = "cards"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    content: Mapped[str]
+
+    collections: Mapped[list[TrainRecord]] = relationship("TrainRecord")
 
 
 class User(Base):

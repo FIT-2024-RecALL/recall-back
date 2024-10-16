@@ -11,8 +11,8 @@ def get_cards(db: Session, *, skip: int = 0, limit: int = 100):
     return db.query(models.Card).offset(skip).limit(limit).all()
 
 
-def create_card(db: Session, card: schemas.card.CardCreate, train_record_id: int | None):
-    db_card = models.Card(**card.model_dump(), train_record_id=train_record_id)
+def create_card(db: Session, card: schemas.card.CardCreate):
+    db_card = models.Card(**card.model_dump())
     db.add(db_card)
     db.commit()
     db.refresh(db_card)
