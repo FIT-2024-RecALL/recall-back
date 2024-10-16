@@ -1,16 +1,12 @@
 from pydantic import BaseModel, Field
 
 
-class CollectionBase(BaseModel):
+class CollectionCreate(BaseModel):
     title: str = Field(max_length=100)
     description: str | None = None
 
 
-class CollectionCreate(CollectionBase):
-    pass
-
-
-class Collection(CollectionBase):
+class Collection(CollectionCreate):
     id: int
     owner_id: int
 

@@ -1,6 +1,6 @@
 from sqlalchemy.orm import Session
 
-from .. import models, schemas
+from app import models, schemas
 
 
 def get_collection(db: Session, collection_id: int):

@@ -1,15 +1,11 @@
-from pydantic import BaseModel, Field
+from pydantic import BaseModel
 
 
-class TrainRecordBase(BaseModel):
+class TrainRecordCreate(BaseModel):
     meta_data: str
 
 
-class TrainRecordCreate(TrainRecordBase):
-    pass
-
-
-class TrainRecord(TrainRecordBase):
+class TrainRecord(TrainRecordCreate):
     id: int
     user_id: int
 

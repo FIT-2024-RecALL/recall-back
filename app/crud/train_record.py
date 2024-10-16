@@ -1,6 +1,6 @@
 from sqlalchemy.orm import Session
 
-from .. import models, schemas
+from app import models, schemas
 
 
 def get_train_record(db: Session, train_record_id: int):
