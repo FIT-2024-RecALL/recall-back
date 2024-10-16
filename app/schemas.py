@@ -16,6 +16,20 @@ class Collection(CollectionBase):
         orm_mode = True
 
 
+class TrainRecordBase(BaseModel):
+    meta_data: str
+
+class TrainRecordCreate(TrainRecordBase):
+    pass
+
+class TrainRecord(TrainRecordBase):
+    id: int
+    user_id: int
+
+    class Config:
+        orm_mode = True
+
+
 class UserBase(BaseModel):
     email: str
     name: str = Field(max_length=50)
@@ -26,6 +40,7 @@ class UserCreate(UserBase):
 class User(UserBase):
     id: int
     collections: list[Collection] = []
+    train_records: list[TrainRecord] = []
 
     class Config:
         orm_mode = True

@@ -42,9 +42,33 @@ def read_user(user_id: int, db: Session = Depends(get_db)):
     return db_user
 
 
+@app.post("/users/{user_id}/train_records/", response_model=schemas.TrainRecord, tags=["train_record"])
+def create_train_record_for_user(
+        user_id: int, train_record: schemas.TrainRecordCreate, db: Session = Depends(get_db)
+):
+    db_user = crud.get_user(db, user_id)
+    if not db_user:
+        raise HTTPException(status_code=400, detail="User with this id doesn't exist")
+    return crud.create_user_train_record(db=db, train_record=train_record, user_id=user_id)
+
+
+@app.get("/train_records/", response_model=list[schemas.TrainRecord], tags=["train_record"])
+def read_train_records(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
+    train_records = crud.get_train_records(db, skip=skip, limit=limit)
+    return train_records
+
+
+@app.get("/train_records/{train_record_id}", response_model=schemas.TrainRecord, tags=["train_record"])
+def read_train_record(train_record_id: int, db: Session = Depends(get_db)):
+    db_train_record = crud.get_train_record(db, train_record_id=train_record_id)
+    if db_train_record is None:
+        raise HTTPException(status_code=404, detail="TrainRecord not found")
+    return db_train_record
+
+
 @app.post("/users/{user_id}/collections/", response_model=schemas.Collection, tags=["collection"])
 def create_collection_for_user(
-    user_id: int, collection: schemas.CollectionCreate, db: Session = Depends(get_db)
+        user_id: int, collection: schemas.CollectionCreate, db: Session = Depends(get_db)
 ):
     db_user = crud.get_user(db, user_id)
     if not db_user:
