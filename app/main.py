@@ -1,66 +1,25 @@
-from fastapi import Depends, FastAPI, HTTPException, Query
+from fastapi import FastAPI, Depends
+from sqlalchemy import insert
 from sqlalchemy.orm import Session
 
-from . import crud, models, schemas
-from .database import SessionLocal, engine
+from app import models
+from app.database import engine, get_db
+from app.routers import cards, collections, train_records, users
+
 
 models.Base.metadata.create_all(bind=engine)
 
 app = FastAPI()
 
 
-# Dependency
-def get_db():
-    db = SessionLocal()
-    try:
-        yield db
-    finally:
-        db.close()
+app.include_router(cards.router)
+app.include_router(collections.router)
+app.include_router(train_records.router)
+app.include_router(users.router)
 
 
-@app.post("/users/", response_model=schemas.User, tags=["user"])
-def create_user(user: schemas.UserCreate, db: Session = Depends(get_db)):
-    db_user_email = crud.get_user_by_email(db, email=user.email)
-    db_user_name = crud.get_user_by_name(db, name=user.name)
-    if db_user_email or db_user_name:
-        raise HTTPException(status_code=400, detail="Email or Name already registered")
-    return crud.create_user(db=db, user=user)
-
-
-
-@app.get("/users/", response_model=list[schemas.User], tags=["user"])
-def read_users(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
-    users = crud.get_users(db, skip=skip, limit=limit)
-    return users
-
-
-@app.get("/users/{user_id}", response_model=schemas.User, tags=["user"])
-def read_user(user_id: int, db: Session = Depends(get_db)):
-    db_user = crud.get_user(db, user_id=user_id)
-    if db_user is None:
-        raise HTTPException(status_code=404, detail="User not found")
-    return db_user
-
-
-@app.post("/users/{user_id}/collections/", response_model=schemas.Collection, tags=["collection"])
-def create_collection_for_user(
-    user_id: int, collection: schemas.CollectionCreate, db: Session = Depends(get_db)
-):
-    db_user = crud.get_user(db, user_id)
-    if not db_user:
-        raise HTTPException(status_code=400, detail="User with this id doesn't exist")
-    return crud.create_user_collection(db=db, collection=collection, user_id=user_id)
-
-
-@app.get("/collections/", response_model=list[schemas.Collection], tags=["collection"])
-def read_collections(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
-    collections = crud.get_collections(db, skip=skip, limit=limit)
-    return collections
-
-
-@app.get("/collections/{collection_id}", response_model=schemas.Collection, tags=["collection"])
-def read_collection(collection_id: int, db: Session = Depends(get_db)):
-    db_collection = crud.get_collection(db, collection_id=collection_id)
-    if db_collection is None:
-        raise HTTPException(status_code=404, detail="Collection not found")
-    return db_collection
+@app.put("/root/{card_id}/{collection_id}", tags=["root"])
+def update_card_collection_connection(card_id: int, collection_id: int, db: Session = Depends(get_db)):
+    statement = insert(models.association_table).values(card_id=card_id, collection_id=collection_id)
+    db.execute(statement)
+    db.commit()
