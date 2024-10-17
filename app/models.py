@@ -39,7 +39,7 @@ class Collection(Base):
     id: Mapped[int] = mapped_column(primary_key=True)
     owner_id: Mapped[int] = mapped_column(ForeignKey("users.id"))
     title: Mapped[str] = mapped_column(String(100), index=True)
-    description: Mapped[str] = mapped_column(index=True)
+    description: Mapped[str | None] = mapped_column(index=True)
 
     cards: Mapped[list["Card"]] = relationship(
         secondary=association_table, back_populates="collections"
