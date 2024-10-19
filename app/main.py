@@ -1,8 +1,7 @@
-from fastapi import FastAPI, Depends
-from sqlalchemy import insert
+from fastapi import FastAPI, Depends, HTTPException
 from sqlalchemy.orm import Session
 
-from app import models
+from app import crud, models, schemas
 from app.database import engine, get_db
 from app.routers import cards, collections, train_records, users
 
@@ -18,8 +17,9 @@ app.include_router(train_records.router)
 app.include_router(users.router)
 
 
-@app.put("/root/{card_id}/{collection_id}", tags=["root"])
-def update_card_collection_connection(card_id: int, collection_id: int, db: Session = Depends(get_db)):
-    statement = insert(models.association_table).values(card_id=card_id, collection_id=collection_id)
-    db.execute(statement)
-    db.commit()
+@app.get("/profile", response_model=schemas.user.User, tags=["profile"])
+def read_current_user_profile(db: Session = Depends(get_db)):
+    db_profile = crud.user.get_profile(db)
+    if db_profile is None:
+        raise HTTPException(status_code=404, detail="User not found")
+    return db_profile

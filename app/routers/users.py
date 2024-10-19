@@ -20,7 +20,6 @@ def create_user(user: schemas.user.UserCreate, db: Session = Depends(get_db)):
     return crud.user.create_user(db=db, user=user)
 
 
-
 @router.get("/", response_model=list[schemas.user.User])
 def read_users(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
     return crud.user.get_users(db, skip=skip, limit=limit)
@@ -32,13 +31,3 @@ def read_user(user_id: int, db: Session = Depends(get_db)):
     if db_user is None:
         raise HTTPException(status_code=404, detail="User not found")
     return db_user
-
-
-@router.post("/{user_id}/collections/", response_model=schemas.collection.Collection, tags=["collection"])
-def create_collection_for_user(
-        user_id: int, collection: schemas.collection.CollectionCreate, db: Session = Depends(get_db)
-):
-    db_user = crud.user.get_user(db, user_id)
-    if not db_user:
-        raise HTTPException(status_code=400, detail="User with this id doesn't exist")
-    return crud.collection.create_user_collection(db=db, collection=collection, user_id=user_id)

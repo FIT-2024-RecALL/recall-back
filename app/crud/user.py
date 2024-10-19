@@ -25,3 +25,7 @@ def create_user(db: Session, user: schemas.user.UserCreate):
     db.commit()
     db.refresh(db_user)
     return db_user
+
+
+def get_profile(db: Session):
+    return db.query(models.User).order_by(models.User.id.desc()).first()

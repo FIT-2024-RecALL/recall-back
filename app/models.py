@@ -52,8 +52,7 @@ class User(Base):
     id: Mapped[int] = mapped_column(primary_key=True)
     email: Mapped[str] = mapped_column(unique=True, index=True)
     name: Mapped[str] = mapped_column(String(50), unique=True, index=True)
-    password: Mapped[str] = mapped_column(String(100))
+    password: Mapped[str] = mapped_column(String(1024))
 
     collections: Mapped[list[Collection]] = relationship("Collection")
     train_records: Mapped[list[TrainRecord]] = relationship("TrainRecord")
-
