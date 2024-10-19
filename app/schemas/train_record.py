@@ -1,4 +1,4 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict
 
 
 class TrainRecordCreate(BaseModel):
@@ -6,9 +6,8 @@ class TrainRecordCreate(BaseModel):
 
 
 class TrainRecord(TrainRecordCreate):
+    model_config = ConfigDict(from_attributes=True)
+
     id: int
     card_id: int
     user_id: int
-
-    class Config:
-        orm_mode = True
