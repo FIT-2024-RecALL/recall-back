@@ -8,7 +8,7 @@ association_table = Table(
     "association_table",
     Base.metadata,
     Column("card_id", ForeignKey("cards.id"), primary_key=True),
-    Column("collection_id", ForeignKey("collections.id"), primary_key=True),
+    Column("collection_id", ForeignKey("collections.id"), primary_key=True)
 )
 
 

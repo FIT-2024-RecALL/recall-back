@@ -1,7 +1,10 @@
-from fastapi import APIRouter, Depends, HTTPException
+from typing import Annotated
+
+from fastapi import APIRouter, Body, Depends, HTTPException
+from sqlalchemy import delete, insert
 from sqlalchemy.orm import Session
 
-from app import crud, schemas
+from app import crud, schemas, models
 from app.database import get_db
 
 
@@ -39,10 +42,29 @@ def create_collection(
     return crud.collection.create_collection(db=db, collection=collection, user_id=user_id)
 
 
-"""
 @router.post("/{collection_id}/pair")
-def update_card_collection_connection(collection_id: int, db: Session = Depends(get_db)):
-    statement = insert(models.association_table).values(card_id=card_id, collection_id=collection_id)
-    db.execute(statement)
+def set_card_collection_connection(
+        collection_id: int, cards: Annotated[list[int], Body], db: Session = Depends(get_db)
+):
+    for card_id in cards:
+        db.execute(
+            insert(models.association_table).values(card_id=card_id, collection_id=collection_id)
+        )
+        db.flush()
     db.commit()
-"""
+    return "Done"
+
+
+@router.delete("/{collection_id}/unpair")
+def delete_card_collection_connection(
+        collection_id: int, cards: Annotated[list[int], Body], db: Session = Depends(get_db)
+):
+    for card_id in cards:
+        db.execute(
+            delete(models.association_table).where(
+                models.association_table.c.card_id == card_id and models.association_table.c.collection_id == collection_id
+            )
+        )
+        db.flush()
+    db.commit()
+    return "Done"
