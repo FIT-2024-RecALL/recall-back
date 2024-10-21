@@ -1,6 +1,6 @@
 from sqlalchemy.orm import Session
 
-from . import models, schemas
+from .. import models, schemas
 
 
 def get_user(db: Session, user_id: int):
@@ -19,7 +19,7 @@ def get_users(db: Session, *, skip: int = 0, limit: int = 100):
     return db.query(models.User).offset(skip).limit(limit).all()
 
 
-def create_user(db: Session, user: schemas.UserCreate):
+def create_user(db: Session, user: schemas.user.UserCreate):
     db_user = models.User(**user.model_dump())
     db.add(db_user)
     db.commit()
@@ -27,17 +27,5 @@ def create_user(db: Session, user: schemas.UserCreate):
     return db_user
 
 
-def get_collection(db: Session, collection_id: int):
-    return db.query(models.Collection).filter(models.Collection.id == collection_id).first()
-
-
-def get_collections(db: Session, *, skip: int = 0, limit: int = 100):
-    return db.query(models.Collection).offset(skip).limit(limit).all()
-
-
-def create_user_collection(db: Session, collection: schemas.CollectionCreate, user_id: int):
-    db_collection = models.Collection(**collection.model_dump(),  owner_id=user_id)
-    db.add(db_collection)
-    db.commit()
-    db.refresh(db_collection)
-    return db_collection
+def get_profile(db: Session):
+    return db.query(models.User).order_by(models.User.id.desc()).first()
