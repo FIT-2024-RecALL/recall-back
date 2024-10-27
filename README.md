@@ -24,7 +24,7 @@ fastapi dev app/main.py
 ```
 
 ### How to install `Poetry`
-- https://python-poetry.org/docs/#installing-with-the-official-installer
+- https://github.com/FIT-2024-RecALL/recall-back/wiki/Poetry
 
 ## Project description
 
