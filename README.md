@@ -13,23 +13,18 @@
 # Enter into the project directory
 cd recall-back
 
-# To create a virtual environment, you can use the venv module that comes with Python
-python -m venv .venv
+# To create and activate virtual environment
+poetry shell
 
-# Activate the new virtual environment
-# - On Windows PowerShell, run
-.venv\Scripts\activate
-# - On Unix or MacOs, run
-source .venv/bin/activate
-# Upgrade pip
-python -m pip install --upgrade pip
-
-# Install packages from requirements.txt
-pip install -r requirements.txt
+# To install the defined dependencies for project
+poetry install
 
 # Run the service
 fastapi dev app/main.py
 ```
+
+### How to install `Poetry`
+- https://python-poetry.org/docs/#installing-with-the-official-installer
 
 ## Project description
 
