@@ -1,0 +1,16 @@
+[tool.poetry]
+name = "recall-back"
+description = ""
+authors = ["AntonTsoy <tcoy210@gmail.com>"]
+readme = "README.md"
+package-mode = false
+
+[tool.poetry.dependencies]
+python = "^3.11"
+sqlalchemy = "^2.0.36"
+fastapi = {extras = ["standard"], version = "^0.115.3"}
+
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"

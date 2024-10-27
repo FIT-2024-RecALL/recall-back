@@ -3,5 +3,5 @@
   <component name="Black">
     <option name="sdkName" value="Python 3.11 (recall-back)" />
   </component>
-  <component name="ProjectRootManager" version="2" project-jdk-name="Python 3.11 (recall-back)" project-jdk-type="Python SDK" />
+  <component name="ProjectRootManager" version="2" project-jdk-name="Poetry (recall-back)" project-jdk-type="Python SDK" />
 </project>
