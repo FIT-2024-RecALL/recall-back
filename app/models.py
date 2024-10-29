@@ -1,12 +1,11 @@
 from sqlalchemy import Column, ForeignKey, String, Table
 from sqlalchemy.orm import relationship, Mapped, mapped_column
 
-from app.database import Base
+from app.database import metadata
 
-
-association_table = Table(
-    "association_table",
-    Base.metadata,
+CardCollectionTable = Table(
+    "card_collection",
+    metadata,
     Column("card_id", ForeignKey("cards.id"), primary_key=True),
     Column("collection_id", ForeignKey("collections.id"), primary_key=True)
 )
