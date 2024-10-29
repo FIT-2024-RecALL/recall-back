@@ -1,7 +1,7 @@
-from sqlalchemy import Column, ForeignKey, String, Table
-from sqlalchemy.orm import relationship, Mapped, mapped_column
+from sqlalchemy import Column, ForeignKey, Integer, String, Table
 
 from app.database import metadata
+
 
 CardCollectionTable = Table(
     "card_collection",
@@ -11,47 +11,39 @@ CardCollectionTable = Table(
 )
 
 
-class TrainRecord(Base):
-    __tablename__ = "train_records"
-
-    id: Mapped[int] = mapped_column(primary_key=True)
-    card_id: Mapped[int] = mapped_column(ForeignKey("cards.id"))
-    user_id: Mapped[int] = mapped_column(ForeignKey("users.id"))
-    meta_data: Mapped[str]
-
-
-class Card(Base):
-    __tablename__ = "cards"
-
-    id: Mapped[int] = mapped_column(primary_key=True)
-    content: Mapped[str]
-
-    collections: Mapped[list["Collection"]] = relationship(
-        secondary=association_table, back_populates="cards"
-    )
-    train_records: Mapped[list[TrainRecord]] = relationship("TrainRecord")
+TrainRecordTable = Table(
+    "train_records",
+    metadata,
+    Column("id", Integer, primary_key=True),
+    Column("card_id", ForeignKey("cards.id"), nullable=False),
+    Column("user_id", ForeignKey("users.id"), nullable=False),
+    Column("meta_data", String, nullable=True)
+)
 
 
-class Collection(Base):
-    __tablename__ = "collections"
-
-    id: Mapped[int] = mapped_column(primary_key=True)
-    owner_id: Mapped[int] = mapped_column(ForeignKey("users.id"))
-    title: Mapped[str] = mapped_column(String(100), index=True)
-    description: Mapped[str | None] = mapped_column(index=True)
-
-    cards: Mapped[list["Card"]] = relationship(
-        secondary=association_table, back_populates="collections"
-    )
+CardTable = Table(
+    "cards",
+    metadata,
+    Column("id", Integer, primary_key=True),
+    Column("content", String, nullable=False)
+) ### Есть связь с collections и train_records
 
 
-class User(Base):
-    __tablename__ = "users"
+CollectionTable = Table(
+    "collections",
+    metadata,
+    Column("id", Integer, primary_key=True),
+    Column("owner_id", ForeignKey="users.id", nullable=False),
+    Column("title", String(100), nullable=False),
+    Column("description", String, nullable=True)
+) ### Есть связь с cards
 
-    id: Mapped[int] = mapped_column(primary_key=True)
-    email: Mapped[str] = mapped_column(unique=True, index=True)
-    name: Mapped[str] = mapped_column(String(50), unique=True, index=True)
-    password: Mapped[str] = mapped_column(String(1024))
 
-    collections: Mapped[list[Collection]] = relationship("Collection")
-    train_records: Mapped[list[TrainRecord]] = relationship("TrainRecord")
+UserTable = Table(
+    "users",
+    metadata,
+    Column("id", Integer, primary_key=True),
+    Column("email", String(100), unique=True, nullable=False),
+    Column("name", String(50), unique=True, nullable=False),
+    Column("hashed_password", String(1024), nullable=False)
+) ### Есть связь с collections и train_records

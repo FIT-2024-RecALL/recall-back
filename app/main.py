@@ -1,12 +1,12 @@
 from fastapi import FastAPI, Depends, HTTPException
 from sqlalchemy.orm import Session
 
-from app import crud, models, schemas
-from app.database import engine, get_db
+from app import models, schemas
+from app.database import engine
 from app.routers import cards, collections, train_records, users
 
 
-models.Base.metadata.create_all(bind=engine)
+models.metadata.create_all(bind=engine)
 
 app = FastAPI()
 
