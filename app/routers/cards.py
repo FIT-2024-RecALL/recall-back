@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException
+"""from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 
 from app import schemas
@@ -26,3 +26,4 @@ def read_card(card_id: int, db: Session = Depends(get_db)):
     if db_card is None:
         raise HTTPException(status_code=404, detail="Collection not found")
     return db_card
+"""

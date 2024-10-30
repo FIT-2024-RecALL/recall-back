@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException
+"""from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 
 from app import crud, schemas
@@ -33,3 +33,4 @@ def read_train_record(train_record_id: int, db: Session = Depends(get_db)):
     if db_train_record is None:
         raise HTTPException(status_code=404, detail="TrainRecord not found")
     return db_train_record
+"""

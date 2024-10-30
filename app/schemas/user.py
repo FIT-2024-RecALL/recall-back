@@ -6,7 +6,7 @@ from .train_record import TrainRecord
 
 class UserBase(BaseModel):
     email: str
-    name: str = Field(max_length=50)
+    nickname: str = Field(max_length=50)
 
 
 class UserCreate(UserBase):
@@ -14,8 +14,4 @@ class UserCreate(UserBase):
 
 
 class User(UserBase):
-    model_config = ConfigDict(from_attributes=True)
-
     id: int
-    collections: list[Collection] = []
-    train_records: list[TrainRecord] = []

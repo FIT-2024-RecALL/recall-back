@@ -1,4 +1,4 @@
-from typing import Annotated
+"""from typing import Annotated
 
 from fastapi import APIRouter, Body, Depends, HTTPException
 from sqlalchemy import delete, insert, select, and_
@@ -83,3 +83,4 @@ def delete_card_collection_connection(
         db.flush()
     db.commit()
     return "Done"
+"""
