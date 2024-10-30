@@ -1,6 +1,4 @@
-from pydantic import BaseModel, ConfigDict, Field
-
-from .card import Card
+from pydantic import BaseModel, Field
 
 
 class CollectionCreate(BaseModel):
@@ -9,8 +7,5 @@ class CollectionCreate(BaseModel):
 
 
 class Collection(CollectionCreate):
-    model_config = ConfigDict(from_attributes=True)
-
     id: int
     owner_id: int
-    cards: list[Card] = []

@@ -1,1 +1,1 @@
-from . import card, user
+from . import card, collection, user

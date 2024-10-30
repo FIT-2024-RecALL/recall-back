@@ -1,11 +1,7 @@
-"""from typing import Annotated
+from fastapi import APIRouter, Body, HTTPException
 
-from fastapi import APIRouter, Body, Depends, HTTPException
-from sqlalchemy import delete, insert, select, and_
-from sqlalchemy.orm import Session
-
-from app import crud, schemas, models
-from app.database import get_db
+from app import crud, schemas
+from app.dependencies import DBConnection
 
 
 router = APIRouter(
@@ -15,13 +11,13 @@ router = APIRouter(
 
 
 @router.get("/{collection_id}", response_model=schemas.collection.Collection)
-def read_collection(collection_id: int, db: Session = Depends(get_db)):
-    db_collection = crud.collection.get_collection(db, collection_id=collection_id)
-    if db_collection is None:
+def read_collection(conn: DBConnection, collection_id: int):
+    collection = crud.collection.get_collection(conn, collection_id)
+    if collection is None:
         raise HTTPException(status_code=404, detail="Collection not found")
-    return db_collection
+    return collection
 
-
+"""
 @router.get("/{collection_id}/cards", response_model=list[schemas.card.Card])
 def read_collection_cards(collection_id: int, db: Session = Depends(get_db)):
     return read_collection(collection_id, db).cards
@@ -40,8 +36,9 @@ def create_collection(
     if not db_user:
         raise HTTPException(status_code=400, detail="User with this id doesn't exist")
     return crud.collection.create_collection(db=db, collection=collection, user_id=user_id)
+"""
 
-
+"""
 def check_connections(collection_id: int, cards: list[int], db: Session) -> bool:
     for card_id in cards:
         query = (
