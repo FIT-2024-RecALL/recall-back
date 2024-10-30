@@ -1,4 +1,4 @@
-from sqlalchemy import Connection, select, insert, exists, or_
+from sqlalchemy import Connection, select, insert
 
 from app import models, schemas
 

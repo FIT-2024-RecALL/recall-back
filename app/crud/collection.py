@@ -25,12 +25,12 @@ def create_collection(
 ):
     check_user = select(exists().where(models.UserTable.c.id == user_id))  ## можно будет вынести в отдельный пользовательский crud
     if not conn.execute(check_user).scalar():
-        raise ValueError("User not found")
+        raise ValueError("User with this id doesn't exist")
 
-    insert_query = (insert(models.CollectionTable).values(
+    insert_query = insert(models.CollectionTable).values(
         owner_id=user_id,
         **collection.model_dump()
-    ).returning(models.CollectionTable.c[*schemas.collection.Collection.model_fields]))
+    ).returning(models.CollectionTable.c[*schemas.collection.Collection.model_fields])
     result = conn.execute(insert_query).mappings().first()
     conn.commit()
     return result

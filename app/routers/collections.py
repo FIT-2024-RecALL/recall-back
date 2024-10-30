@@ -31,7 +31,7 @@ def create_collection(
         created_collection = crud.collection.create_collection(conn, user_id, collection)
         return created_collection
     except ValueError as e:
-        raise HTTPException(status_code=404, detail=str(e))
+        raise HTTPException(status_code=400, detail=str(e))
 
 
 """
