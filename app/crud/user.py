@@ -11,7 +11,7 @@ def get_user(conn: Connection, user_id: int):
 
 
 def get_users(conn: Connection, *, limit: int, skip: int):
-    query = select(models.UserTable.c[*schemas.user.User.model_fields]).offset(skip).limit(limit)
+    query = select(models.UserTable.c[*schemas.user.User.model_fields]).limit(limit).offset(skip)
     return conn.execute(query).mappings().all()
 
 
@@ -29,7 +29,7 @@ def create_user(conn: Connection, user: schemas.user.UserCreate):
         email=user.email,
         nickname=user.nickname,
         hashed_password=temp_hash(user.password)
-    ).returning(models.UserTable.c["id", "email", "nickname"])
+    ).returning(models.UserTable.c[*schemas.user.User.model_fields])
 
     result = conn.execute(insert_query).mappings().first()
     conn.commit()

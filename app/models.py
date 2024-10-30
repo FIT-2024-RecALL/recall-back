@@ -21,14 +21,6 @@ TrainRecordTable = Table(
 )
 
 
-CardTable = Table(
-    "cards",
-    metadata,
-    Column("id", Integer, primary_key=True),
-    Column("content", String, nullable=False)
-) ### Есть связь с collections и train_records
-
-
 CollectionTable = Table(
     "collections",
     metadata,
@@ -38,6 +30,13 @@ CollectionTable = Table(
     Column("description", String, nullable=True)
 ) ### Есть связь с cards
 """
+CardTable = Table(
+    "cards",
+    metadata,
+    Column("id", Integer, primary_key=True),
+    Column("content", String, nullable=False)
+) ### Есть связь с collections и train_records
+
 
 UserTable = Table(
     "users",

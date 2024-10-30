@@ -1,5 +1,4 @@
 from fastapi import APIRouter, HTTPException
-from sqlalchemy import select, exists, insert, or_
 
 from app import crud, schemas
 from app.dependencies import DBConnection
