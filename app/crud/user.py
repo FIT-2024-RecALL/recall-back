@@ -18,11 +18,11 @@ def get_users(conn: Connection, *, limit: int, skip: int):
 temp_hash = lambda x: x
 
 def create_user(conn: Connection, user: schemas.user.UserCreate):
-    check_query = select(exists().where(or_(
+    check_user = select(exists().where(or_(
         models.UserTable.c.email == user.email,
         models.UserTable.c.nickname == user.nickname
     )))
-    if conn.execute(check_query).scalar():
+    if conn.execute(check_user).scalar():
         raise ValueError("Email or Nickname already registered")
 
     insert_query = insert(models.UserTable).values(
@@ -30,7 +30,6 @@ def create_user(conn: Connection, user: schemas.user.UserCreate):
         nickname=user.nickname,
         hashed_password=temp_hash(user.password)
     ).returning(models.UserTable.c[*schemas.user.User.model_fields])
-
     result = conn.execute(insert_query).mappings().first()
     conn.commit()
     return result

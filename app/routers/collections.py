@@ -17,28 +17,29 @@ def read_collection(conn: DBConnection, collection_id: int):
         raise HTTPException(status_code=404, detail="Collection not found")
     return collection
 
+
+@router.get("/", response_model=list[schemas.collection.Collection])
+def read_collections(conn: DBConnection, limit: int = 100, skip: int = 0):
+    return crud.collection.get_collections(conn, limit=limit, skip=skip)
+
+
+@router.post("/{user_id}", response_model=schemas.collection.Collection)
+def create_collection(
+        conn: DBConnection, user_id: int, collection: schemas.collection.CollectionCreate
+):
+    try:
+        created_collection = crud.collection.create_collection(conn, user_id, collection)
+        return created_collection
+    except ValueError as e:
+        raise HTTPException(status_code=404, detail=str(e))
+
+
 """
 @router.get("/{collection_id}/cards", response_model=list[schemas.card.Card])
 def read_collection_cards(collection_id: int, db: Session = Depends(get_db)):
     return read_collection(collection_id, db).cards
 
 
-@router.get("/", response_model=list[schemas.collection.Collection])
-def read_collections(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
-    return crud.collection.get_collections(db, skip=skip, limit=limit)
-
-
-@router.post("/{user_id}", response_model=schemas.collection.Collection)
-def create_collection(
-        user_id: int, collection: schemas.collection.CollectionCreate, db: Session = Depends(get_db)
-):
-    db_user = crud.user.get_user(db, user_id)
-    if not db_user:
-        raise HTTPException(status_code=400, detail="User with this id doesn't exist")
-    return crud.collection.create_collection(db=db, collection=collection, user_id=user_id)
-"""
-
-"""
 def check_connections(collection_id: int, cards: list[int], db: Session) -> bool:
     for card_id in cards:
         query = (

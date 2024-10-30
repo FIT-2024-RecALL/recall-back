@@ -43,7 +43,7 @@ CollectionTable = Table(
     "collections",
     metadata,
     Column("id", Integer, primary_key=True),
-    Column("owner_id", nullable=False, ForeignKey="users.id",),
+    Column("owner_id", ForeignKey("users.id"), nullable=False),
     Column("title", String(100), nullable=False),
     Column("description", String, nullable=True)
 ) ### Есть связь с cards
