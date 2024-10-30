@@ -1,8 +1,5 @@
 from pydantic import BaseModel, ConfigDict, Field
 
-from .collection import Collection
-from .train_record import TrainRecord
-
 
 class UserBase(BaseModel):
     email: str
