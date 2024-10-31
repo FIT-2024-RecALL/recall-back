@@ -1,8 +1,7 @@
-from fastapi import APIRouter, Depends, HTTPException
-from sqlalchemy.orm import Session
+from fastapi import APIRouter, HTTPException
 
 from app import crud, schemas
-from app.database import get_db
+from app.dependencies import DBConnection
 
 
 router = APIRouter(
@@ -11,19 +10,19 @@ router = APIRouter(
 )
 
 
-@router.post("/", response_model=schemas.card.Card)
-def create_card(card: schemas.card.CardCreate, db: Session = Depends(get_db)):
-    return crud.card.create_card(db=db, card=card)
+@router.get("/{card_id}", response_model=schemas.card.Card)
+def read_card(conn: DBConnection, card_id: int):
+    card = crud.card.get_card(conn, card_id)
+    if card is None:
+        raise HTTPException(status_code=404, detail="Card not found")
+    return card
 
 
 @router.get("/", response_model=list[schemas.card.Card])
-def read_cards(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
-    return crud.card.get_cards(db, skip=skip, limit=limit)
+def read_cards(conn: DBConnection, limit: int = 100, skip: int = 0):
+    return crud.card.get_cards(conn, limit=limit, skip=skip)
 
 
-@router.get("/{card_id}", response_model=schemas.card.Card)
-def read_card(card_id: int, db: Session = Depends(get_db)):
-    db_card = crud.collection.get_collection(db, collection_id=card_id)
-    if db_card is None:
-        raise HTTPException(status_code=404, detail="Collection not found")
-    return db_card
+@router.post("/", response_model=schemas.card.Card)
+def create_card(conn: DBConnection, card: schemas.card.CardCreate):
+    return crud.card.create_card(conn, card)
