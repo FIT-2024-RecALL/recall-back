@@ -34,7 +34,7 @@ def create_collection(
         raise HTTPException(status_code=400, detail=str(e))
 
 
-################ Нужно тестировать ########################
+##################### Нужно тестировать ########################
 
 @router.get("/{collection_id}/cards", response_model=list[schemas.card.Card])
 def read_collection_cards(conn: DBConnection, collection_id: int):
