@@ -1,7 +1,7 @@
-from fastapi import APIRouter, Body, HTTPException
+from fastapi import APIRouter, HTTPException
 
 from app import crud, schemas
-from app.dependencies import DBConnection
+from app.dependencies import DBConnection, IntList
 
 
 router = APIRouter(
@@ -34,39 +34,19 @@ def create_collection(
         raise HTTPException(status_code=400, detail=str(e))
 
 
-"""
+################ Нужно тестировать ########################
+
 @router.get("/{collection_id}/cards", response_model=list[schemas.card.Card])
-def read_collection_cards(collection_id: int, db: Session = Depends(get_db)):
-    return read_collection(collection_id, db).cards
+def read_collection_cards(conn: DBConnection, collection_id: int):
+    return crud.card_collection.get_collection_cards(conn, collection_id)
 
-
-def check_connections(collection_id: int, cards: list[int], db: Session) -> bool:
-    for card_id in cards:
-        query = (
-            select(models.association_table).where(models.association_table.c.collection_id == collection_id).where(
-                models.association_table.c.card_id == card_id
-            )
-        )
-        res = db.execute(query)
-        if len(res.all()) > 0:
-            return False
-    return True
 
 @router.post("/{collection_id}/pair")
-def set_card_collection_connection(
-        collection_id: int, cards: Annotated[list[int], Body], db: Session = Depends(get_db)
-):
-    if check_connections(collection_id, cards, db):
-        for card_id in cards:
-            db.execute(
-                insert(models.association_table).values(card_id=card_id, collection_id=collection_id)
-            )
-            db.flush()
-        db.commit()
-        return "Done"
-    raise HTTPException(status_code=400, detail="Rows of connections already exist")
+def set_card_collection_connection(conn: DBConnection, collection_id: int, cards: IntList):
+    crud.card_collection.create_card_collection(conn, collection_id, cards)
+    return "Done"
 
-
+"""
 @router.delete("/{collection_id}/unpair")
 def delete_card_collection_connection(
         collection_id: int, cards: Annotated[list[int], Body], db: Session = Depends(get_db)
