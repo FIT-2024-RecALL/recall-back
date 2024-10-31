@@ -1,4 +1,4 @@
-from sqlalchemy import Connection, select, insert
+from sqlalchemy import Connection, select, insert, delete
 
 from app.models import CardTable, CardCollectionTable, CollectionTable
 from app.schemas import card, collection
@@ -24,7 +24,7 @@ def check_connections(conn: Connection, collection_id: int, cards: list[int]) ->
         CardCollectionTable.c.card_id.in_(unique_cards)
     )
     result_cards: list[int] = [x[0] for x in conn.execute(query).all()]
-    return [x for x in unique_cards if x not in result_cards]
+    return result_cards##### ХУИ надо вместо брать которых нет в этом списке
 
 
 def sift_exist_cards(conn: Connection, cards: list[int]):
@@ -34,7 +34,8 @@ def sift_exist_cards(conn: Connection, cards: list[int]):
 
 # можно переписать через подзапрос (Deep Alchemy)
 def create_card_collection(conn: Connection, collection_id: int, cards: list[int]):
-    sifted_cards = sift_exist_cards(conn, check_connections(conn, collection_id, cards))
+    new_connections: list[int] = [x for x in cards if x not in check_connections(conn, collection_id, cards)]
+    sifted_cards = sift_exist_cards(conn, new_connections)
     if sifted_cards:
         conn.execute(
             insert(CardCollectionTable),
@@ -46,4 +47,8 @@ def create_card_collection(conn: Connection, collection_id: int, cards: list[int
         conn.commit()
 
 
-
+def delete_card_collection(conn: Connection, collection_id: int, cards: list[int]):
+    exist_connections: list[int] = check_connections(conn, collection_id, cards)
+    query = delete(CardCollectionTable).where(CardCollectionTable.c.card_id.in_(exist_connections))
+    conn.execute(query)
+    conn.commit()

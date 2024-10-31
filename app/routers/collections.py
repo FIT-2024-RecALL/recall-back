@@ -46,19 +46,10 @@ def set_card_collection_connection(conn: DBConnection, collection_id: int, cards
     crud.card_collection.create_card_collection(conn, collection_id, cards)
     return "Done"
 
-"""
+
 @router.delete("/{collection_id}/unpair")
 def delete_card_collection_connection(
-        collection_id: int, cards: Annotated[list[int], Body], db: Session = Depends(get_db)
+        conn: DBConnection, collection_id: int, cards: IntList
 ):
-    for card_id in cards:
-        db.execute(
-            delete(models.association_table).filter(and_(
-                models.association_table.c.collection_id == collection_id,
-                models.association_table.c.card_id == card_id
-            ))
-        )
-        db.flush()
-    db.commit()
+    crud.card_collection.delete_card_collection(conn, collection_id, cards)
     return "Done"
-"""
