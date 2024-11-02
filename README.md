@@ -8,7 +8,7 @@
 - [PostgreSQL](https://www.postgresql.org) as the SQL database.
 
 ## How to start the service
-
+1. Environment configuration
 ```bash
 # Enter into the project directory
 cd recall-back
@@ -18,7 +18,22 @@ poetry shell
 
 # To install the defined dependencies for project
 poetry install
-
+```
+2. Environment variables
+  - Setpu these variables in file:
+```conf
+MINIO_HOSTNAME=... # <ADDR:PORT> - without protocol
+MINIO_LOGIN=...
+MINIO_PASSWORD=...
+```
+  - Activate varibles:
+```bash
+set -a
+source <vars_file>
+set +a
+```
+1. Run service!
+```bash
 # Run the service
 fastapi dev app/main.py
 ```
