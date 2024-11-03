@@ -1,10 +1,22 @@
 services:
+  minio-setup:
+    container_name: minio-setup
+    depends_on:
+      minio:
+        condition: service_healthy
+        restart: true
+    image: minio/mc:latest
+    env_file: ./minio_config/.env
+    environment:
+      - "MINIO_SERVER_HOSTNAME=http://minio:9000"
+    volumes:
+      - /mnt/minio-volume:/mnt/minio-volume
+      - ./minio_config/setup.sh:/setup.sh
+    entrypoint: bash /setup.sh
   minio:
     container_name: minio
     image: minio/minio:latest
-    env_file: ./minio_config/.env
     environment:
-      - MINIO_SERVER_HOSTNAME=http://localhost:9000
       - MINIO_CONFIG_ENV_FILE=/etc/config.env
     ports:
       - "9000:9000"
@@ -12,12 +24,11 @@ services:
     volumes:
       - /mnt/minio-volume:/mnt/minio-volume
       - ./minio_config/minio.conf:/etc/config.env
-      - ./minio_config/setup.sh:/setup.sh
     command: server --console-address ":9001"
     healthcheck:
-      test: curl -f http://127.0.0.1:9000 || exit 1
+      test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
       interval: 30s
       timeout: 10s
       retries: 3
-      start_period: 60s
-      start_interval: 20s
+      start_period: 20s
+      start_interval: 5s
