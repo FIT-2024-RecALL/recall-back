@@ -1,12 +1,13 @@
-from sqlalchemy import create_engine
 from sqlalchemy import MetaData
+from sqlalchemy.ext.asyncio import create_async_engine
 
-SQLALCHEMY_DATABASE_URL = "sqlite:///./sql_app.db"
+from app.config import dbSettings
 
-engine = create_engine(
-    url=SQLALCHEMY_DATABASE_URL,
-    connect_args={"check_same_thread": False},
-    echo=True
-)
+
+engine = create_async_engine(url=dbSettings.db_url_asyncpg, echo=True)
 
 metadata = MetaData()
+
+async def create_tables():
+    async with engine.begin() as conn:
+        await conn.run_sync(metadata.create_all)
