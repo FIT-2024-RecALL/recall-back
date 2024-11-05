@@ -1,3 +1,5 @@
+name: recall
+
 services:
   minio-setup:
     container_name: minio-setup
@@ -6,12 +8,14 @@ services:
         condition: service_healthy
         restart: true
     image: minio/mc:latest
-    env_file: ./minio_config/.env
+    env_file:
+      - $RECALL_PROJECT_PATH/config/minio-server.env
+      - $RECALL_PROJECT_PATH/config/minio-backend.env
     environment:
       - "MINIO_SERVER_HOSTNAME=http://minio:9000"
     volumes:
-      - /mnt/minio-volume:/mnt/minio-volume
-      - ./minio_config/setup.sh:/setup.sh
+      - minio-volume:/mnt/minio-volume
+      - $RECALL_PROJECT_PATH/config/minio-setup.sh:/setup.sh
     entrypoint: bash /setup.sh
   minio:
     container_name: minio
@@ -22,8 +26,8 @@ services:
       - "9000:9000"
       - "9001:9001"
     volumes:
-      - /mnt/minio-volume:/mnt/minio-volume
-      - ./minio_config/minio.conf:/etc/config.env
+      - minio-volume:/mnt/minio-volume
+      - $RECALL_PROJECT_PATH/config/minio-server.env:/etc/config.env
     command: server --console-address ":9001"
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
@@ -32,3 +36,6 @@ services:
       retries: 3
       start_period: 20s
       start_interval: 5s
+
+volumes:
+  minio-volume:

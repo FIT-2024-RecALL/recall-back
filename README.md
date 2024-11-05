@@ -12,18 +12,16 @@
 - [Docker Engine + Docker Compose](https://docs.docker.com/engine/install/)
 
 ## How to deploy
-1. Go to deploy folder (*Now there're only Minio image in compose.yaml*)
+1. Set env variable `RECALL_PROJECT_PATH` to project dir
 2. Add config files into `minio_config/`:
-  - `.env`:
+  - `minio-backend.env`:
 ```conf
-MINIO_ADMIN_LOGIN=<root_user_login>
-MINIO_ADMIN_PASSWORD=<root_user_password>
-
+MINIO_HOSTNAME=... # <ADDR:PORT> - without protocol
 MINIO_BUCKET_NAME=<bucket_name>
 MINIO_LOGIN=<backend_minio_user_login>
 MINIO_PASSWORD=<backend_minio_user_password>
 ```
-  - `minio.conf`:
+  - `minio-server.env`:
 ```conf
 MINIO_ROOT_USER="<root_user_login>"
 MINIO_ROOT_PASSWORD="<root_user_passwrod>"
@@ -32,37 +30,26 @@ MINIO_VOLUMES="/mnt/minio-volume"
 
 MINIO_OPTS="--console-address :9001"
 ```
-3. Create folder `/mnt/minio-volume` (**this folder should be used only be MinIO**)
-4. Run `docker compose up -d`
+3. Run `docker compose up -d`
 
 ## How to start the service
 1. Environment configuration
 ```bash
-# Enter into the project directory
-cd recall-back
+cd $RECALL_PROJECT_PATH
 
-# To create and activate virtual environment
 poetry shell
 
-# To install the defined dependencies for project
 poetry install
 ```
-2. Environment variables
-  - Setpu these variables in file:
-```conf
-MINIO_HOSTNAME=... # <ADDR:PORT> - without protocol
-MINIO_LOGIN=<backend_minio_user_login>
-MINIO_PASSWORD=<backend_minio_user_login>
-```
-  - Activate varibles:
+2. Activate next files with env vars: `./config/minio-backend.env`
 ```bash
 set -a
-source <vars_file>
+source <vars_files>
+# ...
 set +a
 ```
-1. Run service!
+3. Run service!
 ```bash
-# Run the service
 fastapi dev app/main.py
 ```
 
