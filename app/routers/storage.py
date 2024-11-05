@@ -29,6 +29,16 @@ def get_file(user_id: int, filename: str):
         )
     except:
         raise HTTPException(404, 'File not found')
+    
+@router.get('/{user_id}', response_model=list[FileUploadedScheme])
+def list_files(user_id: int):
+    file_objects = storage.list_objects(bucket_name, f'{user_id}/')
+    file_urls = []
+    for obj in file_objects:
+        file_urls.append(FileUploadedScheme(
+            url=f'/storage/{quote(obj.object_name)}'
+        ))
+    return file_urls
 
 
 @router.post('/{user_id}', response_model=FileUploadedScheme)
@@ -40,7 +50,9 @@ def add_file(user_id: int, file: UploadFile):
     try:
         storage.put_object(bucket_name, full_path, file.file, file.size)
         return FileUploadedScheme(
-            url=router.url_path_for('get_file', user_id=user_id, filename=quote(file.filename))
+            url=router.url_path_for(
+                'get_file', user_id=user_id, filename=quote(file.filename)
+            )
         )
     except ValueError as e:
         raise HTTPException(409, 'Failed to upload file: ' + e.message)
