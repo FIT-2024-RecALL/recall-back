@@ -39,3 +39,7 @@ services:
 
 volumes:
   minio-volume:
+    driver_opts:
+      type: none
+      o: bind
+      device: $MINIO_VOLUME_PATH

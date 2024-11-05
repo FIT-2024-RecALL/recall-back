@@ -12,8 +12,8 @@
 - [Docker Engine + Docker Compose](https://docs.docker.com/engine/install/)
 
 ## How to deploy
-1. Set env variable `RECALL_PROJECT_PATH` to project dir
-2. Add config files into `minio_config/`:
+- Set env variable `RECALL_PROJECT_PATH` to project dir
+- Add config files into `minio_config/`:
   - `minio-backend.env`:
 ```conf
 MINIO_HOSTNAME=... # <ADDR:PORT> - without protocol
@@ -30,7 +30,8 @@ MINIO_VOLUMES="/mnt/minio-volume"
 
 MINIO_OPTS="--console-address :9001"
 ```
-3. Run `docker compose up -d`
+- Create folder for MinIO object storage and set its path to env var `MINIO_VOLUME_PATH`
+- Run `docker compose up -d`
 
 ## How to start the service
 1. Environment configuration
