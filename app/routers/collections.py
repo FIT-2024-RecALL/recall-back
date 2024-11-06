@@ -35,17 +35,17 @@ async def create_collection(conn: DBConnection, user_id: int, collection: Collec
 
 
 @router.get("/{collection_id}/cards", response_model=list[Card])
-def read_collection_cards(conn: DBConnection, collection_id: int):
-    return crud.card_collection.get_collection_cards(conn, collection_id)
+async def read_collection_cards(conn: DBConnection, collection_id: int):
+    return await crud.card_collection.get_collection_cards(conn, collection_id)
 
 
 @router.post("/{collection_id}/pair")
-def set_card_collection_connection(conn: DBConnection, collection_id: int, cards: IntList):
-    crud.card_collection.create_card_collection(conn, collection_id, cards)
+async def set_card_collection_connection(conn: DBConnection, collection_id: int, cards: IntList):
+    await crud.card_collection.create_card_collection(conn, collection_id, cards)
     return "Done"
 
 
 @router.delete("/{collection_id}/unpair")
-def delete_card_collection_connection(conn: DBConnection, collection_id: int, cards: IntList):
-    crud.card_collection.delete_card_collection(conn, collection_id, cards)
+async def delete_card_collection_connection(conn: DBConnection, collection_id: int, cards: IntList):
+    await crud.card_collection.delete_card_collection(conn, collection_id, cards)
     return "Done"

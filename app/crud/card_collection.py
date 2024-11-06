@@ -1,54 +1,63 @@
-from sqlalchemy import Connection, select, insert, delete
+from sqlalchemy import select, insert, delete
+from sqlalchemy.ext.asyncio import AsyncConnection
 
-from app.models import CardTable, CardCollectionTable, CollectionTable
-from app.schemas import card, collection
+from app.models import CardTable, CardCollectionTable
+from app.schemas.card import Card
 
 
-# наверное можно сделать запрос эффективнее
-def get_collection_cards(conn: Connection, collection_id: int):
-    query = select(CardTable.c[*card.Card.model_fields]).where(
+async def get_collection_cards(conn: AsyncConnection, collection_id: int):
+    query = select(CardTable.c[*Card.model_fields]).where(
         CardTable.c.id == CardCollectionTable.c.card_id,
         CardCollectionTable.c.collection_id == collection_id
     )
-    return conn.execute(query).mappings().all()
+    result = await conn.execute(query)
+    return result.mappings().all()
 
 
 def get_card_collections():
     pass
 
 
-def check_connections(conn: Connection, collection_id: int, cards: list[int]) -> list[int]:
+async def check_connections(conn: AsyncConnection, collection_id: int, cards: list[int]) -> list[int]:
     unique_cards: list[int] = list(set(cards))
     query = select(CardCollectionTable.c.card_id).where(
         CardCollectionTable.c.collection_id == collection_id,
         CardCollectionTable.c.card_id.in_(unique_cards)
     )
-    result_cards: list[int] = [x[0] for x in conn.execute(query).all()]
-    return result_cards##### ХУИ надо вместо брать которых нет в этом списке
+    collection_unique_cards = await conn.execute(query)
+    return [x[0] for x in collection_unique_cards.all()]
 
 
-def sift_exist_cards(conn: Connection, cards: list[int]):
+async def sift_exist_cards(conn: AsyncConnection, cards: list[int]):
     unique_cards: list[int] = list(set(cards))
     query = select(CardTable.c.id).where(CardTable.c.id.in_(unique_cards))
-    return [x[0] for x in conn.execute(query).all()]
-
-# можно переписать через подзапрос (Deep Alchemy)
-def create_card_collection(conn: Connection, collection_id: int, cards: list[int]):
-    new_connections: list[int] = [x for x in cards if x not in check_connections(conn, collection_id, cards)]
-    sifted_cards = sift_exist_cards(conn, new_connections)
-    if sifted_cards:
-        conn.execute(
-            insert(CardCollectionTable),
-            [
-                {"card_id": card_id, "collection_id": collection_id}
-                for card_id in sifted_cards
-            ],
-        )
-        conn.commit()
+    exist_unique_cards = await conn.execute(query)
+    return [x[0] for x in exist_unique_cards.all()]
 
 
-def delete_card_collection(conn: Connection, collection_id: int, cards: list[int]):
-    exist_connections: list[int] = check_connections(conn, collection_id, cards)
+# Можно переписать через подзапрос (Deep Alchemy)
+async def create_card_collection(conn: AsyncConnection, collection_id: int, cards: list[int]):
+    exist_connections = await check_connections(conn, collection_id, cards)
+    new_connections: list[int] = [x for x in cards if x not in exist_connections]
+    if not new_connections:
+        return
+
+    existing_cards = await sift_exist_cards(conn, new_connections)
+    if not existing_cards:
+        return
+
+    await conn.execute(
+        insert(CardCollectionTable),
+        [
+            {"card_id": card_id, "collection_id": collection_id}
+            for card_id in existing_cards
+        ],
+    )
+    await conn.commit()
+
+
+async def delete_card_collection(conn: AsyncConnection, collection_id: int, cards: list[int]):
+    exist_connections: list[int] = await check_connections(conn, collection_id, cards)
     query = delete(CardCollectionTable).where(CardCollectionTable.c.card_id.in_(exist_connections))
-    conn.execute(query)
-    conn.commit()
+    await conn.execute(query)
+    await conn.commit()
