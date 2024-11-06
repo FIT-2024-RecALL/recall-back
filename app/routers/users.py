@@ -1,8 +1,8 @@
 from fastapi import APIRouter, HTTPException
 
 from app import crud
-from app.schemas.user import User, UserCreate
 from app.dependencies import DBConnection
+from app.schemas.user import User, UserCreate
 
 
 router = APIRouter(
