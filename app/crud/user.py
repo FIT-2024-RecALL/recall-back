@@ -1,39 +1,53 @@
-from sqlalchemy import Connection, select, insert, exists, or_
+from sqlalchemy import select, insert, exists, or_
+from sqlalchemy.ext.asyncio import AsyncConnection
 
-from app import models, schemas
-
-
-def get_user(conn: Connection, user_id: int):
-    query = select(models.UserTable.c[*schemas.user.User.model_fields]).where(
-        models.UserTable.c.id == user_id
-    )
-    return conn.execute(query).mappings().first()
+from app.models import UserTable
+from app.schemas.user import User, UserCreate
 
 
-def get_users(conn: Connection, *, limit: int, skip: int):
-    query = select(models.UserTable.c[*schemas.user.User.model_fields]).limit(limit).offset(skip)
-    return conn.execute(query).mappings().all()
+async def get_user(conn: AsyncConnection, user_id: int):
+    query = select(UserTable.c[*User.model_fields]).where(UserTable.c.id == user_id)
+    result = await conn.execute(query)
+    return result.mappings().first()
+
+
+async def get_users(conn: AsyncConnection, *, limit: int, skip: int):
+    query = select(UserTable.c[*User.model_fields]).limit(limit).offset(skip)
+    result = await conn.execute(query)
+    return result.mappings().all()
+
+
+async def check_user_id(conn: AsyncConnection, user_id: int):
+    query = select(exists().where(UserTable.c.id == user_id))
+    result = await conn.execute(query)
+    if not result.scalar():
+        raise ValueError("User with this id doesn't exist")
+
+
+async def check_user_data(conn: AsyncConnection, user: UserCreate):
+    query = select(exists().where(or_(
+        UserTable.c.email == user.email,
+        UserTable.c.nickname == user.nickname
+    )))
+    result = await conn.execute(query)
+    if result.scalar():
+        raise ValueError("Email or Nickname already registered")
 
 
 temp_hash = lambda x: x
 
-def create_user(conn: Connection, user: schemas.user.UserCreate):
-    check_user = select(exists().where(or_(
-        models.UserTable.c.email == user.email,
-        models.UserTable.c.nickname == user.nickname
-    )))
-    if conn.execute(check_user).scalar():
-        raise ValueError("Email or Nickname already registered")
-
-    insert_query = insert(models.UserTable).values(
+async def create_user(conn: AsyncConnection, user: UserCreate):
+    await check_user_data(conn, user)
+    query = insert(UserTable).values(
         email=user.email,
         nickname=user.nickname,
         hashed_password=temp_hash(user.password)
-    ).returning(models.UserTable.c[*schemas.user.User.model_fields])
-    result = conn.execute(insert_query).mappings().first()
-    conn.commit()
-    return result
+    ).returning(UserTable.c[*User.model_fields])
+
+    result = await conn.execute(query)
+    await conn.commit()
+    return result.mappings().first()
 
 
-def get_profile(conn: Connection):
+def get_profile(conn: AsyncConnection):
     pass

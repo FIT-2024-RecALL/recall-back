@@ -16,7 +16,8 @@
 - Add config files into `minio_config/`:
   - `minio-backend.env`:
 ```conf
-MINIO_HOSTNAME=... # <ADDR:PORT> - without protocol
+MINIO_HOSTNAME=<minio_addr> # IP address - without protocol
+MINIO_PORT=<minio_port>
 MINIO_BUCKET_NAME=<bucket_name>
 MINIO_LOGIN=<backend_minio_user_login>
 MINIO_PASSWORD=<backend_minio_user_password>
@@ -29,6 +30,14 @@ MINIO_ROOT_PASSWORD="<root_user_passwrod>"
 MINIO_VOLUMES="/mnt/minio-volume"
 
 MINIO_OPTS="--console-address :9001"
+```
+  - `postgres.env`:
+```conf
+POSTGRES_USER=<backend_postgres_user_login>
+POSTGRES_PASSWORD=<backend_postgres_user_passwrod>
+POSTGRES_HOST=<postgres_addr>
+POSTGRES_HOST_PORT=<postgres_port>
+POSTGRES_DB_NAME=<postgres_db_name>
 ```
 - Create folder for MinIO object storage and set its path to env var `MINIO_VOLUME_PATH`
 - Run `docker compose up -d`

@@ -1,11 +1,10 @@
 from minio import Minio
-from os import getenv
 
-bucket_name = getenv('MINIO_BUCKET_NAME')
+from app.config import minio_settings
 
 storage = Minio(
-    getenv('MINIO_HOSTNAME'),
-    getenv('MINIO_LOGIN'),
-    getenv('MINIO_PASSWORD'),
+    minio_settings.url,
+    minio_settings.LOGIN,
+    minio_settings.PASSWORD,
     secure=False
 )
