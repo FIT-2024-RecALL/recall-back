@@ -1,54 +1,51 @@
 from fastapi import APIRouter, HTTPException, UploadFile
-from fastapi.responses import FileResponse, StreamingResponse
+from fastapi.responses import StreamingResponse
 from urllib.parse import quote
 
-from app.storage import storage, bucket_name, is_object_exists
 from app.schemas.storage import FileUploadedScheme
+from app.crud.storage import (
+    get_file_stream, 
+    get_files_list, 
+    is_file_exists, 
+    upload_file,
+    delete_file
+)
+
 
 router = APIRouter(
     prefix='/storage',
     tags=['storage']
 )
 
+
 @router.get('/{user_id}/{filename}', response_class=StreamingResponse)
 def get_file(user_id: int, filename: str):
-    full_path = f'{user_id}/{filename}'
     try:
-        file_response = storage.get_object(bucket_name, full_path)
-        async def file_stream_generator():
-            try:
-                for chunk in file_response.stream():
-                    yield chunk
-            finally:
-                file_response.close()
-                file_response.release_conn()
         return StreamingResponse(
-            file_stream_generator(),
+            get_file_stream(f'{user_id}/{filename}'),
             media_type="application/octet-stream",
             headers={"Content-Disposition": f"attachment; filename={filename}"}
         )
     except:
         raise HTTPException(404, 'File not found')
     
+
 @router.get('/{user_id}', response_model=list[FileUploadedScheme])
 def list_files(user_id: int):
-    file_objects = storage.list_objects(bucket_name, f'{user_id}/')
-    file_urls = []
-    for obj in file_objects:
-        file_urls.append(FileUploadedScheme(
-            url=f'/storage/{quote(obj.object_name)}'
-        ))
-    return file_urls
+    return [
+        FileUploadedScheme(url=f'/storage/{quote(obj.object_name)}') 
+        for obj in get_files_list(user_id)
+    ]
 
 
 @router.post('/{user_id}', response_model=FileUploadedScheme)
 def add_file(user_id: int, file: UploadFile):
     # TODO: User is owner checking
     full_path = f'{user_id}/{file.filename}'
-    if is_object_exists(full_path):
+    if is_file_exists(full_path):
         raise HTTPException(409, 'File with this name already exists')
     try:
-        storage.put_object(bucket_name, full_path, file.file, file.size)
+        upload_file(full_path, file.file, file.size)
         return FileUploadedScheme(
             url=router.url_path_for(
                 'get_file', user_id=user_id, filename=quote(file.filename)
@@ -62,10 +59,10 @@ def add_file(user_id: int, file: UploadFile):
 def delete_file(user_id: int, filename: str):
     # TODO: User is owner checking
     full_path = f'{user_id}/{filename}'
-    if not is_object_exists(full_path):
+    if not is_file_exists(full_path):
         raise HTTPException(409, 'File doesn\'t exist')
     try:
-        storage.remove_object(bucket_name, full_path)
+        delete_file(full_path)
         return {}
     except ValueError as e:
         raise HTTPException(404, 'Failed to delete file: ' + e.message)
