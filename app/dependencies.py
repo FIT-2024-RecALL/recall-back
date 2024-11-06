@@ -1,15 +1,10 @@
 from typing import Annotated
 
 from fastapi import Depends, Body
-from sqlalchemy import Connection
+from sqlalchemy.ext.asyncio import AsyncConnection
 
-from app.database import engine
+from app.database import get_async_connection
 
 
-def get_connection() -> Connection:
-    with engine.connect() as conn:
-        yield conn
-
-DBConnection = Annotated[Connection, Depends(get_connection)]
-
+DBConnection = Annotated[AsyncConnection, Depends(get_async_connection)]
 IntList = Annotated[list[int], Body]

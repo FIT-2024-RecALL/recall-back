@@ -1,38 +1,37 @@
-from sqlalchemy import Connection, exists, select, insert
+from sqlalchemy import select, insert
+from sqlalchemy.ext.asyncio import AsyncConnection
 
-from app import models, schemas
+from app.crud.card import check_card_id
+from app.crud.user import check_user_id
+from app.models import TrainRecordTable
+from app.schemas.train_record import TrainRecord, TrainRecordCreate
 
 
-def get_train_record(conn: Connection, train_record_id: int):
-    query = select(models.TrainRecordTable.c[*schemas.train_record.TrainRecord.model_fields]).where(
-        models.TrainRecordTable.c.id == train_record_id
+async def get_train_record(conn: AsyncConnection, train_record_id: int):
+    query = select(TrainRecordTable.c[*TrainRecord.model_fields]).where(
+        TrainRecordTable.c.id == train_record_id
     )
-    return conn.execute(query).mappings().first()
+    result = await conn.execute(query)
+    return result.mappings().first()
 
 
-def get_train_records(conn: Connection, limit: int, skip: int):
-    query = (select(models.TrainRecordTable.c[*schemas.train_record.TrainRecord.model_fields])
-             .limit(limit)).offset(skip)
-    return conn.execute(query)
+async def get_train_records(conn: AsyncConnection, limit: int, skip: int):
+    query = (select(TrainRecordTable.c[*TrainRecord.model_fields]).limit(limit)).offset(skip)
+    return await conn.execute(query)
 
 
-def create_train_record(
-        conn: Connection,
+async def create_train_record(
+        conn: AsyncConnection,
         card_id: int, user_id: int,
-        train_record: schemas.train_record.TrainRecordCreate
+        train_record: TrainRecordCreate
 ):
-    check_card = select(exists().where(models.CardTable.c.id == card_id))
-    if not conn.execute(check_card).scalar():
-        raise ValueError("Card with this id doesn't exist")
+    await check_card_id(conn, card_id)
+    await check_user_id(conn, user_id)
 
-    check_user = select(exists().where(models.UserTable.c.id == user_id))  ## можно будет вынести в отдельный пользовательский crud
-    if not conn.execute(check_user).scalar():
-        raise ValueError("User with this id doesn't exist")
-
-    insert_query = insert(models.TrainRecordTable).values(
+    insert_query = insert(TrainRecordTable).values(
         card_id=card_id, user_id=user_id,
         **train_record.model_dump()
-    ).returning(models.TrainRecordTable.c[*schemas.train_record.TrainRecord.model_fields])
-    result = conn.execute(insert_query).mappings().first()
-    conn.commit()
-    return result
+    ).returning(TrainRecordTable.c[*TrainRecord.model_fields])
+    result = await conn.execute(insert_query)
+    await conn.commit()
+    return result.mappings().first()
