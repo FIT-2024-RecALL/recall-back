@@ -1,12 +1,14 @@
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
-class Settings(BaseSettings):
-    POSTGRES_DB_USER: str
-    POSTGRES_DB_PASSWORD: str
-    POSTGRES_DB_HOST: str
-    POSTGRES_DB_HOST_PORT: int
-    POSTGRES_DB_NAME: str
+class PostgreSettings(BaseSettings):
+    model_config = SettingsConfigDict(env_prefix='POSTGRES_', env_file=".env")
+
+    DB_USER: str
+    DB_PASSWORD: str
+    DB_HOST: str
+    DB_HOST_PORT: int
+    DB_NAME: str
 
     @staticmethod
     def __create_dialect_url(self, dialect: str) -> str:
@@ -15,16 +17,15 @@ class Settings(BaseSettings):
 
     @property
     def db_url_asyncpg(self) -> str:
-        return Settings.__create_dialect_url(self, "asyncpg")
+        return PostgreSettings.__create_dialect_url(self, "asyncpg")
 
     @property
     def db_url_psycopg(self) -> str:
-        return Settings.__create_dialect_url(self, "psycopg")
+        return PostgreSettings.__create_dialect_url(self, "psycopg")
 
     @property
     def db_url_pysqlite(self) -> str:
         return "sqlite:///./sql_app.db"
 
-    model_config = SettingsConfigDict(env_file=".env")
 
-dbSettings = Settings()
+dbSettings: PostgreSettings = PostgreSettings()

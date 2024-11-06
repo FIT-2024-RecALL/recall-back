@@ -1,4 +1,4 @@
- services:
+services:
   postgres:
     image: postgres:17.0-alpine
     container_name: postgres
@@ -10,7 +10,7 @@
     ports:
       - ${POSTGRES_DB_HOST_PORT}:5432
     volumes:
-      - pgdata:/var/lib/postgresql/data/pgdata
+      - pgdata:/var/lib/postgresql/data
     healthcheck:
       test: [ "CMD-SHELL", "pg_isready -U postgres_user -d postgres_db" ]
       interval: 3s
@@ -21,3 +21,4 @@
 
 volumes:
   pgdata:
+    driver: local
