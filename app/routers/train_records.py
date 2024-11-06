@@ -21,7 +21,7 @@ async def read_train_record(conn: DBConnection, train_record_id: int):
 
 @router.get("/", response_model=list[TrainRecord])
 async def read_train_records(conn: DBConnection, limit: int = 100, skip: int = 0):
-    return crud.train_record.get_train_records(conn, skip=skip, limit=limit)
+    return await crud.train_record.get_train_records(conn, skip=skip, limit=limit)
 
 
 @router.post("/{card_id}/{user_id}", response_model=TrainRecord)
