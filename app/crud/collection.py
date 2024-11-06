@@ -1,36 +1,34 @@
-from sqlalchemy import Connection, select, insert, exists, or_
+from sqlalchemy import select, insert
+from sqlalchemy.ext.asyncio import AsyncConnection
 
-from app import models, schemas
+from app.crud.user import check_user_id
+from app.models import CollectionTable
+from app.schemas.collection import Collection, CollectionCreate
 
 
-def get_collection(conn: Connection, collection_id: int):
-    query = select(models.CollectionTable.c[*schemas.collection.Collection.model_fields]).where(
-        models.CollectionTable.c.id == collection_id
+async def get_collection(conn: AsyncConnection, collection_id: int):
+    query = select(CollectionTable.c[*Collection.model_fields]).where(
+        CollectionTable.c.id == collection_id
     )
-    return conn.execute(query).mappings().first()
+    result = await conn.execute(query)
+    return result.mappings().first()
 
 
-def get_collections(conn: Connection, limit: int, skip: int):
-    query = (select(models.CollectionTable.c[*schemas.collection.Collection.model_fields])
-             .limit(limit)).offset(skip)
-    return conn.execute(query).mappings().all()
+async def get_collections(conn: AsyncConnection, limit: int, skip: int):
+    query = (select(CollectionTable.c[*Collection.model_fields]).limit(limit)).offset(skip)
+    result = await conn.execute(query)
+    return result.mappings().all()
 
 
 def get_collection_cards():
     pass
 
 
-def create_collection(
-        conn: Connection, user_id: int, collection: schemas.collection.CollectionCreate
-):
-    check_user = select(exists().where(models.UserTable.c.id == user_id))  ## можно будет вынести в отдельный пользовательский crud
-    if not conn.execute(check_user).scalar():
-        raise ValueError("User with this id doesn't exist")
+async def create_collection(conn: AsyncConnection, user_id: int, collection: CollectionCreate):
+    await check_user_id(conn, user_id)
+    query = insert(CollectionTable).values(owner_id=user_id, **collection.model_dump()
+    ).returning(CollectionTable.c[*Collection.model_fields])
 
-    insert_query = insert(models.CollectionTable).values(
-        owner_id=user_id,
-        **collection.model_dump()
-    ).returning(models.CollectionTable.c[*schemas.collection.Collection.model_fields])
-    result = conn.execute(insert_query).mappings().first()
-    conn.commit()
-    return result
+    result = await conn.execute(query)
+    await conn.commit()
+    return result.mappings().first()

@@ -6,9 +6,7 @@ from app.schemas.user import User, UserCreate
 
 
 async def get_user(conn: AsyncConnection, user_id: int):
-    query = select(UserTable.c[*User.model_fields]).where(
-        UserTable.c.id == user_id
-    )
+    query = select(UserTable.c[*User.model_fields]).where(UserTable.c.id == user_id)
     result = await conn.execute(query)
     return result.mappings().first()
 
@@ -19,9 +17,14 @@ async def get_users(conn: AsyncConnection, *, limit: int, skip: int):
     return result.mappings().all()
 
 
-temp_hash = lambda x: x
+async def check_user_id(conn: AsyncConnection, user_id: int):
+    query = select(exists().where(UserTable.c.id == user_id))
+    result = await conn.execute(query)
+    if not result.scalar():
+        raise ValueError("User with this id doesn't exist")
 
-async def check_user(conn: AsyncConnection, user: UserCreate):
+
+async def check_user_data(conn: AsyncConnection, user: UserCreate):
     query = select(exists().where(or_(
         UserTable.c.email == user.email,
         UserTable.c.nickname == user.nickname
@@ -31,14 +34,16 @@ async def check_user(conn: AsyncConnection, user: UserCreate):
         raise ValueError("Email or Nickname already registered")
 
 
-async def create_user(conn: AsyncConnection, user: UserCreate):
-    await check_user(conn, user)
+temp_hash = lambda x: x
 
+async def create_user(conn: AsyncConnection, user: UserCreate):
+    await check_user_data(conn, user)
     query = insert(UserTable).values(
         email=user.email,
         nickname=user.nickname,
         hashed_password=temp_hash(user.password)
     ).returning(UserTable.c[*User.model_fields])
+
     result = await conn.execute(query)
     await conn.commit()
     return result.mappings().first()
