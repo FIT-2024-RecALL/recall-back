@@ -2,12 +2,12 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
 class PostgreSettings(BaseSettings):
-    model_config = SettingsConfigDict(env_prefix='POSTGRES_', env_file=".env")
+    model_config = SettingsConfigDict(env_prefix='POSTGRES_', env_file="/../config/postgres.env")
 
-    DB_USER: str
-    DB_PASSWORD: str
-    DB_HOST: str
-    DB_HOST_PORT: int
+    USER: str
+    PASSWORD: str
+    HOST: str
+    HOST_PORT: int
     DB_NAME: str
 
     @staticmethod
