@@ -28,8 +28,7 @@ async def read_collections(conn: DBConnection, limit: int = 100, skip: int = 0):
 @router.post("/{user_id}", response_model=Collection)
 async def create_collection(conn: DBConnection, user_id: int, collection: CollectionCreate):
     try:
-        created_collection = await crud.collection.create_collection(conn, user_id, collection)
-        return created_collection
+        return await crud.collection.create_collection(conn, user_id, collection)
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
 

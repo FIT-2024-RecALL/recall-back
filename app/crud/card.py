@@ -1,8 +1,15 @@
-from sqlalchemy import select, insert
+from sqlalchemy import select, insert, exists
 from sqlalchemy.ext.asyncio import AsyncConnection
 
 from app.models import CardTable
 from app.schemas.card import Card, CardCreate
+
+
+async def check_card_id(conn: AsyncConnection, card_id: int):
+    query = select(exists().where(CardTable.c.id == card_id))
+    result = await conn.execute(query)
+    if not result.scalar():
+        raise ValueError("Card with this id doesn't exist")
 
 
 async def get_card(conn: AsyncConnection, card_id: int):

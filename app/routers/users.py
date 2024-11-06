@@ -27,8 +27,7 @@ async def read_users(conn: DBConnection, limit: int = 100, skip: int = 0):
 @router.post("/", response_model=User)
 async def create_user(conn: DBConnection, user: UserCreate):
     try:
-        created_user = await crud.user.create_user(conn, user)
-        return created_user
+        return await crud.user.create_user(conn, user)
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
 
