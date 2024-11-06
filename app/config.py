@@ -12,8 +12,8 @@ class PostgreSettings(BaseSettings):
 
     @staticmethod
     def __create_dialect_url(self, dialect: str) -> str:
-        return (f"postgresql+{dialect}://{self.POSTGRES_DB_USER}:{self.POSTGRES_DB_PASSWORD}"
-                f"@{self.POSTGRES_DB_HOST}:{self.POSTGRES_DB_HOST_PORT}/{self.POSTGRES_DB_NAME}")
+        return (f"postgresql+{dialect}://{self.DB_USER}:{self.DB_PASSWORD}"
+                f"@{self.DB_HOST}:{self.DB_HOST_PORT}/{self.DB_NAME}")
 
     @property
     def db_url_asyncpg(self) -> str:

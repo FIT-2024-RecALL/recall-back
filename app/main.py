@@ -1,9 +1,9 @@
+from contextlib import asynccontextmanager
+
 from fastapi import FastAPI
 
 from app.database import create_tables, close_connections
 from app.routers import cards, collections, train_records, users
-
-from contextlib import asynccontextmanager
 
 
 @asynccontextmanager
