@@ -1,7 +1,10 @@
+from datetime import datetime, timezone
+
+from jose import jwt, JWTError
 from sqlalchemy import select, insert, exists, or_
 from sqlalchemy.ext.asyncio import AsyncConnection
 
-from app.auth.utils import get_password_hash, verify_password
+from app.auth.utils import authSettings, get_password_hash, verify_password
 from app.models import UserTable
 from app.schemas.user import User, UserAuth, UserCreate
 
@@ -61,5 +64,23 @@ async def authenticate_user(conn: AsyncConnection, user_data: UserAuth) -> int:
     return user["id"]
 
 
-def get_profile(conn: AsyncConnection):
-    pass
+async def get_profile(conn: AsyncConnection, token: str):
+    try:
+        auth_data = authSettings.get_auth_data
+        payload = jwt.decode(token, auth_data['secret_key'], algorithms=[auth_data['algorithm']])
+    except JWTError:
+        raise ValueError("Invalid token")
+
+    expire = payload.get('exp')
+    expire_time = datetime.fromtimestamp(int(expire), tz=timezone.utc)
+    if (not expire) or (expire_time < datetime.now(timezone.utc)):
+        raise ValueError("Token expired")
+
+    user_id = payload.get('sub')
+    if not user_id:
+        raise ValueError("User ID is undefined")
+
+    user = await get_user(conn, user_id)
+    if not user:
+        ValueError("User not found")
+    return user

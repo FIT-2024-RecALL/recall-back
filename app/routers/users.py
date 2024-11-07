@@ -1,4 +1,4 @@
-from fastapi import APIRouter, HTTPException, Response
+from fastapi import APIRouter, HTTPException, Response, Request
 
 from app import auth
 from app import crud
@@ -12,17 +12,26 @@ router = APIRouter(
 )
 
 
+@router.get("/", response_model=list[User])
+async def read_users(conn: DBConnection, limit: int = 100, skip: int = 0):
+    return await crud.user.get_users(conn, limit=limit, skip=skip)
+
+
+@router.get("/profile")#, response_model=User)
+async def read_current_user(conn: DBConnection, request: Request):
+    try:
+        token: str = auth.utils.get_token(request)
+        return await crud.user.get_profile(conn, token)
+    except ValueError as e:
+        raise HTTPException(status_code=401, detail=str(e))
+
+
 @router.get("/{user_id}", response_model=User)
 async def read_user(conn: DBConnection, user_id: int):
     user = await crud.user.get_user(conn, user_id)
     if user is None:
         raise HTTPException(status_code=404, detail="User not found")
     return user
-
-
-@router.get("/", response_model=list[User])
-async def read_users(conn: DBConnection, limit: int = 100, skip: int = 0):
-    return await crud.user.get_users(conn, limit=limit, skip=skip)
 
 
 @router.post("/register", response_model=User)
@@ -45,6 +54,7 @@ async def authenticate_user(conn: DBConnection, response: Response, user_data: U
     return {"access_token": access_token, "refresh_token": None}
 
 
-@router.get("/profile", response_model=User, tags=["profile"])
-async def read_current_user_profile(conn: DBConnection):
-    pass
+@router.post("/logout")
+async def logout_user(response: Response):
+    response.delete_cookie(key="users_access_token")
+    return {"message": "User logged out"}
