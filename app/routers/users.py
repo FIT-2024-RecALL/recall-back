@@ -24,7 +24,7 @@ async def read_users(conn: DBConnection, limit: int = 100, skip: int = 0):
     return await crud.user.get_users(conn, limit=limit, skip=skip)
 
 
-@router.post("/", response_model=User)
+@router.post("/register", response_model=User)
 async def create_user(conn: DBConnection, user: UserCreate):
     try:
         return await crud.user.create_user(conn, user)

@@ -2,7 +2,7 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
 class AuthSettings(BaseSettings):
-    model_config = SettingsConfigDict(env_file="./config/backend.env")
+    model_config = SettingsConfigDict(env_file="./config/backend.env", extra="allow")
 
     SECRET_KEY: str
     ALGORITHM: str

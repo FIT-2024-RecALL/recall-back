@@ -1,6 +1,7 @@
 from sqlalchemy import select, insert, exists, or_
 from sqlalchemy.ext.asyncio import AsyncConnection
 
+from app.auth.utils import get_password_hash
 from app.models import UserTable
 from app.schemas.user import User, UserCreate
 
@@ -34,14 +35,12 @@ async def check_user_data(conn: AsyncConnection, user: UserCreate):
         raise ValueError("Email or Nickname already registered")
 
 
-temp_hash = lambda x: x
-
 async def create_user(conn: AsyncConnection, user: UserCreate):
     await check_user_data(conn, user)
     query = insert(UserTable).values(
         email=user.email,
         nickname=user.nickname,
-        hashed_password=temp_hash(user.password)
+        hashed_password=get_password_hash(user.password)
     ).returning(UserTable.c[*User.model_fields])
 
     result = await conn.execute(query)
