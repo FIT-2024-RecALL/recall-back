@@ -1,9 +1,9 @@
 from sqlalchemy import select, insert, exists, or_
 from sqlalchemy.ext.asyncio import AsyncConnection
 
-from app.auth.utils import get_password_hash
+from app.auth.utils import get_password_hash, verify_password
 from app.models import UserTable
-from app.schemas.user import User, UserCreate
+from app.schemas.user import User, UserAuth, UserCreate
 
 
 async def get_user(conn: AsyncConnection, user_id: int):
@@ -46,6 +46,19 @@ async def create_user(conn: AsyncConnection, user: UserCreate):
     result = await conn.execute(query)
     await conn.commit()
     return result.mappings().first()
+
+
+async def get_user_via_email(conn: AsyncConnection, email: str):
+    query = select(UserTable).where(UserTable.c.email == email)
+    result = await conn.execute(query)
+    return result.mappings().first()
+
+
+async def authenticate_user(conn: AsyncConnection, user_data: UserAuth) -> int:
+    user = await get_user_via_email(conn, user_data.email)
+    if user is None or not verify_password(user_data.password, user["hashed_password"]):
+        raise ValueError("Entered email or password is incorrect")
+    return user["id"]
 
 
 def get_profile(conn: AsyncConnection):

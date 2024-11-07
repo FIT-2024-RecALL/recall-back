@@ -1,8 +1,9 @@
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, Response
 
+from app import auth
 from app import crud
 from app.dependencies import DBConnection
-from app.schemas.user import User, UserCreate
+from app.schemas.user import User, UserAuth, UserCreate
 
 
 router = APIRouter(
@@ -30,6 +31,18 @@ async def create_user(conn: DBConnection, user: UserCreate):
         return await crud.user.create_user(conn, user)
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
+
+
+@router.post("/login")
+async def authenticate_user(conn: DBConnection, response: Response, user_data: UserAuth):
+    try:
+        check_user_id = await crud.user.authenticate_user(conn, user_data)
+    except ValueError as e:
+        raise HTTPException(status_code=401, detail=str(e))
+
+    access_token = auth.utils.create_access_token({"sub": str(check_user_id)})
+    response.set_cookie(key="users_access_token", value=access_token, httponly=True)
+    return {"access_token": access_token, "refresh_token": None}
 
 
 @router.get("/profile", response_model=User, tags=["profile"])
