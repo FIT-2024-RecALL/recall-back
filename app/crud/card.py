@@ -1,24 +1,31 @@
-from sqlalchemy import Connection, select, insert
+from sqlalchemy import select, insert, exists
+from sqlalchemy.ext.asyncio import AsyncConnection
 
-from app import models, schemas
-
-
-def get_card(conn: Connection, card_id: int):
-    query = select(models.CardTable.c[*schemas.card.Card.model_fields]).where(
-        models.CardTable.c.id == card_id
-    )
-    return conn.execute(query).mappings().first()
+from app.models import CardTable
+from app.schemas.card import Card, CardCreate
 
 
-def get_cards(conn: Connection, *, limit: int, skip: int):
-    query = select(models.CardTable.c[*schemas.card.Card.model_fields]).limit(limit).offset(skip)
-    return conn.execute(query).mappings().all()
+async def check_card_id(conn: AsyncConnection, card_id: int):
+    query = select(exists().where(CardTable.c.id == card_id))
+    result = await conn.execute(query)
+    if not result.scalar():
+        raise ValueError("Card with this id doesn't exist")
 
 
-def create_card(conn: Connection, card: schemas.card.CardCreate):
-    query = insert(models.CardTable).values(**card.model_dump()).returning(
-        models.CardTable.c[*schemas.card.Card.model_fields]
-    )
-    result = conn.execute(query).mappings().first()
-    conn.commit()
-    return result
+async def get_card(conn: AsyncConnection, card_id: int):
+    query = select(CardTable.c[*Card.model_fields]).where(CardTable.c.id == card_id)
+    result = await conn.execute(query)
+    return result.mappings().first()
+
+
+async def get_cards(conn: AsyncConnection, *, limit: int, skip: int):
+    query = select(CardTable.c[*Card.model_fields]).limit(limit).offset(skip)
+    result = await conn.execute(query)
+    return result.mappings().all()
+
+
+async def create_card(conn: AsyncConnection, card: CardCreate):
+    query = insert(CardTable).values(**card.model_dump()).returning(CardTable.c[*Card.model_fields])
+    result = await conn.execute(query)
+    await conn.commit()
+    return result.mappings().first()

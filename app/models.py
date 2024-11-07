@@ -1,7 +1,7 @@
-from sqlalchemy import Column, ForeignKey, Integer, String, Table
+from sqlalchemy import Column, ForeignKey, Integer, String, Table, MetaData
 
-from app.database import metadata
 
+metadata: MetaData = MetaData()
 
 UserTable = Table(
     "users",
