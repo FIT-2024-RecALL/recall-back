@@ -37,9 +37,9 @@ POSTGRES_USER=<backend_postgres_user_login>
 POSTGRES_PASSWORD=<backend_postgres_user_passwrod>
 POSTGRES_HOST=<postgres_addr>
 POSTGRES_HOST_PORT=<postgres_port>
-POSTGRES_DB_NAME=<postgres_db_name>
+POSTGRES_DB=<postgres_db_name>
 ```
-- Create folder for MinIO object storage and set its path to env var `MINIO_VOLUME_PATH`
+- Create folders for MinIO object storage and Postgres DB then set their paths to env var `MINIO_VOLUME_PATH` and `POSTGRES_VOLUME_PATH`
 - Run `docker compose up -d`
 
 ## How to start the service
@@ -51,14 +51,7 @@ poetry shell
 
 poetry install
 ```
-2. Activate next files with env vars: `./config/minio-backend.env`
-```bash
-set -a
-source <vars_files>
-# ...
-set +a
-```
-3. Run service!
+2. Run service!
 ```bash
 fastapi dev app/main.py
 ```
