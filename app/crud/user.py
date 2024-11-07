@@ -80,7 +80,7 @@ async def get_profile(conn: AsyncConnection, token: str):
     if not user_id:
         raise ValueError("User ID is undefined")
 
-    user = await get_user(conn, user_id)
+    user = await get_user(conn, int(user_id))
     if not user:
         ValueError("User not found")
     return user

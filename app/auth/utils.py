@@ -1,6 +1,6 @@
 from datetime import datetime, timedelta, timezone
 
-from fastapi import Request
+from fastapi import Request, HTTPException
 from jose import jwt
 from passlib.context import CryptContext
 
@@ -26,8 +26,8 @@ def create_access_token(data: dict) -> str:
     return encode_jwt
 
 
-def get_token(request: Request):
+def get_token(request: Request) -> str:
     token = request.cookies.get("users_access_token")
     if not token:
-        raise ValueError("Token not found")
+        raise HTTPException(status_code=401, detail="Token not found")
     return token

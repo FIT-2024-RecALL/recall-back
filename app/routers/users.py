@@ -1,8 +1,8 @@
-from fastapi import APIRouter, HTTPException, Response, Request
+from fastapi import APIRouter, HTTPException, Response
 
 from app import auth
 from app import crud
-from app.dependencies import DBConnection
+from app.dependencies import DBConnection, JWToken
 from app.schemas.user import User, UserAuth, UserCreate
 
 
@@ -17,10 +17,9 @@ async def read_users(conn: DBConnection, limit: int = 100, skip: int = 0):
     return await crud.user.get_users(conn, limit=limit, skip=skip)
 
 
-@router.get("/profile")#, response_model=User)
-async def read_current_user(conn: DBConnection, request: Request):
+@router.get("/profile", response_model=User)
+async def read_current_user(conn: DBConnection, token: JWToken):
     try:
-        token: str = auth.utils.get_token(request)
         return await crud.user.get_profile(conn, token)
     except ValueError as e:
         raise HTTPException(status_code=401, detail=str(e))
