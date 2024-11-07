@@ -1,1 +1,1 @@
-from . import card, card_collection, collection, train_record, user
+from . import card, card_collection, collection, train_record, user, storage

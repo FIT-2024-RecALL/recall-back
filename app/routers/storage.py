@@ -3,13 +3,7 @@ from fastapi.responses import StreamingResponse
 from urllib.parse import quote
 
 from app.schemas.storage import FileUploadedScheme
-from app.crud.storage import (
-    get_file_stream, 
-    get_files_list, 
-    is_file_exists, 
-    upload_file,
-    delete_file
-)
+import app.crud as crud
 
 
 router = APIRouter(
@@ -22,7 +16,7 @@ router = APIRouter(
 def get_file(user_id: int, filename: str):
     try:
         return StreamingResponse(
-            get_file_stream(f'{user_id}/{filename}'),
+            crud.storage.get_file_stream(f'{user_id}/{filename}'),
             media_type="application/octet-stream",
             headers={"Content-Disposition": f"attachment; filename={filename}"}
         )
@@ -34,7 +28,7 @@ def get_file(user_id: int, filename: str):
 def list_files(user_id: int):
     return [
         FileUploadedScheme(url=f'/storage/{quote(obj.object_name)}') 
-        for obj in get_files_list(user_id)
+        for obj in crud.storage.get_files_list(user_id)
     ]
 
 
@@ -42,10 +36,10 @@ def list_files(user_id: int):
 def add_file(user_id: int, file: UploadFile):
     # TODO: User is owner checking
     full_path = f'{user_id}/{file.filename}'
-    if is_file_exists(full_path):
+    if crud.storage.is_file_exists(full_path):
         raise HTTPException(409, 'File with this name already exists')
     try:
-        upload_file(full_path, file.file, file.size)
+        crud.storage.upload_file(full_path, file.file, file.size)
         return FileUploadedScheme(
             url=router.url_path_for(
                 'get_file', user_id=user_id, filename=quote(file.filename)
@@ -59,10 +53,10 @@ def add_file(user_id: int, file: UploadFile):
 def delete_file(user_id: int, filename: str):
     # TODO: User is owner checking
     full_path = f'{user_id}/{filename}'
-    if not is_file_exists(full_path):
+    if not crud.storage.is_file_exists(full_path):
         raise HTTPException(409, 'File doesn\'t exist')
     try:
-        delete_file(full_path)
+        crud.storage.delete_file(full_path)
         return {}
     except ValueError as e:
         raise HTTPException(404, 'Failed to delete file: ' + e.message)
