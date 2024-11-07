@@ -1,3 +1,4 @@
+from pydantic import Field, AliasChoices
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -8,7 +9,7 @@ class PostgreSettings(BaseSettings):
     PASSWORD: str
     HOST: str
     HOST_PORT: int
-    DB_NAME: str
+    DB_NAME: str = Field(alias='POSTGRES_DB')
 
     @staticmethod
     def __create_dialect_url(self, dialect: str) -> str:
