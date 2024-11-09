@@ -3,7 +3,7 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 
 class PostgreSettings(BaseSettings):
     model_config = SettingsConfigDict(
-        env_prefix='POSTGRES_', env_file="./config/backend.env", extra="allow"
+        env_prefix='POSTGRES_', env_file="./config/postgres.env", extra="allow"
     )
 
     USER: str
