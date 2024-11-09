@@ -7,3 +7,4 @@ class CardCreate(BaseModel):
 
 class Card(CardCreate):
     id: int
+    owner_id: int

@@ -24,8 +24,8 @@ async def get_collections(conn: AsyncConnection, limit: int | None, skip: int):
 
 async def create_collection(conn: AsyncConnection, user_id: int, collection: CollectionCreate):
     await check_user_id(conn, user_id)
-    query = insert(CollectionTable).values(owner_id=user_id, **collection.model_dump()
-    ).returning(CollectionTable.c[*Collection.model_fields])
+    query = (insert(CollectionTable).values(owner_id=user_id, **collection.model_dump())
+             .returning(CollectionTable.c[*Collection.model_fields]))
 
     result = await conn.execute(query)
     await conn.commit()

@@ -64,23 +64,14 @@ async def authenticate_user(conn: AsyncConnection, user_data: UserAuth) -> int:
     return user["id"]
 
 
-async def get_profile(conn: AsyncConnection, token: str):
+async def get_profile_id(conn: AsyncConnection, token: str) -> int:
     try:
         auth_data = authSettings.get_auth_data
         payload = jwt.decode(token, auth_data['secret_key'], algorithms=[auth_data['algorithm']])
     except JWTError:
-        raise ValueError("Invalid token")
-
-    expire = payload.get('exp')
-    expire_time = datetime.fromtimestamp(int(expire), tz=timezone.utc)
-    if (not expire) or (expire_time < datetime.now(timezone.utc)):
-        raise ValueError("Token expired")
+        raise ValueError("Invalid or expired token")
 
     user_id = payload.get('sub')
     if not user_id:
         raise ValueError("User ID is undefined")
-
-    user = await get_user(conn, int(user_id))
-    if not user:
-        ValueError("User not found")
-    return user
+    return user_id
