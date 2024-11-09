@@ -74,4 +74,4 @@ async def get_profile_id(conn: AsyncConnection, token: str) -> int:
     user_id = payload.get('sub')
     if not user_id:
         raise ValueError("User ID is undefined")
-    return user_id
+    return int(user_id)

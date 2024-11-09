@@ -16,7 +16,21 @@ async def get_train_record(conn: AsyncConnection, train_record_id: int):
 
 
 async def get_train_records(conn: AsyncConnection, limit: int, skip: int):
-    query = (select(TrainRecordTable.c[*TrainRecord.model_fields]).limit(limit)).offset(skip)
+    query = select(TrainRecordTable.c[*TrainRecord.model_fields]).limit(limit).offset(skip)
+    return await conn.execute(query)
+
+
+async def get_user_train_records(conn: AsyncConnection, user_id: int):
+    query = (select(TrainRecordTable.c[*TrainRecord.model_fields])
+             .where(TrainRecordTable.c.user_id == user_id))
+    return await conn.execute(query)
+
+
+async def get_user_card_train_records(conn: AsyncConnection, user_id: int, card_id: int):
+    ## card exist?
+    query = (select(TrainRecordTable.c[*TrainRecord.model_fields])
+             .where(TrainRecordTable.c.user_id == user_id,
+                    TrainRecordTable.c.card_id == card_id))
     return await conn.execute(query)
 
 

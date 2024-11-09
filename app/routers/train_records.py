@@ -26,7 +26,11 @@ async def read_train_records(conn: DBConnection, limit: int = 100, skip: int = 0
 
 @router.get("/", response_model=list[TrainRecord])
 async def read_user_train_records(conn: DBConnection, token: JWToken):
-    pass
+    try:
+        user_id: int = await crud.user.get_profile_id(conn, token)
+        return await crud.train_record.get_user_train_records(conn, user_id)
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
 
 
 @router.post("/{card_id}", response_model=TrainRecord)
@@ -42,4 +46,8 @@ async def create_train_record_for_user(
 
 @router.get("/{card_id}", response_model=list[TrainRecord])
 async def read_user_card_train_records(conn: DBConnection, token: JWToken, card_id: int):
-    pass
+    try:
+        user_id: int = await crud.user.get_profile_id(conn, token)
+        return await crud.train_record.get_user_card_train_records(conn, user_id, card_id)
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
