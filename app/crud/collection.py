@@ -14,14 +14,12 @@ async def get_collection(conn: AsyncConnection, collection_id: int):
     return result.mappings().first()
 
 
-async def get_collections(conn: AsyncConnection, limit: int, skip: int):
-    query = (select(CollectionTable.c[*Collection.model_fields]).limit(limit)).offset(skip)
+async def get_collections(conn: AsyncConnection, limit: int | None, skip: int):
+    query = select(CollectionTable.c[*Collection.model_fields]).offset(skip)
+    if limit is not None:
+        query = query.limit(limit)
     result = await conn.execute(query)
     return result.mappings().all()
-
-
-def get_collection_cards():
-    pass
 
 
 async def create_collection(conn: AsyncConnection, user_id: int, collection: CollectionCreate):

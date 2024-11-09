@@ -21,7 +21,7 @@ async def read_collection(conn: DBConnection, collection_id: int):
 
 
 @router.get("/", response_model=list[Collection])
-async def read_collections(conn: DBConnection, limit: int = 100, skip: int = 0):
+async def read_collections(conn: DBConnection, limit: int | None = None, skip: int = 0):
     return await crud.collection.get_collections(conn, limit=limit, skip=skip)
 
 

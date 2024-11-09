@@ -17,7 +17,9 @@ CardTable = Table(
     "cards",
     metadata,
     Column("id", Integer, primary_key=True),
-    Column("content", String, nullable=False)
+    Column("owner_id", ForeignKey("users.id"), nullable=False),
+    Column("front_side", String, nullable=False),
+    Column("back_side", String, nullable=False)
 ) ### Есть связь с collections и train_records
 
 
