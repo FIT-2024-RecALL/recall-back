@@ -39,6 +39,7 @@ POSTGRES_HOST=<postgres_addr>
 POSTGRES_HOST_PORT=<postgres_port>
 POSTGRES_DB=<postgres_db_name>
 ```
+- Export variable `POSTGRES_HOST_PORT` into your shell
 - Create folders for MinIO object storage and Postgres DB then set their paths to env var `MINIO_VOLUME_PATH` and `POSTGRES_VOLUME_PATH`
 - Run `docker compose up -d`
 
