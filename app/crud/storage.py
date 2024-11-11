@@ -10,10 +10,7 @@ from app.storage import storage
 
 def is_file_exists(path_to_object: str) -> bool:
     try:
-        if storage.stat_object(minio_settings.BUCKET_NAME, path_to_object) != None:
-            return True
-        else:
-            return False
+        return storage.stat_object(minio_settings.BUCKET_NAME, path_to_object) is not None
     except S3Error as e:
         return False
 
