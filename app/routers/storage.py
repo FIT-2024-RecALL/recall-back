@@ -1,5 +1,5 @@
-from fastapi import APIRouter, HTTPException, UploadFile
-from fastapi.responses import StreamingResponse
+from fastapi import APIRouter, HTTPException, UploadFile, File
+from fastapi.responses import StreamingResponse, Response
 from urllib.parse import quote
 
 from app.schemas.storage import FileUploadedScheme
@@ -27,36 +27,31 @@ def get_file(user_id: int, filename: str):
 @router.get('/{user_id}', response_model=list[FileUploadedScheme])
 def list_files(user_id: int):
     return [
-        FileUploadedScheme(url=f'/storage/{quote(obj.object_name)}') 
+        FileUploadedScheme(url=f'/storage/{quote(obj.object_name)}')
         for obj in crud.storage.get_files_list(user_id)
     ]
 
 
 @router.post('/{user_id}', response_model=FileUploadedScheme)
-def add_file(user_id: int, file: UploadFile):
+def add_file(user_id: int, file: UploadFile = File(...)):
     # TODO: User is owner checking
-    full_path = f'{user_id}/{file.filename}'
-    if crud.storage.is_file_exists(full_path):
-        raise HTTPException(409, 'File with this name already exists')
     try:
-        crud.storage.upload_file(full_path, file.file, file.size)
+        obj = crud.storage.upload_file(user_id, file)
         return FileUploadedScheme(
-            url=router.url_path_for(
-                'get_file', user_id=user_id, filename=quote(file.filename)
-            )
+            url=f'/storage/{quote(obj.object_name)}'
         )
     except ValueError as e:
-        raise HTTPException(409, 'Failed to upload file: ' + e.message)
+        raise HTTPException(409, f'Failed to upload file: {e.message}')
 
 
-@router.delete('/{user_id}/{filename}')
+@router.delete('/{user_id}/{filename}', status_code=200)
 def delete_file(user_id: int, filename: str):
     # TODO: User is owner checking
     full_path = f'{user_id}/{filename}'
     if not crud.storage.is_file_exists(full_path):
-        raise HTTPException(409, 'File doesn\'t exist')
+        raise HTTPException(404, 'File not found')
     try:
         crud.storage.delete_file(full_path)
-        return {}
+        return Response(status_code=200)
     except ValueError as e:
-        raise HTTPException(404, 'Failed to delete file: ' + e.message)
+        raise HTTPException(404, f'Failed to delete file: {e.message}')
