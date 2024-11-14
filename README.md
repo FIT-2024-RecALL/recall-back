@@ -18,6 +18,7 @@
 ```conf
 MINIO_HOSTNAME=<minio_addr> # IP address - without protocol
 MINIO_PORT=<minio_port>
+MINIO_BROWSER_PORT=<port_for_browser_working>
 MINIO_BUCKET_NAME=<bucket_name>
 MINIO_LOGIN=<backend_minio_user_login>
 MINIO_PASSWORD=<backend_minio_user_password>
@@ -39,7 +40,10 @@ POSTGRES_HOST=<postgres_addr>
 POSTGRES_HOST_PORT=<postgres_port>
 POSTGRES_DB=<postgres_db_name>
 ```
-- Export variable `POSTGRES_HOST_PORT` into your shell
+- Export next variables into your session:
+  - `MINIO_PORT`
+  - `MINIO_BROWSER_PORT`
+  - `POSTGRES_HOST_PORT`
 - Create folders for MinIO object storage and Postgres DB then set their paths to env var `MINIO_VOLUME_PATH` and `POSTGRES_VOLUME_PATH`
 - Run `docker compose up -d`
 

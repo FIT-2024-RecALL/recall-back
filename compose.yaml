@@ -23,8 +23,8 @@ services:
     environment:
       - MINIO_CONFIG_ENV_FILE=/etc/config.env
     ports:
-      - "9000:9000"
-      - "9001:9001"
+      - "${MINIO_PORT}:9000"
+      - "${MINIO_BROWSER_PORT}:9001"
     volumes:
       - minio-volume:/mnt/minio-volume
       - $RECALL_PROJECT_PATH/config/minio-server.env:/etc/config.env
