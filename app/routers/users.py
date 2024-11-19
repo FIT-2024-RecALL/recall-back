@@ -42,7 +42,7 @@ async def create_user(conn: DBConnection, user: UserCreate):
         raise HTTPException(status_code=400, detail=str(e))
 
 
-@router.post("/login")
+@router.post("/login", response_class=Response)
 async def authenticate_user(conn: DBConnection, response: Response, user_data: UserAuth):
     try:
         check_user_id = await crud.user.authenticate_user(conn, user_data)
@@ -55,7 +55,7 @@ async def authenticate_user(conn: DBConnection, response: Response, user_data: U
     return
 
 
-@router.post("/logout")
+@router.post("/logout", response_class=Response)
 async def logout_user(response: Response):
     response.delete_cookie(key="users_access_token")
     response.status_code = 200

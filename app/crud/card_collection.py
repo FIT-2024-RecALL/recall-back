@@ -1,11 +1,14 @@
 from sqlalchemy import select, insert, delete
 from sqlalchemy.ext.asyncio import AsyncConnection
+from sqlalchemy.orm.collections import collection
 
+from app.crud.collection import check_collection_id
 from app.models import CardTable, CardCollectionTable
 from app.schemas.card import Card
 
 
 async def get_collection_cards(conn: AsyncConnection, collection_id: int):
+    await check_collection_id(conn, collection_id)
     query = select(CardTable.c[*Card.model_fields]).where(
         CardTable.c.id == CardCollectionTable.c.card_id,
         CardCollectionTable.c.collection_id == collection_id
@@ -18,7 +21,7 @@ def get_card_collections():
     pass
 
 
-async def check_connections(conn: AsyncConnection, collection_id: int, cards: list[int]) -> list[int]:
+async def sift_exist_connections(conn: AsyncConnection, collection_id: int, cards: list[int]) -> list[int]:
     unique_cards: list[int] = list(set(cards))
     query = select(CardCollectionTable.c.card_id).where(
         CardCollectionTable.c.collection_id == collection_id,
@@ -37,7 +40,8 @@ async def sift_exist_cards(conn: AsyncConnection, cards: list[int]):
 
 # Можно переписать через подзапрос (Deep Alchemy)
 async def create_card_collection(conn: AsyncConnection, collection_id: int, cards: list[int]):
-    exist_connections = await check_connections(conn, collection_id, cards)
+    await check_collection_id(conn, collection_id)
+    exist_connections = await sift_exist_connections(conn, collection_id, cards)
     new_connections: list[int] = [x for x in cards if x not in exist_connections]
     if not new_connections:
         return
@@ -57,7 +61,10 @@ async def create_card_collection(conn: AsyncConnection, collection_id: int, card
 
 
 async def delete_card_collection(conn: AsyncConnection, collection_id: int, cards: list[int]):
-    exist_connections: list[int] = await check_connections(conn, collection_id, cards)
-    query = delete(CardCollectionTable).where(CardCollectionTable.c.card_id.in_(exist_connections))
+    exist_connections: list[int] = await sift_exist_connections(conn, collection_id, cards)
+    query = delete(CardCollectionTable).where(
+        CardCollectionTable.c.collection_id == collection_id,
+        CardCollectionTable.c.card_id.in_(exist_connections)
+    )
     await conn.execute(query)
     await conn.commit()

@@ -39,13 +39,13 @@ async def read_collection_cards(conn: DBConnection, collection_id: int):
     return await crud.card_collection.get_collection_cards(conn, collection_id)
 
 
-@router.post("/{collection_id}/pair")
+@router.post("/{collection_id}/pair", response_class=Response)
 async def set_card_collection_connection(conn: DBConnection, collection_id: int, cards: IntList):
     await crud.card_collection.create_card_collection(conn, collection_id, cards)
-    return
+    return Response(status_code=200)
 
 
-@router.delete("/{collection_id}/unpair")
+@router.delete("/{collection_id}/unpair", response_class=Response)
 async def delete_card_collection_connection(conn: DBConnection, collection_id: int, cards: IntList):
     await crud.card_collection.delete_card_collection(conn, collection_id, cards)
-    return
+    return Response(status_code=200)
