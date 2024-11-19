@@ -1,10 +1,8 @@
-from datetime import datetime, timezone
-
 from jose import jwt, JWTError
 from sqlalchemy import select, insert, exists, or_
 from sqlalchemy.ext.asyncio import AsyncConnection
 
-from app.auth.utils import authSettings, get_password_hash, verify_password
+from app.auth.utils import settings, get_password_hash, verify_password
 from app.models import UserTable
 from app.schemas.user import User, UserAuth, UserCreate
 
@@ -64,9 +62,9 @@ async def authenticate_user(conn: AsyncConnection, user_data: UserAuth) -> int:
     return user["id"]
 
 
-async def get_profile_id(conn: AsyncConnection, token: str) -> int:
+def get_profile_id(token: str) -> int:
     try:
-        auth_data = authSettings.get_auth_data
+        auth_data = settings.auth_data
         payload = jwt.decode(token, auth_data['secret_key'], algorithms=[auth_data['algorithm']])
     except JWTError:
         raise ValueError("Invalid or expired token")

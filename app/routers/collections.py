@@ -1,5 +1,4 @@
-from fastapi import APIRouter, HTTPException
-from fastapi.responses import Response
+from fastapi import APIRouter, HTTPException, Response
 
 from app import crud
 from app.dependencies import DBConnection, JWToken, IntList
@@ -29,7 +28,7 @@ async def read_collections(conn: DBConnection, skip: int = 0, limit: int | None 
 @router.post("/", response_model=Collection)
 async def create_collection(conn: DBConnection, token: JWToken, collection: CollectionCreate):
     try:
-        user_id: int = await crud.user.get_profile_id(conn, token)
+        user_id: int = crud.user.get_profile_id(token)
         return await crud.collection.create_collection(conn, user_id, collection)
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
@@ -43,10 +42,10 @@ async def read_collection_cards(conn: DBConnection, collection_id: int):
 @router.post("/{collection_id}/pair")
 async def set_card_collection_connection(conn: DBConnection, collection_id: int, cards: IntList):
     await crud.card_collection.create_card_collection(conn, collection_id, cards)
-    return Response(status_code=200)
+    return
 
 
 @router.delete("/{collection_id}/unpair")
 async def delete_card_collection_connection(conn: DBConnection, collection_id: int, cards: IntList):
     await crud.card_collection.delete_card_collection(conn, collection_id, cards)
-    return Response(status_code=200)
+    return

@@ -27,7 +27,7 @@ async def read_cards(conn: DBConnection, skip: int = 0, limit: int | None = None
 @router.post("/", response_model=Card)
 async def create_card(conn: DBConnection, token: JWToken, card: CardCreate):
     try:
-        user_id: int = await crud.user.get_profile_id(conn, token)
+        user_id: int = crud.user.get_profile_id(token)
         return await crud.card.create_card(conn, user_id, card)
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
