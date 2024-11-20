@@ -20,7 +20,7 @@ async def read_users(conn: DBConnection, limit: int = 100, skip: int = 0):
 @router.get("/profile", response_model=User)
 async def read_current_user(conn: DBConnection, token: JWToken):
     try:
-        user_id: int = crud.user.get_profile_id(token)
+        user_id: int = auth.utils.get_profile_id(token)
         return await crud.user.get_user(conn, user_id)
     except ValueError as e:
         raise HTTPException(status_code=401, detail=str(e))

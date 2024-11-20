@@ -1,7 +1,7 @@
 from datetime import datetime, timedelta, timezone
 
 from fastapi import Request, HTTPException
-from jose import jwt
+from jose import jwt, JWTError
 from passlib.context import CryptContext
 
 from app.config import settings
@@ -18,12 +18,13 @@ def verify_password(plain_password: str, hashed_password: str) -> bool:
 
 
 def create_access_token(data: dict) -> str:
-    to_encode: dict = data.copy()
     expire = datetime.now(timezone.utc) + timedelta(days=30)
-    to_encode.update({"exp": expire})
-    auth_data: dict = settings.auth_data
-    encode_jwt = jwt.encode(to_encode, auth_data["secret_key"], algorithm=auth_data["algorithm"])
-    return encode_jwt
+    data.update({"exp": expire})
+    return jwt.encode(
+        data,
+        key=settings.auth_secret_key.get_secret_value(),
+        algorithm=settings.auth_algorithm
+    )
 
 
 def get_token(request: Request) -> str:
@@ -31,3 +32,19 @@ def get_token(request: Request) -> str:
     if not token:
         raise HTTPException(status_code=401, detail="Token not found")
     return token
+
+
+def get_profile_id(token: str) -> int:
+    try:
+        payload = jwt.decode(
+            token,
+            key=settings.auth_secret_key.get_secret_value(),
+            algorithms=settings.auth_algorithm
+        )
+    except JWTError:
+        raise ValueError("Invalid or expired token")
+
+    user_id = payload.get('sub')
+    if not user_id:
+        raise ValueError("User ID is undefined")
+    return int(user_id)

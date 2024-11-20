@@ -1,8 +1,7 @@
-from jose import jwt, JWTError
 from sqlalchemy import select, insert, exists, or_
 from sqlalchemy.ext.asyncio import AsyncConnection
 
-from app.auth.utils import settings, get_password_hash, verify_password
+from app.auth.utils import get_password_hash, verify_password
 from app.models import UserTable
 from app.schemas.user import User, UserAuth, UserCreate
 
@@ -37,7 +36,7 @@ async def check_user_data(conn: AsyncConnection, user: UserCreate):
 
 
 async def create_user(conn: AsyncConnection, user: UserCreate):
-    await check_user_data(conn, user)
+    await check_user_data(conn, user)  ## Переносим в route
     query = insert(UserTable).values(
         email=user.email,
         nickname=user.nickname,
@@ -56,20 +55,7 @@ async def get_user_via_email(conn: AsyncConnection, email: str):
 
 
 async def authenticate_user(conn: AsyncConnection, user_data: UserAuth) -> int:
-    user = await get_user_via_email(conn, user_data.email)
+    user = await get_user_via_email(conn, user_data.email) ## Переносим в route
     if user is None or not verify_password(user_data.password, user["hashed_password"]):
         raise ValueError("Entered email or password is incorrect")
     return user["id"]
-
-
-def get_profile_id(token: str) -> int:
-    try:
-        auth_data = settings.auth_data
-        payload = jwt.decode(token, auth_data['secret_key'], algorithms=[auth_data['algorithm']])
-    except JWTError:
-        raise ValueError("Invalid or expired token")
-
-    user_id = payload.get('sub')
-    if not user_id:
-        raise ValueError("User ID is undefined")
-    return int(user_id)

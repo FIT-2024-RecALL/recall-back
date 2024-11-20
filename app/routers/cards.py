@@ -1,5 +1,6 @@
 from fastapi import APIRouter, HTTPException, Response
 
+from app import auth
 from app import crud
 from app.dependencies import DBConnection, JWToken
 from app.schemas.card import Card, CardCreate
@@ -27,7 +28,7 @@ async def read_cards(conn: DBConnection, skip: int = 0, limit: int | None = None
 @router.post("/", response_model=Card)
 async def create_card(conn: DBConnection, token: JWToken, card: CardCreate):
     try:
-        user_id: int = crud.user.get_profile_id(token)
+        user_id: int = auth.utils.get_profile_id(token)
         return await crud.card.create_card(conn, user_id, card)
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
@@ -42,3 +43,4 @@ async def delete_card(conn: DBConnection, card_id: int):
     await crud.card.delete_card(conn, card_id)
     await crud.card_collection.delete_card_collection_by_card(conn, card_id)
     await crud.train_record.delete_train_record_by_card(conn, card_id)
+    return Response(status_code=200)

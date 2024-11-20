@@ -1,5 +1,6 @@
 from fastapi import APIRouter, HTTPException, Response
 
+from app import auth
 from app import crud
 from app.dependencies import DBConnection, JWToken, IntList
 from app.schemas.card import Card
@@ -28,7 +29,7 @@ async def read_collections(conn: DBConnection, skip: int = 0, limit: int | None 
 @router.post("/", response_model=Collection)
 async def create_collection(conn: DBConnection, token: JWToken, collection: CollectionCreate):
     try:
-        user_id: int = crud.user.get_profile_id(token)
+        user_id: int = auth.utils.get_profile_id(token)
         return await crud.collection.create_collection(conn, user_id, collection)
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))

@@ -30,13 +30,13 @@ class Settings(BaseSettings):
     auth: AuthSettings = AuthSettings()
     db: PostgreSettings = PostgreSettings()
 
-    # ПЕРЕПИСАТЬ ФУНКЦИЮ
     @property
-    def auth_data(self) -> dict[str, str]:
-        return {
-            "secret_key": self.auth.SECRET_KEY.get_secret_value(),
-            "algorithm": self.auth.ALGORITHM
-        }
+    def auth_algorithm(self) -> CryptoAlgorithm:
+        return self.auth.ALGORITHM
+
+    @property
+    def auth_secret_key(self) -> SecretStr:
+        return self.auth.SECRET_KEY
 
     def __create_dialect_url(self, dialect: str) -> str:
         return (f"postgresql+{dialect}://{self.db.USER}:{self.db.PASSWORD}"
