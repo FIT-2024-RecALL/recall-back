@@ -1,4 +1,4 @@
-from sqlalchemy import select, insert, desc
+from sqlalchemy import select, insert, desc, delete
 from sqlalchemy.ext.asyncio import AsyncConnection
 
 from app.crud.card import check_card_id
@@ -50,8 +50,8 @@ async def create_train_record(
         card_id: int, user_id: int,
         train_record: TrainRecordCreate
 ):
-    await check_card_id(conn, card_id)
-    await check_user_id(conn, user_id)
+    await check_card_id(conn, card_id) ## Может вынести это в route?
+    await check_user_id(conn, user_id) ## Может вынести это в route?
 
     insert_query = insert(TrainRecordTable).values(
         card_id=card_id, user_id=user_id,
@@ -60,3 +60,9 @@ async def create_train_record(
     result = await conn.execute(insert_query)
     await conn.commit()
     return result.mappings().first()
+
+
+async def delete_train_record_by_card(conn: AsyncConnection, card_id: int):
+    query = delete(TrainRecordTable).where(TrainRecordTable.c.card_id == card_id)
+    await conn.execute(query)
+    await conn.commit()

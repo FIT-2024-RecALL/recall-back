@@ -1,4 +1,4 @@
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, Response
 
 from app import crud
 from app.dependencies import DBConnection, JWToken
@@ -31,3 +31,14 @@ async def create_card(conn: DBConnection, token: JWToken, card: CardCreate):
         return await crud.card.create_card(conn, user_id, card)
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
+
+
+@router.delete("/{card_id}", response_class=Response)
+async def delete_card(conn: DBConnection, card_id: int):
+    try:
+        await crud.card.check_card_id(conn, card_id)
+    except ValueError as e:
+        raise HTTPException(status_code=404, detail=str(e))
+    await crud.card.delete_card(conn, card_id)
+    await crud.card_collection.delete_card_collection_by_card(conn, card_id)
+    await crud.train_record.delete_train_record_by_card(conn, card_id)
