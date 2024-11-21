@@ -49,7 +49,7 @@ async def authenticate_user(conn: DBConnection, response: Response, user_data: U
     except ValueError as e:
         raise HTTPException(status_code=401, detail=str(e))
 
-    access_token = auth.utils.create_access_token({"sub": str(check_user_id)})
+    access_token = auth.utils.create_access_token(check_user_id)
     response.set_cookie(key="users_access_token", value=access_token, httponly=True)
     response.status_code = 200
     return

@@ -17,11 +17,11 @@ def verify_password(plain_password: str, hashed_password: str) -> bool:
     return __pwd_context.verify(plain_password, hashed_password)
 
 
-def create_access_token(data: dict) -> str:
-    expire = datetime.now(timezone.utc) + timedelta(days=30)
-    data.update({"exp": expire})
+def create_access_token(user_id: int) -> str:
+    expire = datetime.now(timezone.utc) + timedelta(minutes=50)
+    token_data = {"sub": str(user_id), "exp": expire}
     return jwt.encode(
-        data,
+        token_data,
         key=settings.auth_secret_key.get_secret_value(),
         algorithm=settings.auth_algorithm
     )

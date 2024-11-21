@@ -20,7 +20,7 @@ class PostgreSettings(BaseSettings):
     model_config = SettingsConfigDict(env_prefix='POSTGRES_', env_file="./config/postgres.env")
 
     USER: str
-    PASSWORD: str
+    PASSWORD: SecretStr
     HOST: str
     HOST_PORT: int
     DB_NAME: str
@@ -39,7 +39,7 @@ class Settings(BaseSettings):
         return self.auth.SECRET_KEY
 
     def __create_dialect_url(self, dialect: str) -> str:
-        return (f"postgresql+{dialect}://{self.db.USER}:{self.db.PASSWORD}"
+        return (f"postgresql+{dialect}://{self.db.USER}:{self.db.PASSWORD.get_secret_value()}"
                 f"@{self.db.HOST}:{self.db.HOST_PORT}/{self.db.DB_NAME}")
 
     @property
