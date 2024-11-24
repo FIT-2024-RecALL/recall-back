@@ -3,7 +3,8 @@ from typing import Annotated
 from fastapi import Depends, Body
 from sqlalchemy.ext.asyncio import AsyncConnection
 
-from app import get_db_async_connection, get_profile_id
+from .auth import get_profile_id
+from .database import get_db_async_connection
 
 __all__ = ["DBConnection", "UserID", "IntList"]
 

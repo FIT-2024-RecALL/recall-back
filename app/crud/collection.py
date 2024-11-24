@@ -12,7 +12,7 @@ async def check_collection_id(conn: AsyncConnection, collection_id: int):
     query = select(exists().where(CollectionTable.c.id == collection_id))
     result = await conn.execute(query)
     if not result.scalar():
-        raise ValueError("Collection with this id doesn't exist")
+        raise ValueError("Collection not found")
 
 
 async def get_collection(conn: AsyncConnection, collection_id: int):

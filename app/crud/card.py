@@ -12,7 +12,7 @@ async def check_card_id(conn: AsyncConnection, card_id: int):
     query = select(exists().where(CardTable.c.id == card_id))
     result = await conn.execute(query)
     if not result.scalar():
-        raise ValueError("Card with this id doesn't exist")
+        raise ValueError("Card not found")
 
 
 async def get_card(conn: AsyncConnection, card_id: int):

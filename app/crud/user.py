@@ -26,7 +26,7 @@ async def check_user_id(conn: AsyncConnection, user_id: int):
     query = select(exists().where(UserTable.c.id == user_id))
     result = await conn.execute(query)
     if not result.scalar():
-        raise ValueError("User with this id doesn't exist")
+        raise ValueError("User not found")
 
 
 async def check_user_data(conn: AsyncConnection, user: UserCreate):

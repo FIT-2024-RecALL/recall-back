@@ -33,7 +33,10 @@ async def create_collection(conn: DBConnection, user_id: UserID, collection: Col
 
 @router.get("/{collection_id}/cards", response_model=list[Card])
 async def read_collection_cards(conn: DBConnection, collection_id: int):
-    return await crud.get_collection_cards(conn, collection_id)
+    try:
+        return await crud.get_collection_cards(conn, collection_id)
+    except ValueError as e:
+        raise HTTPException(status_code=404, detail=str(e))
 
 
 @router.post("/{collection_id}/pair", response_class=Response)
