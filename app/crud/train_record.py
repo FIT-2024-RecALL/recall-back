@@ -1,10 +1,15 @@
 from sqlalchemy import select, insert, desc, delete
 from sqlalchemy.ext.asyncio import AsyncConnection
 
-from app.crud.card import check_card_id
-from app.crud.user import check_user_id
-from app.models import TrainRecordTable
-from app.schemas.train_record import TrainRecord, TrainRecordCreate
+from app import TrainRecordTable
+from app.crud import check_card_id, check_user_id
+from app.schemas import TrainRecord, TrainRecordCreate
+
+__all__ = [
+    "get_user_card_train_records", "get_train_record", "get_train_records",
+    "get_user_card_last_train_record", "get_user_train_records", "create_train_record",
+    "delete_train_record_by_card"
+]
 
 
 async def get_train_record(conn: AsyncConnection, train_record_id: int):

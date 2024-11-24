@@ -1,11 +1,16 @@
 from sqlalchemy import Column, ForeignKey, Integer, String, Table, MetaData
 
+__all__ = [
+    "UserTable", "CardTable", "CollectionTable", "CardCollectionTable", "TrainRecordTable"
+]
 
-metadata: MetaData = MetaData()
+
+_metadata = MetaData()
+
 
 UserTable = Table(
     "users",
-    metadata,
+    _metadata,
     Column("id", Integer, primary_key=True),
     Column("email", String(100), unique=True, nullable=False),
     Column("nickname", String(50), unique=True, nullable=False),
@@ -15,7 +20,7 @@ UserTable = Table(
 
 CardTable = Table(
     "cards",
-    metadata,
+    _metadata,
     Column("id", Integer, primary_key=True),
     Column("owner_id", ForeignKey("users.id"), nullable=False),
     Column("front_side", String, nullable=False),
@@ -25,7 +30,7 @@ CardTable = Table(
 
 CollectionTable = Table(
     "collections",
-    metadata,
+    _metadata,
     Column("id", Integer, primary_key=True),
     Column("owner_id", ForeignKey("users.id"), nullable=False),
     Column("title", String(100), nullable=False),
@@ -35,7 +40,7 @@ CollectionTable = Table(
 
 CardCollectionTable = Table(
     "card_collection",
-    metadata,
+    _metadata,
     Column("card_id", ForeignKey("cards.id"), primary_key=True),
     Column("collection_id", ForeignKey("collections.id"), primary_key=True)
 )
@@ -43,7 +48,7 @@ CardCollectionTable = Table(
 
 TrainRecordTable = Table(
     "train_records",
-    metadata,
+    _metadata,
     Column("id", Integer, primary_key=True),
     Column("card_id", ForeignKey("cards.id"), nullable=False),
     Column("user_id", ForeignKey("users.id"), nullable=False),

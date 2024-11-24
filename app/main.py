@@ -1,16 +1,16 @@
 from contextlib import asynccontextmanager
 
-from fastapi import FastAPI, Response
+from fastapi import FastAPI
 
-from app.database import create_tables, close_connections
+from app import create_db_tables, close_db_connections
 from app.routers import cards, collections, train_records, users
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    await create_tables()
+    await create_db_tables()
     yield
-    await close_connections()
+    await close_db_connections()
 
 app = FastAPI(lifespan=lifespan)
 

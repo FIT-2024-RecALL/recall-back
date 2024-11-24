@@ -1,9 +1,14 @@
 from sqlalchemy import select, insert, exists, or_
 from sqlalchemy.ext.asyncio import AsyncConnection
 
-from app.auth.utils import get_password_hash, verify_password
-from app.models import UserTable
-from app.schemas.user import User, UserAuth, UserCreate
+from app import UserTable
+from app.auth import get_password_hash, verify_password
+from app.schemas import User, UserAuth, UserCreate
+
+__all__ = [
+    "get_user", "get_users", "check_user_id", "check_user_data", "create_user",
+    "get_user_via_email", "authenticate_user"
+]
 
 
 async def get_user(conn: AsyncConnection, user_id: int):

@@ -55,4 +55,4 @@ class Settings(BaseSettings):
         return "sqlite:///./sql_app.db"
 
 
-settings: Settings = Settings()
+_settings = Settings()

@@ -4,7 +4,12 @@ from fastapi import Request, HTTPException
 from jose import jwt, JWTError
 from passlib.context import CryptContext
 
-from app.config import settings
+from ..config import _settings
+from app import JWToken
+
+__all__ = [
+    "get_password_hash", "verify_password", "create_access_token", "get_token", "get_profile_id"
+]
 
 
 __pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
@@ -22,8 +27,8 @@ def create_access_token(user_id: int) -> str:
     token_data = {"sub": str(user_id), "exp": expire}
     return jwt.encode(
         token_data,
-        key=settings.auth_secret_key.get_secret_value(),
-        algorithm=settings.auth_algorithm
+        key=_settings.auth_secret_key.get_secret_value(),
+        algorithm=_settings.auth_algorithm
     )
 
 
@@ -34,12 +39,12 @@ def get_token(request: Request) -> str:
     return token
 
 
-def get_profile_id(token: str) -> int:
+def get_profile_id(token: JWToken) -> int:
     try:
         payload = jwt.decode(
             token,
-            key=settings.auth_secret_key.get_secret_value(),
-            algorithms=settings.auth_algorithm
+            key=_settings.auth_secret_key.get_secret_value(),
+            algorithms=_settings.auth_algorithm
         )
     except JWTError:
         raise ValueError("Invalid or expired token")
