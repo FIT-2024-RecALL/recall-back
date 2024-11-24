@@ -31,6 +31,7 @@ async def get_cards(conn: AsyncConnection, *, limit: int | None, skip: int):
 
 async def create_card(conn: AsyncConnection, user_id: int,  card: CardCreate):
     await check_user_id(conn, user_id) ## Может вынести это в route?
+
     query = (insert(CardTable).values(owner_id=user_id, **card.model_dump())
              .returning(CardTable.c[*Card.model_fields]))
 
