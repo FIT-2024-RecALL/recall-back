@@ -1,8 +1,9 @@
 from sqlalchemy import select, insert, desc, delete
 from sqlalchemy.ext.asyncio import AsyncConnection
 
+from .card import check_card_id
+from .user import check_user_id
 from app import TrainRecordTable
-from app.crud import check_card_id, check_user_id
 from app.schemas import TrainRecord, TrainRecordCreate
 
 __all__ = [

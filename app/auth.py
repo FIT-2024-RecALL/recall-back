@@ -1,15 +1,12 @@
 from datetime import datetime, timedelta, timezone
 
-from fastapi import Request, HTTPException
+from fastapi import Depends, Request, HTTPException
 from jose import jwt, JWTError
 from passlib.context import CryptContext
 
-from ..config import _settings
-from app import JWToken
+from .config import _settings
 
-__all__ = [
-    "get_password_hash", "verify_password", "create_access_token", "get_token", "get_profile_id"
-]
+__all__ = ["get_password_hash", "verify_password", "create_access_token", "get_profile_id"]
 
 
 __pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
@@ -39,7 +36,7 @@ def get_token(request: Request) -> str:
     return token
 
 
-def get_profile_id(token: JWToken) -> int:
+def get_profile_id(token: str = Depends(get_token)) -> int:
     try:
         payload = jwt.decode(
             token,

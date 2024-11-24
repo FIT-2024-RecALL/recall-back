@@ -1,8 +1,8 @@
 from sqlalchemy import select, insert, exists
 from sqlalchemy.ext.asyncio import AsyncConnection
 
+from .user import check_user_id
 from app import CollectionTable
-from app.crud import check_user_id
 from app.schemas import Collection, CollectionCreate
 
 __all__ = ["check_collection_id", "get_collection", "get_collections", "create_collection"]

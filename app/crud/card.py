@@ -1,8 +1,8 @@
 from sqlalchemy import select, insert, exists, delete
 from sqlalchemy.ext.asyncio import AsyncConnection
 
+from .user import check_user_id
 from app import CardTable
-from app.crud import check_user_id
 from app.schemas import Card, CardCreate
 
 __all__ = ["check_card_id", "get_card", "get_cards", "create_card", "delete_card"]

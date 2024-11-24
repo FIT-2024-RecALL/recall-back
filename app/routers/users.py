@@ -1,7 +1,6 @@
 from fastapi import APIRouter, HTTPException, Response
 
-from app import crud, DBConnection, UserID
-from app.auth import create_access_token
+from app import crud, DBConnection, UserID, create_access_token
 from app.schemas import User, UserAuth, UserCreate
 
 

@@ -1,8 +1,7 @@
 from sqlalchemy import select, insert, exists, or_
 from sqlalchemy.ext.asyncio import AsyncConnection
 
-from app import UserTable
-from app.auth import get_password_hash, verify_password
+from app import UserTable, get_password_hash, verify_password
 from app.schemas import User, UserAuth, UserCreate
 
 __all__ = [

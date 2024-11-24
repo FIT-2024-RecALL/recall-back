@@ -1,8 +1,8 @@
 from sqlalchemy import select, insert, delete
 from sqlalchemy.ext.asyncio import AsyncConnection
 
+from .collection import check_collection_id
 from app import CardTable, CardCollectionTable
-from app.crud import check_collection_id
 from app.schemas import Card
 
 __all__ = [

@@ -1,11 +1,11 @@
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, EmailStr
 
 __all__ = ["User", "UserAuth", "UserBase", "UserCreate"]
 
 
 class UserBase(BaseModel):
     nickname: str = Field(max_length=50)
-    email: str
+    email: EmailStr
 
 
 class UserCreate(UserBase):
@@ -17,5 +17,5 @@ class User(UserBase):
 
 
 class UserAuth(BaseModel):
-    email: str
+    email: EmailStr
     password: str = Field(min_length=13, max_length=64)
