@@ -1,19 +1,16 @@
 from sqlalchemy import select, insert, delete
 from sqlalchemy.ext.asyncio import AsyncConnection
 
-from .collection import check_collection_id
 from app import CardTable, CardCollectionTable
 from app.schemas import Card
 
 __all__ = [
-    "get_collection_cards", "create_card_collection",
-    "delete_card_collection", "delete_card_collection_by_card"
+    "get_collection_cards", "create_card_collection", "delete_card_collection",
+    "delete_card_collection_by_card"
 ]
 
 
 async def get_collection_cards(conn: AsyncConnection, collection_id: int):
-    await check_collection_id(conn, collection_id) ## Может вынести это в route?
-
     query = select(CardTable.c[*Card.model_fields]).where(
         CardTable.c.id == CardCollectionTable.c.card_id,
         CardCollectionTable.c.collection_id == collection_id
@@ -45,8 +42,6 @@ async def sift_exist_cards(conn: AsyncConnection, cards: list[int]):
 
 # Можно переписать через подзапрос (Deep Alchemy)
 async def create_card_collection(conn: AsyncConnection, collection_id: int, cards: list[int]):
-    await check_collection_id(conn, collection_id) ## Может вынести это в route?
-
     exist_connections = await sift_exist_connections(conn, collection_id, cards)
     new_connections: list[int] = [x for x in cards if x not in exist_connections]
     if not new_connections:
@@ -57,10 +52,7 @@ async def create_card_collection(conn: AsyncConnection, collection_id: int, card
 
     await conn.execute(
         insert(CardCollectionTable),
-        [
-            {"card_id": card_id, "collection_id": collection_id}
-            for card_id in existing_cards
-        ],
+        [{"card_id": card_id, "collection_id": collection_id} for card_id in existing_cards],
     )
     await conn.commit()
 

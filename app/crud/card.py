@@ -1,7 +1,6 @@
 from sqlalchemy import select, insert, exists, delete
 from sqlalchemy.ext.asyncio import AsyncConnection
 
-from .user import check_user_id
 from app import CardTable
 from app.schemas import Card, CardCreate
 
@@ -30,11 +29,8 @@ async def get_cards(conn: AsyncConnection, *, limit: int | None, skip: int):
 
 
 async def create_card(conn: AsyncConnection, user_id: int,  card: CardCreate):
-    await check_user_id(conn, user_id) ## Может вынести это в route?
-
     query = (insert(CardTable).values(owner_id=user_id, **card.model_dump())
              .returning(CardTable.c[*Card.model_fields]))
-
     result = await conn.execute(query)
     await conn.commit()
     return result.mappings().first()

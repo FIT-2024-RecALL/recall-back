@@ -1,7 +1,6 @@
 from sqlalchemy import select, insert, exists
 from sqlalchemy.ext.asyncio import AsyncConnection
 
-from .user import check_user_id
 from app import CollectionTable
 from app.schemas import Collection, CollectionCreate
 
@@ -32,11 +31,8 @@ async def get_collections(conn: AsyncConnection, limit: int | None, skip: int):
 
 
 async def create_collection(conn: AsyncConnection, user_id: int, collection: CollectionCreate):
-    await check_user_id(conn, user_id) ## Может вынести это в route?
-
     query = (insert(CollectionTable).values(owner_id=user_id, **collection.model_dump())
              .returning(CollectionTable.c[*Collection.model_fields]))
-
     result = await conn.execute(query)
     await conn.commit()
     return result.mappings().first()

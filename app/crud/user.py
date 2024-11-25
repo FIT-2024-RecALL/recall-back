@@ -31,8 +31,7 @@ async def check_user_id(conn: AsyncConnection, user_id: int):
 
 async def check_user_data(conn: AsyncConnection, user: UserCreate):
     query = select(exists().where(or_(
-        UserTable.c.email == user.email,
-        UserTable.c.nickname == user.nickname
+        UserTable.c.email == user.email, UserTable.c.nickname == user.nickname
     )))
     result = await conn.execute(query)
     if result.scalar():
@@ -40,12 +39,8 @@ async def check_user_data(conn: AsyncConnection, user: UserCreate):
 
 
 async def create_user(conn: AsyncConnection, user: UserCreate):
-    await check_user_data(conn, user)  ## Переносим в route
-
     query = insert(UserTable).values(
-        email=user.email,
-        nickname=user.nickname,
-        hashed_password=get_password_hash(user.password)
+        email=user.email, nickname=user.nickname, hashed_password=get_password_hash(user.password)
     ).returning(UserTable.c[*User.model_fields])
 
     result = await conn.execute(query)

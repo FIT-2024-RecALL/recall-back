@@ -1,8 +1,6 @@
 from sqlalchemy import select, insert, desc, delete
 from sqlalchemy.ext.asyncio import AsyncConnection
 
-from .card import check_card_id
-from .user import check_user_id
 from app import TrainRecordTable
 from app.schemas import TrainRecord, TrainRecordCreate
 
@@ -35,7 +33,6 @@ async def get_user_train_records(conn: AsyncConnection, user_id: int):
 
 
 async def get_user_card_train_records(conn: AsyncConnection, user_id: int, card_id: int):
-    ## card exist?
     query = (select(TrainRecordTable.c[*TrainRecord.model_fields])
              .where(TrainRecordTable.c.user_id == user_id,
                     TrainRecordTable.c.card_id == card_id))
@@ -43,7 +40,6 @@ async def get_user_card_train_records(conn: AsyncConnection, user_id: int, card_
 
 
 async def get_user_card_last_train_record(conn: AsyncConnection, user_id: int, card_id: int):
-    ## card exist?
     query = (select(TrainRecordTable.c[*TrainRecord.model_fields])
              .where(TrainRecordTable.c.user_id == user_id,
                     TrainRecordTable.c.card_id == card_id)
@@ -52,16 +48,10 @@ async def get_user_card_last_train_record(conn: AsyncConnection, user_id: int, c
 
 
 async def create_train_record(
-        conn: AsyncConnection,
-        card_id: int, user_id: int,
-        train_record: TrainRecordCreate
+        conn: AsyncConnection, card_id: int, user_id: int,train_record: TrainRecordCreate
 ):
-    await check_card_id(conn, card_id) ## Может вынести это в route?
-    await check_user_id(conn, user_id) ## Может вынести это в route?
-
     insert_query = insert(TrainRecordTable).values(
-        card_id=card_id, user_id=user_id,
-        **train_record.model_dump()
+        card_id=card_id, user_id=user_id, **train_record.model_dump()
     ).returning(TrainRecordTable.c[*TrainRecord.model_fields])
     result = await conn.execute(insert_query)
     await conn.commit()

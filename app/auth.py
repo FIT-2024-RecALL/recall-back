@@ -9,6 +9,8 @@ from .config import _settings
 __all__ = ["get_password_hash", "verify_password", "create_access_token", "get_profile_id"]
 
 
+EXPIRATION = 50
+
 __pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 def get_password_hash(password: str) -> str:
@@ -20,7 +22,7 @@ def verify_password(plain_password: str, hashed_password: str) -> bool:
 
 
 def create_access_token(user_id: int) -> str:
-    expire = datetime.now(timezone.utc) + timedelta(minutes=50)
+    expire = datetime.now(timezone.utc) + timedelta(minutes=EXPIRATION)
     token_data = {"sub": str(user_id), "exp": expire}
     return jwt.encode(
         token_data,
@@ -44,9 +46,9 @@ def get_profile_id(token: str = Depends(get_token)) -> int:
             algorithms=_settings.auth_algorithm
         )
     except JWTError:
-        raise ValueError("Invalid or expired token")
+        raise HTTPException(status_code=401, detail="Invalid or expired token")
 
     user_id = payload.get('sub')
     if not user_id:
-        raise ValueError("User ID is undefined")
+        raise HTTPException(status_code=401, detail="Invalid or expired token")
     return int(user_id)

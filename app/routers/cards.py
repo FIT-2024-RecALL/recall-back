@@ -26,9 +26,10 @@ async def read_cards(conn: DBConnection, skip: int = 0, limit: int | None = None
 @router.post("/", response_model=Card)
 async def create_card(conn: DBConnection, user_id: UserID, card: CardCreate):
     try:
-        return await crud.create_card(conn, user_id, card)
+        await crud.check_user_id(conn, user_id)
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
+    return await crud.create_card(conn, user_id, card)
 
 
 @router.delete("/{card_id}", response_class=Response)
