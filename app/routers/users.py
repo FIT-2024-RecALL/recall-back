@@ -45,7 +45,7 @@ async def authenticate_user(conn: DBConnection, response: Response, user_data: U
         raise HTTPException(status_code=401, detail=str(e))
 
     access_token = create_access_token(check_user_id)
-    response.set_cookie(key="users_access_token", value=access_token, httponly=True)
+    response.set_cookie(key="users_access_token", value=access_token, httponly=True, secure=True, samesite='none')
     response.status_code = 200
     return
 
