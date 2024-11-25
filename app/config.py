@@ -9,11 +9,22 @@ class CryptoAlgorithm(StrEnum):
     HS512 = "HS512"
 
 
+class SameSiteEnum(StrEnum):
+    LAX = 'lax'
+    STRICT = 'strict'
+    NONE = 'none'
+
+
 class AuthSettings(BaseSettings):
     model_config = SettingsConfigDict(env_file="./config/auth.env")
 
     SECRET_KEY: SecretStr
     ALGORITHM: CryptoAlgorithm = CryptoAlgorithm.HS256
+
+    ACCESS_TOKEN_KEY: str
+    HTTPONLY: bool = True
+    SECURE: bool = True
+    SAMESITE: SameSiteEnum = SameSiteEnum.NONE
 
 
 class PostgreSettings(BaseSettings):
@@ -37,6 +48,18 @@ class Settings(BaseSettings):
     @property
     def auth_secret_key(self) -> SecretStr:
         return self.auth.SECRET_KEY
+    
+    @property
+    def access_token_key(self) -> str:
+        return self.auth.ACCESS_TOKEN_KEY
+
+    @property
+    def cookie_kwargs(self) -> dict:
+        return {
+            'httponly': self.auth.HTTPONLY,
+            'secure': self.auth.SECURE,
+            'samesite': self.auth.SAMESITE
+        }
 
     def __create_dialect_url(self, dialect: str) -> str:
         return (f"postgresql+{dialect}://{self.db.USER}:{self.db.PASSWORD.get_secret_value()}"

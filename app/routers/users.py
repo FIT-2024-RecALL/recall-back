@@ -2,6 +2,7 @@ from fastapi import APIRouter, HTTPException, Response
 
 from app import crud, DBConnection, UserID, create_access_token
 from app.schemas import User, UserAuth, UserCreate
+from app.config import _settings
 
 
 router = APIRouter(
@@ -45,13 +46,13 @@ async def authenticate_user(conn: DBConnection, response: Response, user_data: U
         raise HTTPException(status_code=401, detail=str(e))
 
     access_token = create_access_token(check_user_id)
-    response.set_cookie(key="users_access_token", value=access_token, httponly=True, secure=True, samesite='none')
+    response.set_cookie(key=_settings.access_token_key, value=access_token, **_settings.cookie_kwargs)
     response.status_code = 200
     return
 
 
 @router.post("/logout", response_class=Response)
 async def logout_user(response: Response):
-    response.delete_cookie(key="users_access_token")
+    response.delete_cookie(key=_settings.access_token_key, **_settings.cookie_kwargs)
     response.status_code = 200
     return
