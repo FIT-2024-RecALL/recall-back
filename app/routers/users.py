@@ -46,13 +46,15 @@ async def authenticate_user(conn: DBConnection, response: Response, user_data: U
         raise HTTPException(status_code=401, detail=str(e))
 
     access_token = create_access_token(check_user_id)
-    response.set_cookie(key=_settings.access_token_key, value=access_token, **_settings.cookie_kwargs)
+    response.set_cookie(
+        key=_settings.access_token_key, value=access_token, **_settings.cookie_kwargs.model_dump()
+    )
     response.status_code = 200
     return
 
 
 @router.post("/logout", response_class=Response)
 async def logout_user(response: Response):
-    response.delete_cookie(key=_settings.access_token_key, **_settings.cookie_kwargs)
+    response.delete_cookie(key=_settings.access_token_key, **_settings.cookie_kwargs.model_dump())
     response.status_code = 200
     return

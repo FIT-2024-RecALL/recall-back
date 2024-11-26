@@ -1,6 +1,6 @@
 from enum import StrEnum
 
-from pydantic import SecretStr
+from pydantic import SecretStr, BaseModel
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -13,6 +13,12 @@ class SameSiteEnum(StrEnum):
     LAX = 'lax'
     STRICT = 'strict'
     NONE = 'none'
+
+
+class CookieSettings(BaseModel):
+    httponly: bool
+    secure: bool
+    samesite: SameSiteEnum
 
 
 class AuthSettings(BaseSettings):
@@ -54,12 +60,10 @@ class Settings(BaseSettings):
         return self.auth.ACCESS_TOKEN_KEY
 
     @property
-    def cookie_kwargs(self) -> dict:
-        return {
-            'httponly': self.auth.HTTPONLY,
-            'secure': self.auth.SECURE,
-            'samesite': self.auth.SAMESITE
-        }
+    def cookie_kwargs(self) -> CookieSettings:
+        return CookieSettings(
+            httponly=self.auth.HTTPONLY, secure=self.auth.SECURE, samesite=self.auth.SAMESITE
+        )
 
     def __create_dialect_url(self, dialect: str) -> str:
         return (f"postgresql+{dialect}://{self.db.USER}:{self.db.PASSWORD.get_secret_value()}"

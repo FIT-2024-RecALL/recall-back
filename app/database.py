@@ -21,7 +21,6 @@ async def close_db_connections():
 async def get_db_async_connection() -> AsyncConnection:
     async with __engine.connect() as conn:
         yield conn
-        #await conn.close()
 
 
 async def get_db_async_transaction() -> AsyncConnection:
