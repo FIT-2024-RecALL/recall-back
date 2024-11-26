@@ -11,22 +11,9 @@ router = APIRouter(
 )
 
 
-@router.get("/admin", response_model=list[User])
-async def read_users(conn: DBConnection, limit: int = 100, skip: int = 0):
-    return await crud.get_users(conn, limit=limit, skip=skip)
-
-
 @router.get("/profile", response_model=User)
-async def read_user_profile(conn: DBConnection, user_id: UserID):
+async def read_user(conn: DBConnection, user_id: UserID):
     return await crud.get_user(conn, user_id)
-
-
-@router.get("/{user_id}", response_model=User)
-async def read_user(conn: DBConnection, user_id: int):
-    user = await crud.get_user(conn, user_id)
-    if user is None:
-        raise HTTPException(status_code=404, detail="User not found")
-    return user
 
 
 @router.post("/register", response_model=User)
@@ -36,6 +23,11 @@ async def create_user(conn: DBConnection, user: UserCreate):
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
     return await crud.create_user(conn, user)
+
+
+### DELETE USER
+
+### UPDATE USER
 
 
 @router.post("/login", response_class=Response)

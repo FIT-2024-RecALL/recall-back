@@ -10,6 +10,7 @@ router = APIRouter(
 )
 
 
+### ПЕРЕПИСАТЬ ДЛЯ ПОЛЬЗОВАТЕЛЯ
 @router.get("/{collection_id}", response_model=Collection)
 async def read_collection(conn: DBConnection, collection_id: int):
     collection = await crud.get_collection(conn, collection_id)
@@ -18,6 +19,7 @@ async def read_collection(conn: DBConnection, collection_id: int):
     return collection
 
 
+### ПЕРЕПИСАТЬ ДЛЯ ПОЛЬЗОВАТЕЛЯ
 @router.get("/", response_model=list[Collection])
 async def read_collections(conn: DBConnection, skip: int = 0, limit: int | None = None):
     return await crud.get_collections(conn, limit=limit, skip=skip)
@@ -32,6 +34,7 @@ async def create_collection(conn: DBConnection, user_id: UserID, collection: Col
     return await crud.create_collection(conn, user_id, collection)
 
 
+### ПЕРЕПИСАТЬ ДЛЯ ПОЛЬЗОВАТЕЛЯ
 @router.get("/{collection_id}/cards", response_model=list[Card])
 async def read_collection_cards(conn: DBConnection, collection_id: int):
     try:
@@ -41,6 +44,7 @@ async def read_collection_cards(conn: DBConnection, collection_id: int):
     return await crud.get_collection_cards(conn, collection_id)
 
 
+### ПЕРЕПИСАТЬ ДЛЯ ПОЛЬЗОВАТЕЛЯ
 @router.post("/{collection_id}/pair", response_class=Response)
 async def set_card_collection_connection(conn: DBConnection, collection_id: int, cards: IntList):
     try:
@@ -51,6 +55,7 @@ async def set_card_collection_connection(conn: DBConnection, collection_id: int,
     return Response(status_code=200)
 
 
+### ПЕРЕПИСАТЬ ДЛЯ ПОЛЬЗОВАТЕЛЯ
 @router.delete("/{collection_id}/unpair", response_class=Response)
 async def delete_card_collection_connection(conn: DBConnection, collection_id: int, cards: IntList):
     await crud.delete_card_collection(conn, collection_id, cards)

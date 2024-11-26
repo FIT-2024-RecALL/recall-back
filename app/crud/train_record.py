@@ -5,36 +5,14 @@ from app import TrainRecordTable
 from app.schemas import TrainRecord, TrainRecordCreate
 
 __all__ = [
-    "get_user_card_train_records", "get_train_record", "get_train_records",
-    "get_user_card_last_train_record", "get_user_train_records", "create_train_record",
+    "get_train_records", "get_user_card_last_train_record", "create_train_record",
 ]
-
-
-async def get_train_record(conn: AsyncConnection, train_record_id: int):
-    query = select(TrainRecordTable.c[*TrainRecord.model_fields]).where(
-        TrainRecordTable.c.id == train_record_id
-    )
-    result = await conn.execute(query)
-    return result.mappings().first()
 
 
 async def get_train_records(conn: AsyncConnection, limit: int | None, skip: int):
     query = select(TrainRecordTable.c[*TrainRecord.model_fields]).offset(skip)
     if limit is not None:
         query = query.limit(limit)
-    return await conn.execute(query)
-
-
-async def get_user_train_records(conn: AsyncConnection, user_id: int):
-    query = (select(TrainRecordTable.c[*TrainRecord.model_fields])
-             .where(TrainRecordTable.c.user_id == user_id))
-    return await conn.execute(query)
-
-
-async def get_user_card_train_records(conn: AsyncConnection, user_id: int, card_id: int):
-    query = (select(TrainRecordTable.c[*TrainRecord.model_fields])
-             .where(TrainRecordTable.c.user_id == user_id,
-                    TrainRecordTable.c.card_id == card_id))
     return await conn.execute(query)
 
 

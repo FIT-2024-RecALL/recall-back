@@ -26,3 +26,24 @@ app.include_router(cards.router)
 app.include_router(collections.router)
 app.include_router(train_records.router)
 app.include_router(users.router)
+
+
+###################################################
+### ВРЕМЕННЫЙ КОД, КОТОРЫЙ БУДЕТ УДАЛЕН ПОЗДНЕЕ ###
+###################################################
+from fastapi import HTTPException
+from .dependencies import DBConnection
+from app.schemas import Card, TrainRecord, User
+from app import crud
+
+@app.get("/admin/cards", response_model=list[Card])
+async def read_cards(conn: DBConnection, skip: int = 0, limit: int | None = None):
+    return await crud.get_cards(conn, limit=limit, skip=skip)
+
+@app.get("/admin/train_records", response_model=list[TrainRecord])
+async def read_train_records(conn: DBConnection, skip: int = 0, limit: int | None = None):
+    return await crud.get_train_records(conn, skip=skip, limit=limit)
+
+@app.get("/admin/users", response_model=list[User])
+async def read_users(conn: DBConnection, limit: int = 100, skip: int = 0):
+    return await crud.get_users(conn, limit=limit, skip=skip)
