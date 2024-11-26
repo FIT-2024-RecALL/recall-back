@@ -3,7 +3,8 @@ from sqlalchemy.ext.asyncio import AsyncConnection, create_async_engine
 from .config import _settings
 from .models import _metadata
 
-__all__ = ["create_db_tables", "close_db_connections", "get_db_async_connection"]
+__all__ = ["create_db_tables", "get_db_async_connection", "get_db_async_transaction",
+           "close_db_connections"]
 
 
 __engine = create_async_engine(url=_settings.db_url_asyncpg, echo=True)
@@ -20,4 +21,9 @@ async def close_db_connections():
 async def get_db_async_connection() -> AsyncConnection:
     async with __engine.connect() as conn:
         yield conn
-        await conn.close()
+        #await conn.close()
+
+
+async def get_db_async_transaction() -> AsyncConnection:
+    async with __engine.begin() as trans:
+        yield trans

@@ -5,8 +5,7 @@ from app import CardTable, CardCollectionTable
 from app.schemas import Card
 
 __all__ = [
-    "get_collection_cards", "create_card_collection", "delete_card_collection",
-    "delete_card_collection_by_card"
+    "get_collection_cards", "create_card_collection", "delete_card_collection"
 ]
 
 
@@ -63,11 +62,5 @@ async def delete_card_collection(conn: AsyncConnection, collection_id: int, card
         CardCollectionTable.c.collection_id == collection_id,
         CardCollectionTable.c.card_id.in_(exist_connections)
     )
-    await conn.execute(query)
-    await conn.commit()
-
-
-async def delete_card_collection_by_card(conn: AsyncConnection, card_id: int):
-    query = delete(CardCollectionTable).where(CardCollectionTable.c.card_id == card_id)
     await conn.execute(query)
     await conn.commit()

@@ -1,4 +1,4 @@
-from sqlalchemy import select, insert, desc, delete
+from sqlalchemy import select, insert, desc
 from sqlalchemy.ext.asyncio import AsyncConnection
 
 from app import TrainRecordTable
@@ -7,7 +7,6 @@ from app.schemas import TrainRecord, TrainRecordCreate
 __all__ = [
     "get_user_card_train_records", "get_train_record", "get_train_records",
     "get_user_card_last_train_record", "get_user_train_records", "create_train_record",
-    "delete_train_record_by_card"
 ]
 
 
@@ -56,9 +55,3 @@ async def create_train_record(
     result = await conn.execute(insert_query)
     await conn.commit()
     return result.mappings().first()
-
-
-async def delete_train_record_by_card(conn: AsyncConnection, card_id: int):
-    query = delete(TrainRecordTable).where(TrainRecordTable.c.card_id == card_id)
-    await conn.execute(query)
-    await conn.commit()

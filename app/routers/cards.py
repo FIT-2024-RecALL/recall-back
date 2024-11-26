@@ -39,6 +39,4 @@ async def delete_card(conn: DBConnection, card_id: int):
     except ValueError as e:
         raise HTTPException(status_code=404, detail=str(e))
     await crud.delete_card(conn, card_id)
-    await crud.delete_card_collection_by_card(conn, card_id)
-    await crud.delete_train_record_by_card(conn, card_id)
     return Response(status_code=200)
