@@ -15,4 +15,4 @@ DBTransaction = Annotated[AsyncConnection, Depends(get_db_async_transaction)]
 
 UserID = Annotated[int, Depends(get_profile_id)]
 
-IntList = Annotated[list[int], Body]
+IntList = Annotated[list[int], Body(min_length=1, max_length=100)]

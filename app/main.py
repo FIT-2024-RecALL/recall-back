@@ -31,9 +31,17 @@ app.include_router(users.router)
 ###################################################
 ### ВРЕМЕННЫЙ КОД, КОТОРЫЙ БУДЕТ УДАЛЕН ПОЗДНЕЕ ###
 ###################################################
+from fastapi import status
 from .dependencies import DBConnection
 from app.schemas import Card, TrainRecord, User, Collection
 from app import crud
+
+@app.get("/items/{item_id}", responses={
+    status.HTTP_404_NOT_FOUND: {"description": "Item not found"},
+    status.HTTP_500_INTERNAL_SERVER_ERROR: {"description": "Internal Server Error"},
+})
+async def read_item(item_id: int | None = None):
+    return {"item_id": item_id}
 
 @app.get("/admin/cards", response_model=list[Card])
 async def read_cards(conn: DBConnection, skip: int = 0, limit: int | None = None):

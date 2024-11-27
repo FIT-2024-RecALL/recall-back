@@ -34,29 +34,25 @@ async def create_collection(conn: DBConnection, user_id: UserID, collection: Col
     return await crud.create_collection(conn, user_id, collection)
 
 
-### ПЕРЕПИСАТЬ ДЛЯ ПОЛЬЗОВАТЕЛЯ
 @router.get("/{collection_id}/cards", response_model=list[Card])
-async def read_collection_cards(conn: DBConnection, collection_id: int):
+async def read_collection_cards(
+        conn: DBConnection, user_id: UserID, collection_id: int
+) -> list[Card]:
     try:
-        await crud.check_collection_id(conn, collection_id)
+        await crud.check_user_id(conn, user_id)
+        await crud.check_collection_id(conn, collection_id) ################
     except ValueError as e:
         raise HTTPException(status_code=404, detail=str(e))
-    return await crud.get_collection_cards(conn, collection_id)
+    return await crud.get_user_collection_cards(conn, user_id, collection_id)
 
 
-### ПЕРЕПИСАТЬ ДЛЯ ПОЛЬЗОВАТЕЛЯ
-@router.post("/{collection_id}/pair", response_class=Response)
-async def set_card_collection_connection(conn: DBConnection, collection_id: int, cards: IntList):
+@router.get("/{card_id}/collections")
+async def read_card_collections(
+        conn: DBConnection, user_id: UserID, card_id: int
+) -> list[Collection]:
     try:
-        await crud.check_collection_id(conn, collection_id)
+        await crud.check_user_id(conn, user_id)
+        await crud.check_card_id(conn, user_id, card_id)
     except ValueError as e:
         raise HTTPException(status_code=404, detail=str(e))
-    await crud.create_card_collection(conn, collection_id, cards)
-    return Response(status_code=200)
-
-
-### ПЕРЕПИСАТЬ ДЛЯ ПОЛЬЗОВАТЕЛЯ
-@router.delete("/{collection_id}/unpair", response_class=Response)
-async def delete_card_collection_connection(conn: DBConnection, collection_id: int, cards: IntList):
-    await crud.delete_card_collection(conn, collection_id, cards)
-    return Response(status_code=200)
+    return await crud.get_user_card_collections(conn, user_id, card_id)

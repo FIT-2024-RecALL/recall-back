@@ -13,6 +13,10 @@ router = APIRouter(
 
 @router.get("/profile", response_model=User)
 async def read_user(conn: DBConnection, user_id: UserID) -> User:
+    try:
+        await crud.check_user_id(conn, user_id)
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
     return await crud.get_user(conn, user_id)
 
 
@@ -56,5 +60,9 @@ async def logout_user(response: Response) -> None:
 
 @router.delete("/delete_profile", response_class=Response)
 async def delete_user(conn: DBConnection, user_id: UserID, response: Response) -> None:
+    try:
+        await crud.check_user_id(conn, user_id)
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
     await crud.delete_user(conn, user_id)
     await logout_user(response)

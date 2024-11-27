@@ -12,8 +12,8 @@ UserTable = Table(
     "users",
     _metadata,
     Column("id", Integer, primary_key=True),
-    Column("email", String(100), unique=True, nullable=False),
-    Column("nickname", String(50), unique=True, nullable=False),
+    Column("email", String(100), unique=True, index=True, nullable=False),
+    Column("nickname", String(50), unique=True, index=True, nullable=False),
     Column("hashed_password", String(1024), nullable=False)
 )
 
@@ -22,7 +22,7 @@ CardTable = Table(
     "cards",
     _metadata,
     Column("id", Integer, primary_key=True),
-    Column("owner_id", ForeignKey("users.id", ondelete="CASCADE"), nullable=False),
+    Column("owner_id", ForeignKey("users.id", ondelete="CASCADE"), index=True, nullable=False),
     Column("front_side", String, nullable=False),
     Column("back_side", String, nullable=False)
 )
@@ -32,8 +32,8 @@ CollectionTable = Table(
     "collections",
     _metadata,
     Column("id", Integer, primary_key=True),
-    Column("owner_id", ForeignKey("users.id", ondelete="CASCADE"), nullable=False),
-    Column("title", String(100), nullable=False),
+    Column("owner_id", ForeignKey("users.id", ondelete="CASCADE"), index=True, nullable=False),
+    Column("title", String(100), index=True, nullable=False),
     Column("description", String, nullable=True)
 )
 
@@ -50,7 +50,7 @@ TrainRecordTable = Table(
     "train_records",
     _metadata,
     Column("id", Integer, primary_key=True),
-    Column("card_id", ForeignKey("cards.id", ondelete="CASCADE"), nullable=False),
-    Column("user_id", ForeignKey("users.id", ondelete="CASCADE"), nullable=False),
+    Column("card_id", ForeignKey("cards.id", ondelete="CASCADE"), index=True, nullable=False),
+    Column("user_id", ForeignKey("users.id", ondelete="CASCADE"), index=True, nullable=False),
     Column("meta_data", String, nullable=True)
 )

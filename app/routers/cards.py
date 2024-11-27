@@ -1,6 +1,6 @@
 from fastapi import APIRouter, HTTPException, Response
 
-from app import crud, DBConnection, UserID
+from app import crud, DBConnection, IntList, UserID
 from app.schemas import Card, CardCreate
 
 
@@ -26,30 +26,27 @@ async def read_cards(conn: DBConnection, skip: int = 0, limit: int | None = None
 
 
 @router.post("/", response_model=Card)
-async def create_card(conn: DBConnection, user_id: UserID, card: CardCreate):
+async def create_card(conn: DBConnection, user_id: UserID, card: CardCreate, collections: IntList) -> Card:
+    result_card: Card = await crud.create_card(conn, user_id, card)
     try:
         await crud.check_user_id(conn, user_id)
-    except ValueError as e:
-        raise HTTPException(status_code=400, detail=str(e))
-    return await crud.create_card(conn, user_id, card)
-
-
-### ПЕРЕПИСАТЬ ДЛЯ ПОЛЬЗОВАТЕЛЯ
-@router.delete("/{card_id}", response_class=Response)
-async def delete_card(conn: DBConnection, card_id: int):
-    try:
-        await crud.check_card_id(conn, card_id)
+        await crud.create_card_collection_connections(conn, result_card.id, collections)
     except ValueError as e:
         raise HTTPException(status_code=404, detail=str(e))
-    await crud.delete_card(conn, card_id)
+    return result_card
+
+
+@router.delete("/{card_id}", response_class=Response)
+async def delete_card(conn: DBConnection, user_id: UserID, card_id: int):
+    try:
+        await crud.check_user_id(conn, user_id)
+        await crud.check_card_id(conn, user_id, card_id)
+    except ValueError as e:
+        raise HTTPException(status_code=404, detail=str(e))
+    await crud.delete_user_card(conn, user_id, card_id)
     return Response(status_code=200)
 
 
 @router.put("/{card_id}", response_class=Response)
 async def update_card():
-    ...
-
-
-@router.get("/{card_id}/collections")
-async def read_card_collections():
     ...
