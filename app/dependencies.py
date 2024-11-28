@@ -3,8 +3,16 @@ from typing import Annotated
 from fastapi import Depends, Body
 from sqlalchemy.ext.asyncio import AsyncConnection
 
-from app.database import get_async_connection
+from . import get_db_async_transaction
+from .auth import get_profile_id
+from .database import get_db_async_connection
+
+__all__ = ["DBConnection", "DBTransaction", "UserID", "IntList"]
 
 
-DBConnection = Annotated[AsyncConnection, Depends(get_async_connection)]
-IntList = Annotated[list[int], Body]
+DBConnection = Annotated[AsyncConnection, Depends(get_db_async_connection)]
+DBTransaction = Annotated[AsyncConnection, Depends(get_db_async_transaction)]
+
+UserID = Annotated[int, Depends(get_profile_id)]
+
+IntList = Annotated[list[int], Body(min_length=1, max_length=100)]

@@ -1,16 +1,21 @@
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, EmailStr
+
+__all__ = ["User", "UserAuth", "UserBase", "UserCreate"]
 
 
 class UserBase(BaseModel):
     nickname: str = Field(max_length=50)
-    email: str
+    email: EmailStr
+
 
 class UserCreate(UserBase):
-    password: str = Field(min_length=13, max_length=128)
+    password: str = Field(min_length=13, max_length=64)
+
 
 class User(UserBase):
     id: int
 
+
 class UserAuth(BaseModel):
-    email: str
-    password: str = Field(min_length=13, max_length=128)
+    email: EmailStr
+    password: str = Field(min_length=13, max_length=64)
