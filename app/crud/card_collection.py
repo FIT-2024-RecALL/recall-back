@@ -5,7 +5,8 @@ from app import CardTable, CardCollectionTable, CollectionTable
 from app.schemas import Card, Collection
 
 __all__ = [
-    "get_user_collection_cards", "get_user_card_collections", "create_card_collection_connections",
+    "get_user_collection_cards", "get_user_card_collections",
+    "create_card_collection_connections", "update_card_collection_connections"
 ]
 
 
@@ -59,43 +60,35 @@ async def create_card_collection_connections(
     await _set_card_collection_connections(conn, card_id, new_collections)
 
 
-async def update_card_collection_connections():
-    ...
-
-###########################################################################################################
-async def sift_exist_connections(conn: AsyncConnection, collection_id: int, cards: list[int]) -> list[int]:
-    unique_cards: list[int] = list(set(cards))
-    query = select(CardCollectionTable.c.card_id).where(
-        CardCollectionTable.c.collection_id == collection_id,
-        CardCollectionTable.c.card_id.in_(unique_cards)
+async def _fetch_card_collections(conn: AsyncConnection, card_id: int) -> list[int]:
+    card_collection_connections = await conn.execute(
+        select(CardCollectionTable.c.collection_id).where(CardCollectionTable.c.card_id == card_id)
     )
-    collection_unique_cards = await conn.execute(query)
-    return [x[0] for x in collection_unique_cards.all()]
+    return list(card_collection_connections.scalars())
 
 
-##############################################################################################
-async def create_card_collection(conn: AsyncConnection, collection_id: int, cards: list[int]):
-    exist_connections = await sift_exist_connections(conn, collection_id, cards)
-    new_connections: list[int] = [x for x in cards if x not in exist_connections]
-    if not new_connections:
-        return
-    existing_cards = []#await sift_exist_cards(conn, new_connections)
-    if not existing_cards:
-        return
-
+async def _unset_card_collection_connections(
+        conn: AsyncConnection, card_id: int, collections: list[int]
+) -> None:
     await conn.execute(
-        insert(CardCollectionTable),
-        [{"card_id": card_id, "collection_id": collection_id} for card_id in existing_cards],
+        delete(CardCollectionTable).where(
+            CardCollectionTable.c.card_id == card_id,
+            CardCollectionTable.c.collection_id.in_(collections)
+        )
     )
     await conn.commit()
- 
 
-##############################################################################################
-async def delete_card_collection(conn: AsyncConnection, collection_id: int, cards: list[int]):
-    exist_connections: list[int] = await sift_exist_connections(conn, collection_id, cards)
-    query = delete(CardCollectionTable).where(
-        CardCollectionTable.c.collection_id == collection_id,
-        CardCollectionTable.c.card_id.in_(exist_connections)
-    )
-    await conn.execute(query)
-    await conn.commit()
+
+async def update_card_collection_connections(
+        conn: AsyncConnection, card_id: int, collections: list[int]
+) -> None:
+    request_collections: set[int] = set(await _fetch_exist_collections(conn, collections))
+    if len(request_collections) < 1:
+        raise ValueError("Collections not found")
+    old_collections: set[int] = set(await _fetch_card_collections(conn, card_id))
+    delete_collections: list[int] = list(old_collections.difference(request_collections))
+    new_collections: list[int] = list(request_collections.difference(old_collections))
+    if delete_collections:
+        await _unset_card_collection_connections(conn, card_id, delete_collections)
+    if new_collections:
+        await _set_card_collection_connections(conn, card_id, new_collections)

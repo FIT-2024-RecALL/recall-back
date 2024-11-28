@@ -1,13 +1,13 @@
-from sqlalchemy import select, insert, delete
+from sqlalchemy import select, insert, delete, update
 from sqlalchemy.ext.asyncio import AsyncConnection
 
 from app import CardTable
 from app.schemas import Card, CardCreate
 
-__all__ = ["check_card_id", "get_card", "get_cards", "create_card", "delete_user_card"]
+__all__ = ["check_card_id", "get_card", "get_cards", "create_card", "delete_card", "update_card"]
 
 
-async def check_card_id(conn: AsyncConnection, user_id: int, card_id: int):
+async def check_card_id(conn: AsyncConnection, user_id: int, card_id: int) -> None:
     result = await conn.execute(select(CardTable.c.owner_id).where(
         CardTable.c.id == card_id).limit(1)
     )
@@ -40,8 +40,17 @@ async def create_card(conn: AsyncConnection, user_id: int,  card: CardCreate) ->
     return Card(**result.mappings().first())
 
 
-async def delete_user_card(conn: AsyncConnection, user_id: int, card_id: int) -> None:
+async def delete_card(conn: AsyncConnection, card_id: int) -> None:
     await conn.execute(delete(CardTable).where(
         CardTable.c.id == card_id).returning(CardTable.c.id)
     )
     await conn.commit()
+
+
+async def update_card(conn: AsyncConnection, card_id: int, card: CardCreate) -> Card:
+    result = await conn.execute(
+        update(CardTable).where(CardTable.c.id == card_id).values(**card.model_dump())
+        .returning(CardTable.c[*Card.model_fields])
+    )
+    await conn.commit()
+    return Card(**result.mappings().first())

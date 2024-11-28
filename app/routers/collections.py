@@ -34,6 +34,9 @@ async def create_collection(conn: DBConnection, user_id: UserID, collection: Col
     return await crud.create_collection(conn, user_id, collection)
 
 
+### UPDATE AND DELETE
+
+
 @router.get("/{collection_id}/cards", response_model=list[Card])
 async def read_collection_cards(
         conn: DBConnection, user_id: UserID, collection_id: int
