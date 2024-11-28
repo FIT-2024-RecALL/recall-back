@@ -53,9 +53,7 @@ async def create_card(conn: AsyncConnection, user_id: int, card: CardCreate) -> 
 
 
 async def delete_card(conn: AsyncConnection, card_id: int) -> None:
-    await conn.execute(delete(CardTable).where(
-        CardTable.c.id == card_id).returning(CardTable.c.id)
-    )
+    await conn.execute(delete(CardTable).where(CardTable.c.id == card_id))
     await conn.commit()
 
 

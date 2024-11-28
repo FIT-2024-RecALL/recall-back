@@ -1,7 +1,7 @@
 from fastapi import APIRouter, HTTPException, Response
 
 from app import crud, DBConnection, IntList, UserID
-from app.schemas import Card, CardCreate
+from app.schemas import Card, CardCreate, Collection
 
 
 router = APIRouter(
@@ -65,3 +65,15 @@ async def update_card(
     except ValueError as e:
         raise HTTPException(status_code=404, detail=str(e))
     return await crud.update_card(conn, card_id, new_card)
+
+
+@router.get("/{card_id}/collections")
+async def read_card_collections(
+        conn: DBConnection, user_id: UserID, card_id: int
+) -> list[Collection]:
+    try:
+        await crud.check_user_id(conn, user_id)
+        await crud.check_card_id(conn, user_id, card_id)
+    except ValueError as e:
+        raise HTTPException(status_code=404, detail=str(e))
+    return await crud.get_user_card_collections(conn, user_id, card_id)
