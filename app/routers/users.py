@@ -1,12 +1,12 @@
 from fastapi import APIRouter, HTTPException, Response
 
 from app import crud, DBConnection, UserID, create_access_token
-from app.schemas import User, UserAuth, UserBase, UserCreate
+from app.schemas import User, UserAuth, UserBase, UserCreate, Card, Collection
 from app.config import _settings
 
 
 router = APIRouter(
-    prefix="/users",
+    prefix="/user",
     tags=["user"]
 )
 
@@ -49,6 +49,28 @@ async def authenticate_user(conn: DBConnection, response: Response, user_data: U
     )
     response.status_code = 200
     return
+
+
+@router.get("/cards", response_model=list[Card])
+async def read_cards(
+        conn: DBConnection, user_id: UserID, skip: int = 0, limit: int | None = None
+) -> list[Card]:
+    try:
+        await crud.check_user_id(conn, user_id)
+    except ValueError as e:
+        raise HTTPException(status_code=404, detail=str(e))
+    return await crud.get_user_cards(conn, user_id, limit=limit, skip=skip)
+
+
+@router.get("/collections", response_model=list[Collection])
+async def read_collections(
+        conn: DBConnection, user_id: UserID, skip: int = 0, limit: int | None = None
+) -> list[Collection]:
+    try:
+        await crud.check_user_id(conn, user_id)
+    except ValueError as e:
+        raise HTTPException(status_code=404, detail=str(e))
+    return await crud.get_user_collections(conn, user_id, limit=limit, skip=skip)
 
 
 @router.post("/logout", response_class=Response)

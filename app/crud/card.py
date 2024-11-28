@@ -6,7 +6,7 @@ from app.schemas import Card, CardCreate
 
 __all__ = [
     "check_card_id", "get_card", "get_cards", "get_user_cards", "create_card", "delete_card",
-    "update_card"
+    "update_card", "delete_cards"
 ]
 
 
@@ -19,19 +19,19 @@ async def check_card_id(conn: AsyncConnection, user_id: int, card_id: int) -> No
         raise ValueError("Card not found in User collections")
 
 
-async def get_card(conn: AsyncConnection, card_id: int) -> Card:
+async def get_card(conn: AsyncConnection, card_id: int) -> Card | None:
     result = await conn.execute(
         select(CardTable.c[*Card.model_fields]).where(CardTable.c.id == card_id)
     )
-    return Card(**result.mappings().first())
+    return result if result is None else Card(**result.mappings().first())
 
 
-async def get_cards(conn: AsyncConnection, *, limit: int | None, skip: int):
+async def get_cards(conn: AsyncConnection, *, limit: int | None, skip: int) -> list[Card]:
     query = select(CardTable.c[*Card.model_fields]).offset(skip)
     if limit is not None:
         query = query.limit(limit)
     result = await conn.execute(query)
-    return result.mappings().all()
+    return [Card(**card) for card in result.mappings().all()]
 
 
 async def get_user_cards(conn: AsyncConnection, user_id: int, *, limit: int | None, skip: int) -> list[Card]:
@@ -54,6 +54,11 @@ async def create_card(conn: AsyncConnection, user_id: int, card: CardCreate) -> 
 
 async def delete_card(conn: AsyncConnection, card_id: int) -> None:
     await conn.execute(delete(CardTable).where(CardTable.c.id == card_id))
+    await conn.commit()
+
+
+async def delete_cards(conn: AsyncConnection, cards: list[int]) -> None:
+    await conn.execute(delete(CardTable).where(CardTable.c.id.in_(cards)))
     await conn.commit()
 
 

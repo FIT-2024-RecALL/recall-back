@@ -5,19 +5,17 @@ from app import CardTable, CardCollectionTable, CollectionTable
 from app.schemas import Card, Collection
 
 __all__ = [
-    "get_user_collection_cards", "get_user_card_collections",
-    "create_card_collection_connections", "update_card_collection_connections"
+    "get_collection_cards", "get_user_card_collections", "create_card_collection_connections",
+    "update_card_collection_connections"
 ]
 
 
-async def get_user_collection_cards(
-        conn: AsyncConnection, user_id: int, collection_id: int
+async def get_collection_cards(
+        conn: AsyncConnection, collection_id: int
 ) -> list[Card]:
     query = select(CardTable.c[*Card.model_fields]).join(
         CardCollectionTable, CardTable.c.id == CardCollectionTable.c.card_id
-    ).where(
-        CardTable.c.owner_id == user_id, CardCollectionTable.c.collection_id == collection_id
-    )
+    ).where(CardCollectionTable.c.collection_id == collection_id)
     result = await conn.execute(query)
     return list(map(lambda x: Card(**x), result.mappings().all()))
 
