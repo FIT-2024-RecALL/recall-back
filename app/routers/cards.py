@@ -10,19 +10,25 @@ router = APIRouter(
 )
 
 
-### ПЕРЕПИСАТЬ ДЛЯ ПОЛЬЗОВАТЕЛЯ
 @router.get("/{card_id}", response_model=Card)
-async def read_card(conn: DBConnection, card_id: int):
-    card = await crud.get_card(conn, card_id)
-    if card is None:
-        raise HTTPException(status_code=404, detail="Card not found")
-    return card
+async def read_card(conn: DBConnection, user_id: UserID, card_id: int) -> Card:
+    try:
+        await crud.check_user_id(conn, user_id)
+        await crud.check_card_id(conn, user_id, card_id)
+    except ValueError as e:
+        raise HTTPException(status_code=404, detail=str(e))
+    return await crud.get_card(conn, card_id)
 
 
-### ПЕРЕПИСТАЬ ДЛЯ ПОЛЬЗОВАТЕЛЯ
 @router.get("/", response_model=list[Card])
-async def read_cards(conn: DBConnection, skip: int = 0, limit: int | None = None):
-    return await crud.get_cards(conn, limit=limit, skip=skip)
+async def read_cards(
+        conn: DBConnection, user_id: UserID, skip: int = 0, limit: int | None = None
+) -> list[Card]:
+    try:
+        await crud.check_user_id(conn, user_id)
+    except ValueError as e:
+        raise HTTPException(status_code=404, detail=str(e))
+    return await crud.get_user_cards(conn, user_id, limit=limit, skip=skip)
 
 
 @router.post("/", response_model=Card)

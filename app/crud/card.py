@@ -4,7 +4,10 @@ from sqlalchemy.ext.asyncio import AsyncConnection
 from app import CardTable
 from app.schemas import Card, CardCreate
 
-__all__ = ["check_card_id", "get_card", "get_cards", "create_card", "delete_card", "update_card"]
+__all__ = [
+    "check_card_id", "get_card", "get_cards", "get_user_cards", "create_card", "delete_card",
+    "update_card"
+]
 
 
 async def check_card_id(conn: AsyncConnection, user_id: int, card_id: int) -> None:
@@ -16,11 +19,11 @@ async def check_card_id(conn: AsyncConnection, user_id: int, card_id: int) -> No
         raise ValueError("Card not found in User collections")
 
 
-async def get_card(conn: AsyncConnection, card_id: int):
+async def get_card(conn: AsyncConnection, card_id: int) -> Card:
     result = await conn.execute(
         select(CardTable.c[*Card.model_fields]).where(CardTable.c.id == card_id)
     )
-    return result.mappings().first()
+    return Card(**result.mappings().first())
 
 
 async def get_cards(conn: AsyncConnection, *, limit: int | None, skip: int):
@@ -31,7 +34,16 @@ async def get_cards(conn: AsyncConnection, *, limit: int | None, skip: int):
     return result.mappings().all()
 
 
-async def create_card(conn: AsyncConnection, user_id: int,  card: CardCreate) -> Card:
+async def get_user_cards(conn: AsyncConnection, user_id: int, *, limit: int | None, skip: int) -> list[Card]:
+    query = select(CardTable.c[*Card.model_fields]).where(
+        CardTable.c.owner_id == user_id).offset(skip)
+    if limit is not None:
+        query = query.limit(limit)
+    result = await conn.execute(query)
+    return [Card(**card) for card in result.mappings().all()]
+
+
+async def create_card(conn: AsyncConnection, user_id: int, card: CardCreate) -> Card:
     result = await conn.execute(
         insert(CardTable).values(owner_id=user_id, **card.model_dump())
         .returning(CardTable.c[*Card.model_fields])
