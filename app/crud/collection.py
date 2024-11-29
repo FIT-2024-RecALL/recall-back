@@ -26,12 +26,12 @@ async def check_user_collection_id(conn: AsyncConnection, user_id: int, collecti
         raise ValueError("User does not have this collection")
 
 
-async def get_collection(conn: AsyncConnection, collection_id: int) -> Collection:
+async def get_collection(conn: AsyncConnection, collection_id: int) -> Collection | None:
     query = select(CollectionTable.c[*Collection.model_fields]).where(
         CollectionTable.c.id == collection_id
     )
-    result = await conn.execute(query)
-    return Collection(**result.mappings().first())
+    result = (await conn.execute(query)).mappings().first()
+    return result if result is None else Collection(**result)
 
 
 async def get_collections(conn: AsyncConnection, limit: int | None, skip: int) -> list[Collection]:
@@ -53,7 +53,9 @@ async def get_user_collections(
     return [Collection(**collection) for collection in result.mappings().all()]
 
 
-async def create_collection(conn: AsyncConnection, user_id: int, collection: CollectionCreate):
+async def create_collection(
+        conn: AsyncConnection, user_id: int, collection: CollectionCreate
+) -> Collection:
     query = (insert(CollectionTable).values(owner_id=user_id, **collection.model_dump())
              .returning(CollectionTable.c[*Collection.model_fields]))
     result = await conn.execute(query)

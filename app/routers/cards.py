@@ -12,7 +12,7 @@ router = APIRouter(
 
 @router.get("/{card_id}", response_model=Card)
 async def read_card(conn: DBConnection, card_id: int):
-    card = await crud.card.get_card(conn, card_id)
+    card: Card | None = await crud.get_card(conn, card_id)
     if card is None:
         raise HTTPException(status_code=404, detail="Card not found")
     return card

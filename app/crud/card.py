@@ -20,10 +20,10 @@ async def check_card_id(conn: AsyncConnection, user_id: int, card_id: int) -> No
 
 
 async def get_card(conn: AsyncConnection, card_id: int) -> Card | None:
-    result = await conn.execute(
+    result = (await conn.execute(
         select(CardTable.c[*Card.model_fields]).where(CardTable.c.id == card_id)
-    )
-    return result if result is None else Card(**result.mappings().first())
+    )).mappings().first()
+    return result if result is None else Card(**result)
 
 
 async def get_cards(conn: AsyncConnection, *, limit: int | None, skip: int) -> list[Card]:

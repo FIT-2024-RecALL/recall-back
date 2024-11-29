@@ -12,7 +12,7 @@ router = APIRouter(
 
 @router.get("/{collection_id}", response_model=Collection)
 async def read_collection(conn: DBConnection, collection_id: int) -> Collection:
-    collection = await crud.collection.get_collection(conn, collection_id)
+    collection: Collection | None = await crud.get_collection(conn, collection_id)
     if collection is None:
         raise HTTPException(status_code=404, detail="Collection not found")
     return collection
@@ -20,7 +20,7 @@ async def read_collection(conn: DBConnection, collection_id: int) -> Collection:
 
 @router.get("/", response_model=list[Collection])
 async def read_collections(conn: DBConnection, limit: int = 100, skip: int = 0) -> list[Collection]:
-    return await crud.collection.get_collections(conn, limit=limit, skip=skip)
+    return await crud.get_collections(conn, limit=limit, skip=skip)
 
 
 @router.post("/", response_model=Collection)

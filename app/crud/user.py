@@ -30,11 +30,10 @@ async def check_user_id(conn: AsyncConnection, user_id: int) -> None:
         raise ValueError("User not found")
 
 
-async def find_user_by_data(conn: AsyncConnection, user: UserBase):
-    result = await conn.execute(select(UserTable.c.id).where(or_(
+async def find_user_by_data(conn: AsyncConnection, user: UserBase) -> int | None:
+    return (await conn.execute(select(UserTable.c.id).where(or_(
         UserTable.c.email == user.email, UserTable.c.nickname == user.nickname
-    )).limit(1))
-    return result.mappings().first()
+    )).limit(1))).scalar()
 
 
 async def create_user(conn: AsyncConnection, user: UserCreate):
