@@ -21,34 +21,42 @@ async def read_user(conn: DBConnection, user_id: UserID) -> User:
 
 
 @router.post("/register", response_model=User)
-async def create_user(conn: DBConnection, user: UserCreate) -> User:
-    user_data = await crud.find_user_by_data(conn, user)
+async def create_user(
+        conn: DBConnection, response: Response, user: UserCreate, auto_login: bool = True
+) -> User:
+    user_data = await crud.find_user_id_by_data(conn, user)
     if user_data is not None:
         raise HTTPException(status_code=400, detail="Email or Nickname already registered")
-    return await crud.create_user(conn, user)
+    new_user: User = await crud.create_user(conn, user)
+    if auto_login:
+        access_token = create_access_token(new_user.id)
+        response.set_cookie(
+            key=_settings.access_token_key, value=access_token,
+            **_settings.cookie_kwargs.model_dump()
+        )
+    return new_user
 
 
 @router.put("/edit_profile", response_model=User)
 async def update_user(conn: DBConnection, user_id: UserID, user: UserBase) -> User:
-    user_data_id: int = await crud.find_user_by_data(conn, user)
+    user_data_id: int = await crud.find_user_id_by_data(conn, user)
     if user_data_id is not None and user_data_id != user_id:
         raise HTTPException(status_code=400, detail="Email or Nickname already registered")
     return await crud.update_user(conn, user_id, user)
 
 
-@router.post("/login", response_class=Response)
-async def authenticate_user(conn: DBConnection, response: Response, user_data: UserAuth) -> None:
+@router.post("/login", response_model=User)
+async def authenticate_user(conn: DBConnection, response: Response, user_data: UserAuth) -> User:
     try:
-        check_user_id = await crud.authenticate_user(conn, user_data)
+        user = await crud.authenticate_user(conn, user_data)
     except ValueError as e:
         raise HTTPException(status_code=401, detail=str(e))
 
-    access_token = create_access_token(check_user_id)
+    access_token = create_access_token(user.id)
     response.set_cookie(
         key=_settings.access_token_key, value=access_token, **_settings.cookie_kwargs.model_dump()
     )
-    response.status_code = 200
-    return
+    return user
 
 
 @router.get("/cards", response_model=list[Card])

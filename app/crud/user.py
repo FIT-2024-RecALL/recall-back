@@ -5,7 +5,7 @@ from app import UserTable, get_password_hash, verify_password
 from app.schemas import User, UserAuth, UserBase, UserCreate
 
 __all__ = [
-    "get_user", "get_users", "check_user_id", "find_user_by_data", "create_user",
+    "get_user", "get_users", "check_user_id", "find_user_id_by_data", "create_user",
     "get_user_via_email", "authenticate_user", "delete_user", "update_user"
 ]
 
@@ -30,20 +30,20 @@ async def check_user_id(conn: AsyncConnection, user_id: int) -> None:
         raise ValueError("User not found")
 
 
-async def find_user_by_data(conn: AsyncConnection, user: UserBase) -> int | None:
+async def find_user_id_by_data(conn: AsyncConnection, user: UserBase) -> int | None:
     return (await conn.execute(select(UserTable.c.id).where(or_(
         UserTable.c.email == user.email, UserTable.c.nickname == user.nickname
     )).limit(1))).scalar()
 
 
-async def create_user(conn: AsyncConnection, user: UserCreate):
+async def create_user(conn: AsyncConnection, user: UserCreate) -> User:
     query = insert(UserTable).values(
         email=user.email, nickname=user.nickname, hashed_password=get_password_hash(user.password)
     ).returning(UserTable.c[*User.model_fields])
 
     result = await conn.execute(query)
     await conn.commit()
-    return result.mappings().first()
+    return User(**result.mappings().first())
 
 
 async def delete_user(conn: AsyncConnection, user_id: int) -> None:
@@ -66,8 +66,8 @@ async def get_user_via_email(conn: AsyncConnection, email: str):
     return result.mappings().first()
 
 
-async def authenticate_user(conn: AsyncConnection, user_data: UserAuth) -> int:
+async def authenticate_user(conn: AsyncConnection, user_data: UserAuth) -> User:
     user = await get_user_via_email(conn, user_data.email)
     if user is None or not verify_password(user_data.password, user["hashed_password"]):
         raise ValueError("Entered email or password is not correct")
-    return user["id"]
+    return User(**user)
