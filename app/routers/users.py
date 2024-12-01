@@ -24,8 +24,8 @@ async def read_user(conn: DBConnection, user_id: UserID) -> User:
 async def create_user(
         conn: DBConnection, response: Response, user: UserCreate, auto_login: bool = True
 ) -> User:
-    user_data = await crud.find_user_id_by_data(conn, user)
-    if user_data is not None:
+    users_with_data: list[int] = await crud.find_users_by_data(conn, user)
+    if len(users_with_data) > 0:
         raise HTTPException(status_code=400, detail="Email or Nickname already registered")
     new_user: User = await crud.create_user(conn, user)
     if auto_login:
@@ -39,8 +39,8 @@ async def create_user(
 
 @router.put("/edit_profile", response_model=User)
 async def update_user(conn: DBConnection, user_id: UserID, user: UserBase) -> User:
-    user_data_id: int = await crud.find_user_id_by_data(conn, user)
-    if user_data_id is not None and user_data_id != user_id:
+    users_with_data: list[int] = await crud.find_users_by_data(conn, user)
+    if len(users_with_data) == 1 and users_with_data[0] != user_id or len(users_with_data) > 1:
         raise HTTPException(status_code=400, detail="Email or Nickname already registered")
     return await crud.update_user(conn, user_id, user)
 

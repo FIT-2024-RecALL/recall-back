@@ -5,16 +5,16 @@ from app import UserTable, get_password_hash, verify_password
 from app.schemas import User, UserAuth, UserBase, UserCreate
 
 __all__ = [
-    "get_user", "get_users", "check_user_id", "find_user_id_by_data", "create_user",
+    "get_user", "get_users", "check_user_id", "find_users_by_data", "create_user",
     "get_user_via_email", "authenticate_user", "delete_user", "update_user"
 ]
 
 
-async def get_user(conn: AsyncConnection, user_id: int):
-    result = await conn.execute(
+async def get_user(conn: AsyncConnection, user_id: int) -> User | None:
+    result = (await conn.execute(
         select(UserTable.c[*User.model_fields]).where(UserTable.c.id == user_id)
-    )
-    return result.mappings().first()
+    )).mappings().first()
+    return result if result is None else User(**result)
 
 
 async def get_users(conn: AsyncConnection, *, limit: int, skip: int):
@@ -30,10 +30,10 @@ async def check_user_id(conn: AsyncConnection, user_id: int) -> None:
         raise ValueError("User not found")
 
 
-async def find_user_id_by_data(conn: AsyncConnection, user: UserBase) -> int | None:
-    return (await conn.execute(select(UserTable.c.id).where(or_(
-        UserTable.c.email == user.email, UserTable.c.nickname == user.nickname
-    )).limit(1))).scalar()
+async def find_users_by_data(conn: AsyncConnection, user: UserBase) -> list[int]:
+    return list((await conn.execute(select(UserTable.c.id).where(
+        or_(UserTable.c.email == user.email, UserTable.c.nickname == user.nickname)
+    ))).scalars().all())
 
 
 async def create_user(conn: AsyncConnection, user: UserCreate) -> User:

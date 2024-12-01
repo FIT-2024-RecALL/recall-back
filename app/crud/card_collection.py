@@ -17,7 +17,7 @@ async def get_collection_cards(
         CardCollectionTable, CardTable.c.id == CardCollectionTable.c.card_id
     ).where(CardCollectionTable.c.collection_id == collection_id)
     result = await conn.execute(query)
-    return list(map(lambda x: Card(**x), result.mappings().all()))
+    return [Card(**card) for card in result.mappings().all()]
 
 
 async def get_user_card_collections(
@@ -29,14 +29,14 @@ async def get_user_card_collections(
         CollectionTable.c.owner_id == user_id, CardCollectionTable.c.card_id == card_id
     )
     result = await conn.execute(query)
-    return list(map(lambda x: Collection(**x), result.mappings().all()))
+    return [Collection(**collection) for collection in result.mappings().all()]
 
 
 async def _fetch_exist_collections(conn: AsyncConnection, collections: list[int]) -> list[int]:
     exist_unique_collections = await conn.execute(
         select(CollectionTable.c.id).where(CollectionTable.c.id.in_(set(collections)))
     )
-    return list(exist_unique_collections.scalars())
+    return list(exist_unique_collections.scalars().all())
 
 
 async def _set_card_collection_connections(
@@ -62,7 +62,7 @@ async def _fetch_card_collections(conn: AsyncConnection, card_id: int) -> list[i
     card_collection_connections = await conn.execute(
         select(CardCollectionTable.c.collection_id).where(CardCollectionTable.c.card_id == card_id)
     )
-    return list(card_collection_connections.scalars())
+    return list(card_collection_connections.scalars().all())
 
 
 async def _unset_card_collection_connections(

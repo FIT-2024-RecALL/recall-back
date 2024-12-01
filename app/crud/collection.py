@@ -67,13 +67,13 @@ async def _fetch_connected_cards(conn: AsyncConnection, cards: set[int]) -> set[
     connected_cards = await conn.execute(
         select(CardCollectionTable.c.card_id).where(CardCollectionTable.c.card_id.in_(cards))
     )
-    return set(connected_cards.scalars())
+    return set(connected_cards.scalars().all())
 
 
 async def delete_collection(conn: AsyncConnection, collection_id: int) -> None:
     checking_cards: set[int] = set((await conn.execute(select(CardCollectionTable.c.card_id).where(
         CardCollectionTable.c.collection_id == collection_id
-    ))).scalars())
+    ))).scalars().all())
     await conn.execute(delete(CollectionTable).where(CollectionTable.c.id == collection_id))
     await conn.commit()
 
