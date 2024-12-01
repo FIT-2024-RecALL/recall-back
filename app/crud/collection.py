@@ -63,7 +63,15 @@ async def create_collection(
     return Collection(**result.mappings().first())
 
 
-async def _fetch_connected_cards(conn: AsyncConnection, cards: set[int]) -> set[int]:
+async def _filter_connected_cards(conn: AsyncConnection, cards: set[int]) -> set[int]:
+    """
+    Фильтрует исходное множество идентификаторов карт, оставляя только те,
+    которые имеют связь хотя бы с одной коллекцией в таблице CardCollectionTable.
+
+    :param conn: Асинхронное соединение с базой данных.
+    :param cards: Исходное множество идентификаторов карт.
+    :return: Множество идентификаторов карт, которые имеют связь хотя бы с одной коллекцией.
+    """
     connected_cards = await conn.execute(
         select(CardCollectionTable.c.card_id).where(CardCollectionTable.c.card_id.in_(cards))
     )
@@ -77,7 +85,7 @@ async def delete_collection(conn: AsyncConnection, collection_id: int) -> None:
     await conn.execute(delete(CollectionTable).where(CollectionTable.c.id == collection_id))
     await conn.commit()
 
-    cards_with_collections: set[int] = await _fetch_connected_cards(conn, checking_cards)
+    cards_with_collections: set[int] = await _filter_connected_cards(conn, checking_cards)
     need_delete_cards: list[int] = list(checking_cards.difference(cards_with_collections))
     if need_delete_cards:
         await delete_cards(conn, need_delete_cards)

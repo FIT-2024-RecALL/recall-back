@@ -40,7 +40,7 @@ class PostgreSettings(BaseSettings):
     PASSWORD: SecretStr
     HOST: str
     HOST_PORT: int
-    DB_NAME: str
+    DB: str
 
 
 class Settings(BaseSettings):
@@ -67,7 +67,7 @@ class Settings(BaseSettings):
 
     def __create_dialect_url(self, dialect: str) -> str:
         return (f"postgresql+{dialect}://{self.db.USER}:{self.db.PASSWORD.get_secret_value()}"
-                f"@{self.db.HOST}:{self.db.HOST_PORT}/{self.db.DB_NAME}")
+                f"@{self.db.HOST}:{self.db.HOST_PORT}/{self.db.DB}")
 
     @property
     def db_url_asyncpg(self) -> str:
