@@ -43,9 +43,20 @@ class PostgreSettings(BaseSettings):
     DB: str
 
 
+class MinioSettings(BaseSettings):
+    model_config = SettingsConfigDict(env_prefix='MINIO_', env_file="./config/minio-backend.env")
+
+    BUCKET_NAME: str
+    HOSTNAME: str
+    PORT: int
+    LOGIN: str
+    PASSWORD: str
+
+
 class Settings(BaseSettings):
     auth: AuthSettings = AuthSettings()
     db: PostgreSettings = PostgreSettings()
+    minio: MinioSettings = MinioSettings()
 
     @property
     def auth_algorithm(self) -> CryptoAlgorithm:
@@ -64,6 +75,11 @@ class Settings(BaseSettings):
         return CookieSettings(
             httponly=self.auth.HTTPONLY, secure=self.auth.SECURE, samesite=self.auth.SAMESITE
         )
+
+    @property
+    def minio_url(self) -> str:
+        """Hostname with port"""
+        return f"{self.minio.HOSTNAME}:{self.minio.PORT}"
 
     def __create_dialect_url(self, dialect: str) -> str:
         return (f"postgresql+{dialect}://{self.db.USER}:{self.db.PASSWORD.get_secret_value()}"
