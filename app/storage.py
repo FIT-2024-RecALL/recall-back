@@ -1,10 +1,11 @@
 from minio import Minio
 
-from app.config import minio_settings
+from .config import _settings
+
 
 storage = Minio(
-    minio_settings.url,
-    minio_settings.LOGIN,
-    minio_settings.PASSWORD,
+    _settings.minio_url,
+    _settings.minio.LOGIN,
+    _settings.minio.PASSWORD,
     secure=False
 )

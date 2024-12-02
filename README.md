@@ -12,9 +12,10 @@
 - [Docker Engine + Docker Compose](https://docs.docker.com/engine/install/)
 
 ## How to deploy
-- Set env variable `RECALL_PROJECT_PATH` to project dir
-- Add config files into `minio_config/`:
-  - `minio-backend.env`:
+1. Set env variable `RECALL_PROJECT_PATH` to project dir
+2. Add config files into folder `config/`:
+
+- `minio-backend.env`:
 ```conf
 MINIO_HOSTNAME=<minio_addr> # IP address - without protocol
 MINIO_PORT=<minio_port>
@@ -22,7 +23,7 @@ MINIO_BUCKET_NAME=<bucket_name>
 MINIO_LOGIN=<backend_minio_user_login>
 MINIO_PASSWORD=<backend_minio_user_password>
 ```
-  - `minio-server.env`:
+- `minio-server.env`:
 ```conf
 MINIO_ROOT_USER="<root_user_login>"
 MINIO_ROOT_PASSWORD="<root_user_passwrod>"
@@ -31,7 +32,7 @@ MINIO_VOLUMES="/mnt/minio-volume"
 
 MINIO_OPTS="--console-address :9001"
 ```
-  - `postgres.env`:
+- `postgres.env`:
 ```conf
 POSTGRES_USER=<backend_postgres_user_login>
 POSTGRES_PASSWORD=<backend_postgres_user_passwrod>
@@ -39,12 +40,22 @@ POSTGRES_HOST=<postgres_addr>
 POSTGRES_HOST_PORT=<postgres_port>
 POSTGRES_DB=<postgres_db_name>
 ```
-- Export next variables into your session:
+- `auth.env`:
+```conf
+SECRET_KEY=<secret_key_for_encrypting>
+ALGORITHM=<encrypting_algorithm: e.g. HS256>
+ACCESS_TOKEN_KEY=<title_of_cookie_token_attribute>
+HTTPONLY=true
+SECURE=true
+SAMESITE=none
+```
+
+3. Export next variables into your session:
   - `MINIO_PORT`
   - `MINIO_BROWSER_PORT` (**used only for debug**)
   - `POSTGRES_HOST_PORT`
-- Create folders for MinIO object storage and Postgres DB then set their paths to env var `MINIO_VOLUME_PATH` and `POSTGRES_VOLUME_PATH`
-- Run `docker compose up -d`
+4. Create folders for MinIO object storage and Postgres DB then set their paths to env var `MINIO_VOLUME_PATH` and `POSTGRES_VOLUME_PATH`
+5. Run `docker compose up -d`
 
 ## How to start the service
 1. Environment configuration
@@ -55,9 +66,12 @@ poetry shell
 
 poetry install
 ```
-2. Run service!
+2. Run the service!
 ```bash
 fastapi dev app/main.py
+
+# or commercial development style
+python -m app.main
 ```
 
 ### How to install `Poetry`

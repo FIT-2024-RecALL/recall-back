@@ -96,7 +96,6 @@ celerybeat.pid
 *.sage.py
 
 # Environments
-config/postgres.env
 .venv
 env/
 venv/
