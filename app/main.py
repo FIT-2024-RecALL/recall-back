@@ -2,8 +2,9 @@ from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+import uvicorn
 
-from .database import create_db_tables, close_db_connections
+from app.database import create_db_tables, close_db_connections
 from app.routers import cards, collections, train_records, users
 
 
@@ -58,3 +59,10 @@ async def read_users(conn: DBConnection, limit: int = 100, skip: int = 0):
 @app.get("/admin/collections", response_model=list[Collection])
 async def read_collections(conn: DBConnection, skip: int = 0, limit: int | None = None):
     return await crud.get_collections(conn, limit=limit, skip=skip)
+############################
+### БУДЕТ УДАЛЕН ПОЗДНЕЕ ###
+############################
+
+
+if __name__ == "__main__":
+    uvicorn.run("app.main:app", reload=True)

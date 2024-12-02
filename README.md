@@ -66,9 +66,12 @@ poetry shell
 
 poetry install
 ```
-2. Run service!
+2. Run the service!
 ```bash
 fastapi dev app/main.py
+
+# or commercial development style
+python -m app.main
 ```
 
 ### How to install `Poetry`
