@@ -1,31 +1,101 @@
+from enum import StrEnum
+
+from pydantic import SecretStr, BaseModel
 from pydantic_settings import BaseSettings, SettingsConfigDict
+
+
+class CryptoAlgorithm(StrEnum):
+    HS256 = "HS256"
+    HS512 = "HS512"
+
+
+class SameSiteEnum(StrEnum):
+    LAX = 'lax'
+    STRICT = 'strict'
+    NONE = 'none'
+
+
+class CookieSettings(BaseModel):
+    httponly: bool
+    secure: bool
+    samesite: SameSiteEnum
+
+
+class AuthSettings(BaseSettings):
+    model_config = SettingsConfigDict(env_file="./config/auth.env")
+
+    SECRET_KEY: SecretStr
+    ALGORITHM: CryptoAlgorithm = CryptoAlgorithm.HS256
+
+    ACCESS_TOKEN_KEY: str
+    HTTPONLY: bool = True
+    SECURE: bool = True
+    SAMESITE: SameSiteEnum = SameSiteEnum.NONE
 
 
 class PostgreSettings(BaseSettings):
     model_config = SettingsConfigDict(env_prefix='POSTGRES_', env_file="./config/postgres.env")
 
     USER: str
-    PASSWORD: str
+    PASSWORD: SecretStr
     HOST: str
     HOST_PORT: int
-    DB_NAME: str
+    DB: str
 
-    @staticmethod
+
+class MinioSettings(BaseSettings):
+    model_config = SettingsConfigDict(env_prefix='MINIO_', env_file="./config/minio-backend.env")
+
+    BUCKET_NAME: str
+    HOSTNAME: str
+    PORT: int
+    LOGIN: str
+    PASSWORD: str
+
+
+class Settings(BaseSettings):
+    auth: AuthSettings = AuthSettings()
+    db: PostgreSettings = PostgreSettings()
+    minio: MinioSettings = MinioSettings()
+
+    @property
+    def auth_algorithm(self) -> CryptoAlgorithm:
+        return self.auth.ALGORITHM
+
+    @property
+    def auth_secret_key(self) -> SecretStr:
+        return self.auth.SECRET_KEY
+    
+    @property
+    def access_token_key(self) -> str:
+        return self.auth.ACCESS_TOKEN_KEY
+
+    @property
+    def cookie_kwargs(self) -> CookieSettings:
+        return CookieSettings(
+            httponly=self.auth.HTTPONLY, secure=self.auth.SECURE, samesite=self.auth.SAMESITE
+        )
+
+    @property
+    def minio_url(self) -> str:
+        """Hostname with port"""
+        return f"{self.minio.HOSTNAME}:{self.minio.PORT}"
+
     def __create_dialect_url(self, dialect: str) -> str:
-        return (f"postgresql+{dialect}://{self.USER}:{self.PASSWORD}"
-                f"@{self.HOST}:{self.HOST_PORT}/{self.DB_NAME}")
+        return (f"postgresql+{dialect}://{self.db.USER}:{self.db.PASSWORD.get_secret_value()}"
+                f"@{self.db.HOST}:{self.db.HOST_PORT}/{self.db.DB}")
 
     @property
     def db_url_asyncpg(self) -> str:
-        return PostgreSettings.__create_dialect_url(self, "asyncpg")
+        return self.__create_dialect_url("asyncpg")
 
     @property
     def db_url_psycopg(self) -> str:
-        return PostgreSettings.__create_dialect_url(self, "psycopg")
+        return self.__create_dialect_url("psycopg")
 
     @property
     def db_url_pysqlite(self) -> str:
         return "sqlite:///./sql_app.db"
 
 
-dbSettings: PostgreSettings = PostgreSettings()
+_settings = Settings()

@@ -9,10 +9,15 @@ package-mode = false
 python = "^3.11"
 sqlalchemy = "^2.0.36"
 fastapi = {extras = ["standard"], version = "^0.115.3"}
+minio = "^7.2.10"
+python-multipart = "^0.0.17"
 pydantic-settings = "^2.6.1"
 asyncpg = "^0.30.0"
 psycopg = "^3.2.3"
 psycopg-binary = "^3.2.3"
+python-jose = "^3.3.0"
+bcrypt = "^4.2.0"
+passlib = {extras = ["bcrypt"], version = "^1.7.4"}
 
 
 [build-system]
