@@ -4,7 +4,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 import uvicorn
 
-from app.database import create_db_tables, close_db_connections
+from .database import create_db_tables, close_db_connections
 from app.routers import cards, collections, train_records, users, storage
 
 

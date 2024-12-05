@@ -22,7 +22,7 @@ async def create_train_record(
     return await crud.create_train_record(conn, card_id, user_id, train_record)
 
 
-@router.get("/record/{card_id}", response_model=list[TrainRecord])
+@router.get("/{card_id}", response_model=list[TrainRecord])
 async def read_card_last_train_record(conn: DBConnection, user_id: UserID, card_id: int):
     try:
         await crud.check_user_id(conn, user_id)

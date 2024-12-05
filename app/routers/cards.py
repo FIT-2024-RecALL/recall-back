@@ -9,6 +9,10 @@ router = APIRouter(
     tags=["card"]
 )
 
+@router.get("/training/{card_count}", response_model=list[int])
+async def train_cards(conn: DBConnection, user_id: UserID, card_count: int) -> list[int]:
+    ...
+
 
 @router.get("/{card_id}", response_model=Card)
 async def read_card(conn: DBConnection, card_id: int):
@@ -25,7 +29,7 @@ async def create_card(
     result_card: Card = await crud.create_card(conn, user_id, card)
     try:
         await crud.check_user_id(conn, user_id)
-        await crud.create_card_collection_connections(conn, result_card.id, collections)
+        await crud.create_card_collection_connections(conn, user_id, result_card.id, collections)
     except ValueError as e:
         raise HTTPException(status_code=404, detail=str(e))
     return result_card
@@ -50,7 +54,7 @@ async def update_card(
     try:
         await crud.check_user_id(conn, user_id)
         await crud.check_card_id(conn, user_id, card_id)
-        await crud.update_card_collection_connections(conn, card_id, collections)
+        await crud.update_card_collection_connections(conn, user_id, card_id, collections)
     except ValueError as e:
         raise HTTPException(status_code=404, detail=str(e))
     return await crud.update_card(conn, card_id, new_card)
