@@ -1,9 +1,9 @@
-from pydantic import BaseModel
+from .base import CamelCaseBaseModel
 
 __all__ = ["TrainRecord", "TrainRecordCreate"]
 
 
-class TrainRecordCreate(BaseModel):
+class TrainRecordCreate(CamelCaseBaseModel):
     meta_data: str
 
 
