@@ -12,24 +12,24 @@ __all__ = [
 
 async def get_collection_cards(
         conn: AsyncConnection, collection_id: int
-) -> list[Card]:
-    query = select(CardTable.c[*Card.model_fields]).join(
+) -> list[int]:
+    query = select(CardTable.c.id).join(
         CardCollectionTable, CardTable.c.id == CardCollectionTable.c.card_id
     ).where(CardCollectionTable.c.collection_id == collection_id)
     result = await conn.execute(query)
-    return [Card(**card) for card in result.mappings().all()]
+    return [card['id'] for card in result.mappings().all()]
 
 
 async def get_user_card_collections(
         conn: AsyncConnection, user_id: int, card_id: int
-) -> list[Collection]:
-    query = select(CollectionTable.c[*Collection.model_fields]).join(
+) -> list[int]:
+    query = select(CollectionTable.c.id).join(
         CardCollectionTable, CollectionTable.c.id == CardCollectionTable.c.collection_id
     ).where(
         CollectionTable.c.owner_id == user_id, CardCollectionTable.c.card_id == card_id
     )
     result = await conn.execute(query)
-    return [Collection(**collection) for collection in result.mappings().all()]
+    return [collection['id'] for collection in result.mappings().all()]
 
 
 async def _fetch_exist_collections(conn: AsyncConnection, collections: list[int]) -> list[int]:

@@ -18,7 +18,12 @@ async def read_collection(conn: DBConnection, collection_id: int) -> Collection:
     return collection
 
 
-@router.get("/", response_model=list[Collection])
+@router.get("/", response_model=list[int], description="Returns collections' ids")
+async def read_collections(conn: DBConnection, limit: int = 100, skip: int = 0) -> list[int]:
+    return await crud.get_collections_ids(conn, limit=limit, skip=skip)
+
+
+@router.get("/full", response_model=list[Collection], description="Returns collections' full data objects")
 async def read_collections(conn: DBConnection, limit: int = 100, skip: int = 0) -> list[Collection]:
     return await crud.get_collections(conn, limit=limit, skip=skip)
 
@@ -55,8 +60,8 @@ async def update_collection(
     return await crud.update_collection(conn, collection_id, new_collection)
 
 
-@router.get("/{collection_id}/cards", response_model=list[Card])
-async def read_collection_cards(conn: DBConnection, collection_id: int) -> list[Card]:
+@router.get("/{collection_id}/cards", response_model=list[int])
+async def read_collection_cards(conn: DBConnection, collection_id: int) -> list[int]:
     try:
         await crud.check_collection_id(conn, collection_id)
     except ValueError as e:

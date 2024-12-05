@@ -56,10 +56,10 @@ async def update_card(
     return await crud.update_card(conn, card_id, new_card)
 
 
-@router.get("/{card_id}/collections")
+@router.get("/{card_id}/collections", response_model=list[int])
 async def read_card_collections(
         conn: DBConnection, user_id: UserID, card_id: int
-) -> list[Collection]:
+) -> list[int]:
     try:
         await crud.check_user_id(conn, user_id)
         await crud.check_card_id(conn, user_id, card_id)

@@ -59,10 +59,10 @@ async def authenticate_user(conn: DBConnection, response: Response, user_data: U
     return user
 
 
-@router.get("/cards", response_model=list[Card])
+@router.get("/cards", response_model=list[int])
 async def read_cards(
         conn: DBConnection, user_id: UserID, skip: int = 0, limit: int | None = None
-) -> list[Card]:
+) -> list[int]:
     try:
         await crud.check_user_id(conn, user_id)
     except ValueError as e:
@@ -70,10 +70,10 @@ async def read_cards(
     return await crud.get_user_cards(conn, user_id, limit=limit, skip=skip)
 
 
-@router.get("/collections", response_model=list[Collection])
+@router.get("/collections", response_model=list[int])
 async def read_collections(
         conn: DBConnection, user_id: UserID, skip: int = 0, limit: int | None = None
-) -> list[Collection]:
+) -> list[int]:
     try:
         await crud.check_user_id(conn, user_id)
     except ValueError as e:
