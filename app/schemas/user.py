@@ -1,9 +1,11 @@
-from pydantic import BaseModel, Field, EmailStr
+from pydantic import Field, EmailStr
+
+from .base import CamelCaseBaseModel
 
 __all__ = ["User", "UserAuth", "UserBase", "UserCreate"]
 
 
-class UserBase(BaseModel):
+class UserBase(CamelCaseBaseModel):
     nickname: str = Field(max_length=50)
     email: EmailStr
 
@@ -16,6 +18,6 @@ class User(UserBase):
     id: int
 
 
-class UserAuth(BaseModel):
+class UserAuth(CamelCaseBaseModel):
     email: EmailStr
     password: str = Field(min_length=13, max_length=64)

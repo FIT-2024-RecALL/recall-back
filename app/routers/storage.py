@@ -2,7 +2,7 @@ from fastapi import APIRouter, HTTPException, UploadFile, File
 from fastapi.responses import StreamingResponse, Response
 from urllib.parse import quote
 
-import app.crud as crud
+from app import crud, DBConnection, UserID
 from app.schemas import FileUploadedScheme
 
 
@@ -14,27 +14,39 @@ router = APIRouter(
 
 @router.get('/{user_id}/{filename}', response_class=StreamingResponse)
 def get_file(user_id: int, filename: str):
+    
+    full_path = f'{user_id}/{filename}'
+    if not crud.is_file_exists(full_path):
+        raise HTTPException(404, "File not found")
     try:
         return StreamingResponse(
-            crud.get_file_stream(f'{user_id}/{filename}'),
+            crud.get_file_stream(full_path),
             media_type="application/octet-stream",
             headers={"Content-Disposition": f"attachment; filename={filename}"}
         )
-    except:
-        raise HTTPException(404, "File not found")
+    except ValueError as e:
+        raise HTTPException(404, f"File not found: {str(e)}")
     
 
-@router.get('/{user_id}', response_model=list[FileUploadedScheme])
-def list_files(user_id: int):
+@router.get('/', response_model=list[FileUploadedScheme])
+async def list_files(conn: DBConnection, user_id: UserID):
+    try:
+        await crud.check_user_id(conn, user_id)
+    except ValueError as e:
+        raise HTTPException(401, str(e))
     return [
         FileUploadedScheme(url=f"/storage/{quote(obj.object_name)}")
         for obj in crud.get_files_list(user_id)
     ]
 
 
-@router.post('/{user_id}', response_model=FileUploadedScheme)
-def add_file(user_id: int, file: UploadFile = File(...)):
-    # TODO: User is owner checking
+@router.post('/', response_model=FileUploadedScheme)
+async def add_file(conn: DBConnection, user_id: UserID, file: UploadFile = File(...)):
+    try:
+        await crud.check_user_id(conn, user_id)
+    except ValueError as e:
+        raise HTTPException(401, str(e))
+
     try:
         obj = crud.upload_file(user_id, file)
         return FileUploadedScheme(
@@ -44,9 +56,13 @@ def add_file(user_id: int, file: UploadFile = File(...)):
         raise HTTPException(409, f"Failed to upload file: {str(e)}")
 
 
-@router.delete('/{user_id}/{filename}', status_code=200)
-def delete_file(user_id: int, filename: str):
-    # TODO: User is owner checking
+@router.delete('/{filename}', status_code=200)
+async def delete_file(conn: DBConnection, user_id: UserID, filename: str):
+    try:
+        await crud.check_user_id(conn, user_id)
+    except ValueError as e:
+        raise HTTPException(401, str(e))
+
     full_path = f'{user_id}/{filename}'
     if not crud.is_file_exists(full_path):
         raise HTTPException(404, "File not found")

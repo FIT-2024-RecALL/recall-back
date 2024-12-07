@@ -1,7 +1,7 @@
-from pydantic import BaseModel
+from .base import CamelCaseBaseModel
 
 __all__ = ["FileUploadedScheme"]
 
 
-class FileUploadedScheme(BaseModel):
+class FileUploadedScheme(CamelCaseBaseModel):
     url: str

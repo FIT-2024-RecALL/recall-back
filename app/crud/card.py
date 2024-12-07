@@ -34,13 +34,13 @@ async def get_cards(conn: AsyncConnection, *, limit: int | None, skip: int) -> l
     return [Card(**card) for card in result.mappings().all()]
 
 
-async def get_user_cards(conn: AsyncConnection, user_id: int, *, limit: int | None, skip: int) -> list[Card]:
-    query = select(CardTable.c[*Card.model_fields]).where(
+async def get_user_cards(conn: AsyncConnection, user_id: int, *, limit: int | None, skip: int) -> list[int]:
+    query = select(CardTable.c.id).where(
         CardTable.c.owner_id == user_id).offset(skip)
     if limit is not None:
         query = query.limit(limit)
     result = await conn.execute(query)
-    return [Card(**card) for card in result.mappings().all()]
+    return [card['id'] for card in result.mappings().all()]
 
 
 async def create_card(conn: AsyncConnection, user_id: int, card: CardCreate) -> Card:
