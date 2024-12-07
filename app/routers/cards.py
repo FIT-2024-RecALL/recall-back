@@ -1,8 +1,7 @@
 from fastapi import APIRouter, HTTPException, Response
 
 from app import crud, DBConnection, IntList, UserID
-from app.schemas import Card, CardCreate, Collection
-
+from app.schemas import Card, CardCreate, Collection, CollectionShort
 
 router = APIRouter(
     prefix="/cards",
@@ -56,10 +55,10 @@ async def update_card(
     return await crud.update_card(conn, card_id, new_card)
 
 
-@router.get("/{card_id}/collections", response_model=list[int])
+@router.get("/{card_id}/collections", response_model=list[CollectionShort])
 async def read_card_collections(
         conn: DBConnection, user_id: UserID, card_id: int
-) -> list[int]:
+) -> list[CollectionShort]:
     try:
         await crud.check_user_id(conn, user_id)
         await crud.check_card_id(conn, user_id, card_id)

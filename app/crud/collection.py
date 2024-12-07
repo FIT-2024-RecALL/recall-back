@@ -3,10 +3,10 @@ from sqlalchemy.ext.asyncio import AsyncConnection
 
 from app import CollectionTable, CardCollectionTable
 from app.crud.card import delete_cards
-from app.schemas import Collection, CollectionCreate
+from app.schemas import Collection, CollectionCreate, CollectionShort
 
 __all__ = [
-    "check_user_collection_id", "get_collection", "get_collections", "get_collections_ids",
+    "check_user_collection_id", "get_collection", "get_user_collections_short", "get_collections",
     "create_collection", "get_user_collections", "delete_collection", "update_collection",
     "check_collection_id"
 ]
@@ -43,23 +43,26 @@ async def get_collections(conn: AsyncConnection, limit: int | None, skip: int) -
     return [Collection(**collection) for collection in result.mappings().all()]
 
 
-async def get_collections_ids(conn: AsyncConnection, limit: int | None, skip: int) -> list[int]:
-    query = select(CollectionTable.c.id).offset(skip)
-    if limit is not None:
-        query = query.limit(limit)
-    result = await conn.execute(query)
-    return [collection['id'] for collection in result.mappings().all()]
-
-
-async def get_user_collections(
+async def get_user_collections_short(
         conn: AsyncConnection, user_id: int, limit: int | None, skip: int
-) -> list[int]:
-    query = select(CollectionTable.c.id).where(
+) -> list[CollectionShort]:
+    query = select(CollectionTable.c[*CollectionShort.model_fields]).where(
         CollectionTable.c.owner_id == user_id).offset(skip)
     if limit is not None:
         query = query.limit(limit)
     result = await conn.execute(query)
-    return [collection['id'] for collection in result.mappings().all()]
+    return [CollectionShort(**collection) for collection in result.mappings().all()]
+
+
+async def get_user_collections(
+        conn: AsyncConnection, user_id: int, limit: int | None, skip: int
+) -> list[Collection]:
+    query = select(CollectionTable.c[*Collection.model_fields]).where(
+        CollectionTable.c.owner_id == user_id).offset(skip)
+    if limit is not None:
+        query = query.limit(limit)
+    result = await conn.execute(query)
+    return [Collection(**collection) for collection in result.mappings().all()]
 
 
 async def create_collection(
