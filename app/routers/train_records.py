@@ -1,6 +1,7 @@
 from fastapi import APIRouter, HTTPException
 
-from app import crud, DBConnection, UserID
+from app import crud
+from app.helpers import DBConnection, UserID
 from app.schemas import TrainRecord, TrainRecordCreate
 
 

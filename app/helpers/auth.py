@@ -4,7 +4,7 @@ from fastapi import Depends, Request, HTTPException
 from jose import jwt, JWTError
 from passlib.context import CryptContext
 
-from .config import _settings
+from app.config import _settings
 
 __all__ = ["get_password_hash", "verify_password", "create_access_token", "get_profile_id"]
 

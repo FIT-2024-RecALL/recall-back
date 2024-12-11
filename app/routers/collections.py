@@ -1,6 +1,7 @@
 from fastapi import APIRouter, HTTPException, Response
 
-from app import crud, DBConnection, UserID
+from app import crud
+from app.helpers import DBConnection, UserID
 from app.schemas import Card, Collection, CollectionCreate
 
 
@@ -62,3 +63,15 @@ async def read_collection_cards(conn: DBConnection, collection_id: int) -> list[
     except ValueError as e:
         raise HTTPException(status_code=404, detail=str(e))
     return await crud.get_collection_cards(conn, collection_id)
+
+
+@router.get("/{collection_id}/cards/train", response_model=list[int])
+async def train_cards(
+        conn: DBConnection, user_id: UserID, collection_id: int, limit: int = 100
+) -> list[int]:
+    try:
+        await crud.check_user_id(conn, user_id)
+        await crud.check_user_collection_id(conn, user_id, collection_id)
+    except ValueError as e:
+        raise HTTPException(status_code=404, detail=str(e))
+

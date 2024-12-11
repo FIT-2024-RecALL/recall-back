@@ -1,6 +1,7 @@
 from fastapi import APIRouter, HTTPException, Response
 
-from app import crud, DBConnection, IntList, UserID
+from app import crud
+from app.helpers import DBConnection, IntList, UserID
 from app.schemas import Card, CardCreate, Collection
 
 
@@ -8,10 +9,6 @@ router = APIRouter(
     prefix="/cards",
     tags=["card"]
 )
-
-@router.get("/training/{card_count}", response_model=list[int])
-async def train_cards(conn: DBConnection, user_id: UserID, card_count: int) -> list[int]:
-    ...
 
 
 @router.get("/{card_id}", response_model=Card)

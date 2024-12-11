@@ -2,7 +2,7 @@ from sqlalchemy import select, insert, exists, delete, update
 from sqlalchemy.ext.asyncio import AsyncConnection
 
 from app import CollectionTable, CardCollectionTable
-from app.crud.card import delete_cards
+from app.crud import delete_cards
 from app.schemas import Collection, CollectionCreate
 
 __all__ = [

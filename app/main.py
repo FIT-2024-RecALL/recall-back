@@ -34,7 +34,7 @@ app.include_router(storage.router)
 ### ВРЕМЕННЫЙ КОД, КОТОРЫЙ БУДЕТ УДАЛЕН ПОЗДНЕЕ ###
 ###################################################
 from fastapi import status
-from .dependencies import DBConnection
+from app.helpers.dependencies import DBConnection
 from app.schemas import Card, TrainRecord, User, Collection
 from app import crud
 
