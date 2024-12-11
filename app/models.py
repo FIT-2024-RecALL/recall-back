@@ -52,6 +52,7 @@ TrainRecordTable = Table(
     Column("id", Integer, primary_key=True),
     Column("card_id", ForeignKey("cards.id", ondelete="CASCADE"), index=True, nullable=False),
     Column("user_id", ForeignKey("users.id", ondelete="CASCADE"), index=True, nullable=False),
-    Column("repeat_date", Date, nullable=True),
+    Column("repeat_date", Date, nullable=False),
+    Column("next_repeat_date", Date, nullable=False),
     Column("progress", Numeric(), nullable=False)
 )
