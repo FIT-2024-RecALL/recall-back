@@ -1,6 +1,4 @@
-from datetime import datetime, timedelta, timezone
-
-from sqlalchemy import select, insert, desc
+from sqlalchemy import select, insert, desc, text, func
 from sqlalchemy.ext.asyncio import AsyncConnection
 
 from app import TrainRecordTable
@@ -30,18 +28,18 @@ async def get_user_card_last_train_record(
     return result if result is None else TrainRecord(**result)
 
 
-## TODO: В БУДУЮЩЕМ ВЫЧИСЛЯТЬ ДАТУ НА СТОРОНЕ БАЗЫ ДАННЫХ
 async def create_train_record(
-        conn: AsyncConnection, card_id: int, user_id: int, train_data: TrainRecordCreate, prev_progress: float
-):
-    repeat_date: datetime = datetime.now(timezone.utc)
-    progress: float = compute_new_card_progress(prev_progress, train_data.mark)
-    interval_minutes_duration: int = compute_repeat_interval_duration(progress)
-    next_repeat_date: datetime = repeat_date + timedelta(minutes=interval_minutes_duration)
+        conn: AsyncConnection, card_id: int, user_id: int, prev_progress: float,
+        train_data: TrainRecordCreate
+) -> TrainRecord:
+    repeat_date = func.now()
+    progress = compute_new_card_progress(prev_progress, train_data.mark)
+    repeat_interval = text(f"INTERVAL {compute_repeat_interval_duration(progress)} MINUTES")
     insert_query = insert(TrainRecordTable).values(
-        card_id=card_id, user_id=user_id, **train_data.model_dump(),
-        repeat_date=repeat_date, next_repeat_date=next_repeat_date, progress=progress
+        card_id=card_id, user_id=user_id,
+        progress=progress, **train_data.model_dump(),
+        repeat_date=repeat_date, next_repeat_date=repeat_date+repeat_interval
     ).returning(TrainRecordTable.c[*TrainRecord.model_fields])
-    result = await conn.execute(insert_query)
+    result = (await conn.execute(insert_query)).mappings().first()  ## result не может быть None
     await conn.commit()
-    return result.mappings().first()
+    return TrainRecord(**result)
