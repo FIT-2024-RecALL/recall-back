@@ -6,9 +6,11 @@ from app.crud.card import delete_cards
 from app.schemas import Collection, CollectionCreate, CollectionShort
 
 __all__ = [
-    "check_user_collection_id", "get_collection", "get_user_collections_short", "get_collections",
-    "create_collection", "get_user_collections", "delete_collection", "update_collection",
-    "check_collection_id"
+    "check_user_collection_id", "check_collection_id",
+    "get_collection",
+    "get_collections", "get_collections_short",
+    "get_user_collections", "get_user_collections_short",
+    "create_collection", "delete_collection", "update_collection",
 ]
 
 
@@ -41,6 +43,14 @@ async def get_collections(conn: AsyncConnection, limit: int | None, skip: int) -
         query = query.limit(limit)
     result = await conn.execute(query)
     return [Collection(**collection) for collection in result.mappings().all()]
+
+
+async def get_collections_short(conn: AsyncConnection, limit: int | None, skip: int) -> list[CollectionShort]:
+    query = select(CollectionTable.c[*CollectionShort.model_fields]).offset(skip)
+    if limit is not None:
+        query = query.limit(limit)
+    result = await conn.execute(query)
+    return [CollectionShort(**collection) for collection in result.mappings().all()]
 
 
 async def get_user_collections_short(

@@ -1,8 +1,7 @@
 from fastapi import APIRouter, HTTPException, Response
 
 from app import crud, DBConnection, UserID
-from app.schemas import Card, Collection, CollectionCreate
-
+from app.schemas import Card, Collection, CollectionCreate, CollectionShort
 
 router = APIRouter(
     prefix="/collections",
@@ -18,9 +17,9 @@ async def read_collection(conn: DBConnection, collection_id: int) -> Collection:
     return collection
 
 
-@router.get("/", response_model=list[int], description="Returns collections' ids")
-async def read_collections(conn: DBConnection, limit: int = 100, skip: int = 0) -> list[int]:
-    return await crud.get_collections_ids(conn, limit=limit, skip=skip)
+@router.get("/", response_model=list[CollectionShort], description="Returns collections' ids")
+async def read_collections(conn: DBConnection, limit: int = 100, skip: int = 0) -> list[CollectionShort]:
+    return await crud.get_collections_short(conn, limit=limit, skip=skip)
 
 
 @router.get("/full", response_model=list[Collection], description="Returns collections' full data objects")

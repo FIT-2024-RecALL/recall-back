@@ -17,7 +17,7 @@ async def get_collection_cards(
         CardCollectionTable, CardTable.c.id == CardCollectionTable.c.card_id
     ).where(CardCollectionTable.c.collection_id == collection_id)
     result = await conn.execute(query)
-    return [card['id'] for card in result.mappings().all()]
+    return list(result.scalars().all())
 
 
 async def get_user_card_collections(

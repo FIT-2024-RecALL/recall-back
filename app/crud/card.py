@@ -40,7 +40,7 @@ async def get_user_cards(conn: AsyncConnection, user_id: int, *, limit: int | No
     if limit is not None:
         query = query.limit(limit)
     result = await conn.execute(query)
-    return [card['id'] for card in result.mappings().all()]
+    return list(result.scalars().all())
 
 
 async def create_card(conn: AsyncConnection, user_id: int, card: CardCreate) -> Card:
