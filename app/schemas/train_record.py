@@ -9,7 +9,7 @@ class TrainRecordCreate(BaseModel):
     mark: int = Field(ge=1, le=5)
 
 
-class TrainRecord(BaseModel):
+class TrainRecord(TrainRecordCreate):
     id: int
     card_id: int
     user_id: int

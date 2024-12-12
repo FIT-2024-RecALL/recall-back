@@ -24,7 +24,7 @@ async def create_train_record(
         raise HTTPException(status_code=400, detail=str(e))
     last_train_record = await crud.get_user_card_last_train_record(conn, user_id, card_id)
     last_progress: float = 0.0 if last_train_record is None else last_train_record.progress
-    return await crud.create_train_record(conn, card_id, user_id, train_record.mark, last_progress)
+    return await crud.create_train_record(conn, card_id, user_id, train_record, last_progress)
 
 
 @router.get("/{card_id}", response_model=Union[TrainRecord, None])
