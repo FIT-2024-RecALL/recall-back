@@ -1,13 +1,22 @@
 from sqlalchemy import select, insert, delete
 from sqlalchemy.ext.asyncio import AsyncConnection
 
-from app import CardTable, CardCollectionTable, CollectionTable
+from app.models import CardTable, CardCollectionTable, CollectionTable
 from app.schemas import Card, Collection
 
 __all__ = [
     "get_collection_cards", "get_user_card_collections", "create_card_collection_connections",
-    "update_card_collection_connections"
+    "update_card_collection_connections", "get_collection_card_ids"
 ]
+
+
+async def get_collection_card_ids(
+        conn: AsyncConnection, collection_id: int
+) -> list[int]:
+    query = select(CardCollectionTable.c.card_id).where(
+        CardCollectionTable.c.collection_id == collection_id
+    )
+    return list((await conn.execute(query)).scalars())
 
 
 async def get_collection_cards(

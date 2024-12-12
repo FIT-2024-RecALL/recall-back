@@ -67,11 +67,11 @@ async def read_collection_cards(conn: DBConnection, collection_id: int) -> list[
 
 @router.get("/{collection_id}/cards/train", response_model=list[int])
 async def train_cards(
-        conn: DBConnection, user_id: UserID, collection_id: int, limit: int = 100
+        conn: DBConnection, user_id: UserID, collection_id: int
 ) -> list[int]:
     try:
         await crud.check_user_id(conn, user_id)
         await crud.check_user_collection_id(conn, user_id, collection_id)
     except ValueError as e:
         raise HTTPException(status_code=404, detail=str(e))
-
+    return await crud.get_training_cards(conn, collection_id)

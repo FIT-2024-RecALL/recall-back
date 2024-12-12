@@ -1,7 +1,7 @@
 from sqlalchemy import select, insert, delete, update
 from sqlalchemy.ext.asyncio import AsyncConnection
 
-from app import CardTable
+from app.models import CardTable
 from app.schemas import Card, CardCreate
 
 __all__ = [

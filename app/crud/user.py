@@ -1,7 +1,7 @@
 from sqlalchemy import select, insert, exists, or_, delete, update
 from sqlalchemy.ext.asyncio import AsyncConnection
 
-from app import UserTable
+from app.models import UserTable
 from app.helpers import get_password_hash, verify_password
 from app.schemas import User, UserAuth, UserBase, UserCreate
 
