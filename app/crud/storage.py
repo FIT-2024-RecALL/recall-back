@@ -1,3 +1,4 @@
+import os.path
 from typing import AsyncGenerator, Iterator, Any
 
 from fastapi import UploadFile
@@ -39,9 +40,7 @@ def get_files_list(user_id: int) -> Iterator[Object]:
 
 def upload_file(user_id: int, file: UploadFile) -> ObjectWriteResult:
     full_path = f'{user_id}/{file.filename}'
-    name_parts = file.filename.split('.')
-    name = '.'.join(name_parts[:-1])
-    extension = name_parts[-1]
+    name, extension = os.path.splitext(file.filename)
     # TODO: Here can be some additional extension's checks
     index = 0
     while is_file_exists(full_path):
