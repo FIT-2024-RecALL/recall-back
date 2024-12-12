@@ -36,15 +36,15 @@ async def create_train_record(
 ) -> TrainRecord:
     repeat_date = func.now()
     progress = compute_new_card_progress(prev_progress, train_data.mark)
-    repeat_interval = text(f"INTERVAL {compute_repeat_interval_duration(progress)} MINUTES")
+    repeat_interval = text(f"INTERVAL '{compute_repeat_interval_duration(progress)} minutes'")
     insert_query = insert(TrainRecordTable).values(
         card_id=card_id, user_id=user_id,
         progress=progress, **train_data.model_dump(),
         repeat_date=repeat_date, next_repeat_date=repeat_date+repeat_interval
     ).returning(TrainRecordTable.c[*TrainRecord.model_fields])
-    result = (await conn.execute(insert_query)).mappings().first()  ## result не может быть None
+    result = await conn.execute(insert_query)  ## result не может быть None
     await conn.commit()
-    return TrainRecord(**result)
+    return TrainRecord(**result.mappings().first())
 
 
 async def get_training_cards(conn: AsyncConnection, collection_id: int) -> list[int]:
@@ -58,6 +58,6 @@ async def get_training_cards(conn: AsyncConnection, collection_id: int) -> list[
     not_training_card_ids: set[int] = set((await conn.execute(
         select(TrainRecordTable.c.card_id)
         .join(subquery, TrainRecordTable.c.id == subquery.c.last_id)
-        .where(TrainRecordTable.c.next_repeat_date < func.now())
+        .where(TrainRecordTable.c.next_repeat_date > func.now())
     )).scalars())
     return list(collection_card_ids.difference(not_training_card_ids))
