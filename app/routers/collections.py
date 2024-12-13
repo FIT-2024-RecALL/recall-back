@@ -17,14 +17,9 @@ async def read_collection(conn: DBConnection, collection_id: int) -> Collection:
     return collection
 
 
-@router.get("/list", response_model=list[CollectionShort], description="Returns collections' list without descriptions")
-async def read_collections_list(conn: DBConnection, limit: int = 100, skip: int = 0) -> list[CollectionShort]:
+@router.get("/", response_model=list[CollectionShort], description="Returns collections' list without descriptions")
+async def read_collections(conn: DBConnection, limit: int = 100, skip: int = 0) -> list[CollectionShort]:
     return await crud.get_collections_short(conn, limit=limit, skip=skip)
-
-
-@router.get("/list/full", response_model=list[Collection], description="Returns collections' full data objects")
-async def read_collections_list_full(conn: DBConnection, limit: int = 100, skip: int = 0) -> list[Collection]:
-    return await crud.get_collections(conn, limit=limit, skip=skip)
 
 
 @router.post("/", response_model=Collection)
