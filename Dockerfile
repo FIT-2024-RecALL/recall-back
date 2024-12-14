@@ -5,7 +5,7 @@ FROM python:3.11-slim AS builder
 RUN apt-get update && apt-get install -y curl
 
 # Установка зависимостей Poetry
-curl -sSL https://install.python-poetry.org | python3 - --version 1.7.0
+RUN curl -sSL https://install.python-poetry.org | python3 - --version 1.7.0
 
 # Добавление Poetry в PATH
 ENV PATH="/root/.local/bin:$PATH"
