@@ -2,8 +2,8 @@
 
 FROM python:3.11-slim AS builder
 
-RUN apt-get update && apt-get install -y curl build-essential libpq-dev \
-    && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/* \
+#RUN apt-get update && apt-get install -y curl build-essential libpq-dev \
+#    && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/* \
 
 # Установка зависимостей Poetry
 RUN curl -sSL https://install.python-poetry.org | POETRY_VERSION=1.8.0 python3 -
