@@ -1,7 +1,7 @@
 from sqlalchemy import select, insert, delete
 from sqlalchemy.ext.asyncio import AsyncConnection
 
-from app import CardTable, CardCollectionTable, CollectionTable
+from app.models import CardCollectionTable, CollectionTable
 from app.schemas import CollectionShort
 
 __all__ = [
@@ -13,11 +13,10 @@ __all__ = [
 async def get_collection_cards(
         conn: AsyncConnection, collection_id: int
 ) -> list[int]:
-    query = select(CardTable.c.id).join(
-        CardCollectionTable, CardTable.c.id == CardCollectionTable.c.card_id
-    ).where(CardCollectionTable.c.collection_id == collection_id)
-    result = await conn.execute(query)
-    return list(result.scalars().all())
+    query = select(CardCollectionTable.c.card_id).where(
+        CardCollectionTable.c.collection_id == collection_id
+    )
+    return list((await conn.execute(query)).scalars().all())
 
 
 async def get_user_card_collections(
@@ -32,9 +31,13 @@ async def get_user_card_collections(
     return [CollectionShort(**collection) for collection in result.mappings().all()]
 
 
-async def _fetch_exist_collections(conn: AsyncConnection, collections: list[int]) -> list[int]:
+async def _fetch_exist_user_collections(
+        conn: AsyncConnection, user_id: int, collections: list[int]
+) -> list[int]:
     exist_unique_collections = await conn.execute(
-        select(CollectionTable.c.id).where(CollectionTable.c.id.in_(set(collections)))
+        select(CollectionTable.c.id).where(
+            CollectionTable.c.id.in_(set(collections)), CollectionTable.c.owner_id == user_id
+        )
     )
     return list(exist_unique_collections.scalars().all())
 
@@ -50,10 +53,10 @@ async def _set_card_collection_connections(
 
 
 async def create_card_collection_connections(
-        conn: AsyncConnection, card_id: int, collections: list[int]
+        conn: AsyncConnection, user_id: int, card_id: int, collections: list[int]
 ) -> None:
-    new_collections: list[int] = await _fetch_exist_collections(conn, collections)
-    if len(new_collections) < 1:
+    new_collections = await _fetch_exist_user_collections(conn, user_id, collections)
+    if not new_collections:
         raise ValueError("Collections not found")
     await _set_card_collection_connections(conn, card_id, new_collections)
 
@@ -78,10 +81,10 @@ async def _unset_card_collection_connections(
 
 
 async def update_card_collection_connections(
-        conn: AsyncConnection, card_id: int, collections: list[int]
+        conn: AsyncConnection, user_id: int, card_id: int, collections: list[int]
 ) -> None:
-    request_collections: set[int] = set(await _fetch_exist_collections(conn, collections))
-    if len(request_collections) < 1:
+    request_collections: set[int] = set(await _fetch_exist_user_collections(conn, user_id, collections))
+    if not request_collections:
         raise ValueError("Collections not found")
     old_collections: set[int] = set(await _fetch_card_collections(conn, card_id))
     delete_collections: list[int] = list(old_collections.difference(request_collections))

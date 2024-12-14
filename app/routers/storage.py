@@ -2,7 +2,8 @@ from fastapi import APIRouter, HTTPException, UploadFile, File
 from fastapi.responses import StreamingResponse, Response
 from urllib.parse import quote
 
-from app import crud, DBConnection, UserID
+from app import crud
+from app.helpers import DBConnection, UserID
 from app.schemas import FileUploadedScheme
 
 
@@ -26,7 +27,7 @@ def get_file(user_id: int, filename: str):
         )
     except ValueError as e:
         raise HTTPException(404, f"File not found: {str(e)}")
-    
+
 
 @router.get('/', response_model=list[FileUploadedScheme])
 async def list_files(conn: DBConnection, user_id: UserID):
