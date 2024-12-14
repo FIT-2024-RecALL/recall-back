@@ -15,7 +15,7 @@ WORKDIR /code
 COPY pyproject.toml poetry.lock /code/
 
 # Устанавливаем зависимости с помощью Poetry
-RUN poetry config virtualenvs.create false && poetry install --no-dev --no-interaction --no-ansi
+RUN poetry config virtualenvs.create false && poetry install
 
 
 # Этап запуска
