@@ -6,7 +6,7 @@ FROM python:3.11-slim AS builder
 #    && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/* \
 
 # Установка зависимостей Poetry
-RUN curl -sSL https://install.python-poetry.org | POETRY_VERSION=1.8.0 python3 -
+RUN curl -sSL https://install.python-poetry.org | python3 - && poetry self update 1.8.0
 
 # Добавление Poetry в PATH
 ENV PATH="/root/.local/bin:$PATH"
