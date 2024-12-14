@@ -2,11 +2,10 @@
 
 FROM python:3.11-slim AS builder
 
-#RUN apt-get update && apt-get install -y curl build-essential libpq-dev \
-#    && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/* \
+RUN apt-get update && apt-get install -y curl
 
 # Установка зависимостей Poetry
-RUN curl -sSL https://install.python-poetry.org | python3 - && poetry self update 1.8.0
+curl -sSL https://install.python-poetry.org | python3 - --version 1.7.0
 
 # Добавление Poetry в PATH
 ENV PATH="/root/.local/bin:$PATH"
