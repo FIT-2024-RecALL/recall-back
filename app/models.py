@@ -1,4 +1,4 @@
-from sqlalchemy import Column, DateTime, ForeignKey, Integer, String, Table, MetaData, Numeric, func
+from sqlalchemy import Column, DateTime, ForeignKey, Integer, String, Table, MetaData, Numeric
 
 __all__ = [
     "UserTable", "CardTable", "CollectionTable", "CardCollectionTable", "TrainRecordTable"

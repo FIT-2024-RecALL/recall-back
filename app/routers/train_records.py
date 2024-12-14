@@ -1,5 +1,3 @@
-from typing import Union
-
 from fastapi import APIRouter, HTTPException
 
 from app import crud
@@ -19,7 +17,7 @@ async def read_card_last_train_record(
 ) -> TrainRecord | None:
     try:
         await crud.check_user_id(conn, user_id)
-        await crud.check_card_id(conn, user_id, card_id)
+        await crud.check_card_id(conn, card_id)
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
     return await crud.get_user_card_last_train_record(conn, user_id, card_id)
@@ -31,7 +29,7 @@ async def create_train_record(
 ):
     try:
         await crud.check_user_id(conn, user_id)
-        await crud.check_card_id(conn, user_id, card_id)
+        await crud.check_card_id(conn, card_id)
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
     last_train_record = await crud.get_user_card_last_train_record(conn, user_id, card_id)

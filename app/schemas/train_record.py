@@ -1,11 +1,13 @@
 from datetime import datetime
 
-from pydantic import BaseModel, Field
+from pydantic import Field
+
+from .base import CamelCaseBaseModel
 
 __all__ = ["TrainRecord", "TrainRecordCreate"]
 
 
-class TrainRecordCreate(BaseModel):
+class TrainRecordCreate(CamelCaseBaseModel):
     mark: int = Field(ge=1, le=5)
 
 

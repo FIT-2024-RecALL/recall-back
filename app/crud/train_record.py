@@ -1,7 +1,7 @@
 from sqlalchemy import select, insert, desc, text, func
 from sqlalchemy.ext.asyncio import AsyncConnection
 
-from .card_collection import get_collection_card_ids
+from .card_collection import get_collection_cards
 from app.models import TrainRecordTable
 from app.helpers import compute_new_card_progress, compute_repeat_interval_duration
 from app.schemas import TrainRecord, TrainRecordCreate
@@ -48,7 +48,7 @@ async def create_train_record(
 
 
 async def get_training_cards(conn: AsyncConnection, collection_id: int) -> list[int]:
-    collection_card_ids: set[int] = set(await get_collection_card_ids(conn, collection_id))
+    collection_card_ids: set[int] = set(await get_collection_cards(conn, collection_id))
     subquery = (
         select(TrainRecordTable.c.card_id, func.max(TrainRecordTable.c.id).label("last_id"))
         .where(TrainRecordTable.c.card_id.in_(collection_card_ids))

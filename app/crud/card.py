@@ -1,16 +1,22 @@
-from sqlalchemy import select, insert, delete, update
+from sqlalchemy import select, insert, delete, update, exists
 from sqlalchemy.ext.asyncio import AsyncConnection
 
 from app.models import CardTable
 from app.schemas import Card, CardCreate
 
 __all__ = [
-    "check_card_id", "get_card", "get_cards", "get_user_cards", "create_card", "delete_card",
-    "update_card", "delete_cards"
+    "check_card_id", "check_user_card_id", "get_card", "get_cards", "get_user_cards",
+    "create_card", "delete_card", "update_card", "delete_cards"
 ]
 
 
-async def check_card_id(conn: AsyncConnection, user_id: int, card_id: int) -> None:
+async def check_card_id(conn: AsyncConnection, card_id: int) -> None:
+    result = await conn.execute(select(exists().where(CardTable.c.id == card_id)))
+    if not result.scalar():
+        raise ValueError("Card not found")
+
+
+async def check_user_card_id(conn: AsyncConnection, user_id: int, card_id: int) -> None:
     result = await conn.execute(select(CardTable.c.owner_id).where(
         CardTable.c.id == card_id).limit(1)
     )
@@ -34,13 +40,13 @@ async def get_cards(conn: AsyncConnection, *, limit: int | None, skip: int) -> l
     return [Card(**card) for card in result.mappings().all()]
 
 
-async def get_user_cards(conn: AsyncConnection, user_id: int, *, limit: int | None, skip: int) -> list[Card]:
-    query = select(CardTable.c[*Card.model_fields]).where(
+async def get_user_cards(conn: AsyncConnection, user_id: int, *, limit: int | None, skip: int) -> list[int]:
+    query = select(CardTable.c.id).where(
         CardTable.c.owner_id == user_id).offset(skip)
     if limit is not None:
         query = query.limit(limit)
     result = await conn.execute(query)
-    return [Card(**card) for card in result.mappings().all()]
+    return list(result.scalars().all())
 
 
 async def create_card(conn: AsyncConnection, user_id: int, card: CardCreate) -> Card:

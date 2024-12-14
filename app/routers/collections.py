@@ -2,7 +2,7 @@ from fastapi import APIRouter, HTTPException, Response
 
 from app import crud
 from app.helpers import DBConnection, UserID
-from app.schemas import Card, Collection, CollectionCreate
+from app.schemas import Collection, CollectionCreate, CollectionShort
 
 
 router = APIRouter(
@@ -19,9 +19,9 @@ async def read_collection(conn: DBConnection, collection_id: int) -> Collection:
     return collection
 
 
-@router.get("/", response_model=list[Collection])
-async def read_collections(conn: DBConnection, limit: int = 100, skip: int = 0) -> list[Collection]:
-    return await crud.get_collections(conn, limit=limit, skip=skip)
+@router.get("/", response_model=list[CollectionShort], description="Returns collections' list without descriptions")
+async def read_collections(conn: DBConnection, limit: int = 100, skip: int = 0) -> list[CollectionShort]:
+    return await crud.get_collections_short(conn, limit=limit, skip=skip)
 
 
 @router.post("/", response_model=Collection)
@@ -56,8 +56,8 @@ async def update_collection(
     return await crud.update_collection(conn, collection_id, new_collection)
 
 
-@router.get("/{collection_id}/cards", response_model=list[Card])
-async def read_collection_cards(conn: DBConnection, collection_id: int) -> list[Card]:
+@router.get("/{collection_id}/cards", response_model=list[int])
+async def read_collection_cards(conn: DBConnection, collection_id: int) -> list[int]:
     try:
         await crud.check_collection_id(conn, collection_id)
     except ValueError as e:
