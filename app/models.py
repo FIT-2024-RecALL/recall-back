@@ -1,4 +1,4 @@
-from sqlalchemy import Column, ForeignKey, Integer, String, Table, MetaData
+from sqlalchemy import Column, DateTime, ForeignKey, Integer, String, Table, MetaData, Numeric
 
 __all__ = [
     "UserTable", "CardTable", "CollectionTable", "CardCollectionTable", "TrainRecordTable"
@@ -52,5 +52,8 @@ TrainRecordTable = Table(
     Column("id", Integer, primary_key=True),
     Column("card_id", ForeignKey("cards.id", ondelete="CASCADE"), index=True, nullable=False),
     Column("user_id", ForeignKey("users.id", ondelete="CASCADE"), index=True, nullable=False),
-    Column("meta_data", String, nullable=True)
+    Column("mark", Integer, nullable=False),
+    Column("progress", Numeric(5, 4), nullable=False),
+    Column("repeat_date", DateTime(timezone=True), nullable=False),
+    Column("next_repeat_date", DateTime(timezone=True), nullable=False),
 )

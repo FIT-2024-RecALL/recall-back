@@ -1,7 +1,8 @@
 from fastapi import APIRouter, HTTPException, Response
 
-from app import crud, DBConnection, IntList, UserID
-from app.schemas import Card, CardCreate, Collection
+from app import crud
+from app.helpers import DBConnection, IntList, UserID
+from app.schemas import Card, CardCreate, CollectionShort
 
 
 router = APIRouter(
@@ -25,7 +26,7 @@ async def create_card(
     result_card: Card = await crud.create_card(conn, user_id, card)
     try:
         await crud.check_user_id(conn, user_id)
-        await crud.create_card_collection_connections(conn, result_card.id, collections)
+        await crud.create_card_collection_connections(conn, user_id, result_card.id, collections)
     except ValueError as e:
         raise HTTPException(status_code=404, detail=str(e))
     return result_card
@@ -35,7 +36,7 @@ async def create_card(
 async def delete_card(conn: DBConnection, user_id: UserID, card_id: int):
     try:
         await crud.check_user_id(conn, user_id)
-        await crud.check_card_id(conn, user_id, card_id)
+        await crud.check_user_card_id(conn, user_id, card_id)
     except ValueError as e:
         raise HTTPException(status_code=404, detail=str(e))
     await crud.delete_card(conn, card_id)
@@ -49,20 +50,20 @@ async def update_card(
 ) -> Card:
     try:
         await crud.check_user_id(conn, user_id)
-        await crud.check_card_id(conn, user_id, card_id)
-        await crud.update_card_collection_connections(conn, card_id, collections)
+        await crud.check_user_card_id(conn, user_id, card_id)
+        await crud.update_card_collection_connections(conn, user_id, card_id, collections)
     except ValueError as e:
         raise HTTPException(status_code=404, detail=str(e))
     return await crud.update_card(conn, card_id, new_card)
 
 
-@router.get("/{card_id}/collections")
+@router.get("/{card_id}/collections", response_model=list[CollectionShort])
 async def read_card_collections(
         conn: DBConnection, user_id: UserID, card_id: int
-) -> list[Collection]:
+) -> list[CollectionShort]:
     try:
         await crud.check_user_id(conn, user_id)
-        await crud.check_card_id(conn, user_id, card_id)
+        await crud.check_user_card_id(conn, user_id, card_id)
     except ValueError as e:
         raise HTTPException(status_code=404, detail=str(e))
     return await crud.get_user_card_collections(conn, user_id, card_id)

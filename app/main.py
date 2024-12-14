@@ -4,7 +4,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 import uvicorn
 
-from app.database import create_db_tables, close_db_connections
+from .database import create_db_tables, close_db_connections
 from app.routers import cards, collections, train_records, users, storage
 
 
@@ -34,7 +34,7 @@ app.include_router(storage.router)
 ### ВРЕМЕННЫЙ КОД, КОТОРЫЙ БУДЕТ УДАЛЕН ПОЗДНЕЕ ###
 ###################################################
 from fastapi import status
-from .dependencies import DBConnection
+from app.helpers.dependencies import DBConnection
 from app.schemas import Card, TrainRecord, User, Collection
 from app import crud
 
