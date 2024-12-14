@@ -11,7 +11,7 @@ services:
     depends_on:
       postgres:
         condition: service_healthy
-      minio-setup:
+      minio:
         condition: service_healthy
     networks:
       - dev
@@ -20,7 +20,6 @@ services:
     depends_on:
       minio:
         condition: service_healthy
-        restart: true
     image: minio/mc:latest
     env_file:
       - $RECALL_PROJECT_PATH/config/minio-server.env
@@ -31,6 +30,7 @@ services:
       - minio-volume:/mnt/minio-volume
       - $RECALL_PROJECT_PATH/config/minio-setup.sh:/setup.sh
     entrypoint: bash /setup.sh
+    restart: always
     networks:
       - dev
   minio:
