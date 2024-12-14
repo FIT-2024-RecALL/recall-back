@@ -30,8 +30,10 @@ ENV PYTHONUNBUFFERED=1
 ENV PYTHONPATH=/code
 
 COPY --from=builder /code /code
-COPY . /code
 
 EXPOSE 8000
+
+COPY . /code
+
 CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]
 #CMD ["poetry", "run", "python", "-m", "app.main"]
