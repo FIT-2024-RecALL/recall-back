@@ -21,16 +21,11 @@ RUN poetry config virtualenvs.create false && poetry install --no-dev --no-inter
 # Этап запуска
 FROM python:3.11-slim AS runtime
 
-WORKDIR /code
-
-# Установка переменных окружения
-ENV PYTHONUNBUFFERED=1
-ENV PYTHONPATH=/code
-
-COPY --from=builder /code /code
+COPY --from=builder /code .
 
 EXPOSE 8000
 
-COPY . /code
+COPY . .
 
-CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]
+#CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]
+CMD ["poetry", "run", "python", "-m", "app.main"]
