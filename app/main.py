@@ -64,6 +64,6 @@ async def read_collections(conn: DBConnection, skip: int = 0, limit: int | None 
 ### БУДЕТ УДАЛЕН ПОЗДНЕЕ ###
 ############################
 
-
-if __name__ == "__main__":
-    uvicorn.run("app.main:app", host="0.0.0.0", port=8000, reload=True)
+def fake_main():
+    if __name__ == "__main__":
+        uvicorn.run("app.main:app", host="0.0.0.0", port=8000, reload=True)
