@@ -31,8 +31,8 @@ async def get_user_card_last_train_record(
 
 
 async def create_train_record(
-        conn: AsyncConnection, card_id: int, user_id: int, prev_progress: float,
-        train_data: TrainRecordCreate
+        conn: AsyncConnection, card_id: int, user_id: int,
+        train_data: TrainRecordCreate, prev_progress: float
 ) -> TrainRecord:
     repeat_date = func.now()
     progress = compute_new_card_progress(prev_progress, train_data.mark)
@@ -59,5 +59,5 @@ async def get_training_cards(conn: AsyncConnection, collection_id: int) -> list[
         select(TrainRecordTable.c.card_id)
         .join(subquery, TrainRecordTable.c.id == subquery.c.last_id)
         .where(TrainRecordTable.c.next_repeat_date > func.now())
-    )).scalars())
+    )).scalars().all())
     return list(collection_card_ids.difference(not_training_card_ids))

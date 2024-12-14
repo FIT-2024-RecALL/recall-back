@@ -14,7 +14,7 @@ async def create_db_tables():
         await conn.run_sync(_metadata.create_all)
 
 
-## shell: python -c "import asyncio; from app import delete_tables; asyncio.run(delete_tables())"
+## shell: python -c "import asyncio; from app.database import delete_tables; asyncio.run(delete_tables())"
 async def delete_tables() -> None:
     async with __engine.begin() as conn:
         await conn.run_sync(_metadata.drop_all)
