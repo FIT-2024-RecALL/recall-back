@@ -1,9 +1,11 @@
-from pydantic import BaseModel, Field
+from pydantic import Field
 
-__all__ = ["Collection", "CollectionCreate"]
+from .base import CamelCaseBaseModel
+
+__all__ = ["Collection", "CollectionCreate", "CollectionShort"]
 
 
-class CollectionCreate(BaseModel):
+class CollectionCreate(CamelCaseBaseModel):
     title: str = Field(min_length=1, max_length=100)
     description: str | None = None
 
@@ -11,3 +13,9 @@ class CollectionCreate(BaseModel):
 class Collection(CollectionCreate):
     id: int
     owner_id: int
+
+
+class CollectionShort(CamelCaseBaseModel):
+    id: int
+    owner_id: int
+    title: str = Field(min_length=1, max_length=100)

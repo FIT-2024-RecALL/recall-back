@@ -2,7 +2,7 @@ from sqlalchemy import select, insert, delete
 from sqlalchemy.ext.asyncio import AsyncConnection
 
 from app import CardTable, CardCollectionTable, CollectionTable
-from app.schemas import Card, Collection
+from app.schemas import CollectionShort
 
 __all__ = [
     "get_collection_cards", "get_user_card_collections", "create_card_collection_connections",
@@ -12,24 +12,24 @@ __all__ = [
 
 async def get_collection_cards(
         conn: AsyncConnection, collection_id: int
-) -> list[Card]:
-    query = select(CardTable.c[*Card.model_fields]).join(
+) -> list[int]:
+    query = select(CardTable.c.id).join(
         CardCollectionTable, CardTable.c.id == CardCollectionTable.c.card_id
     ).where(CardCollectionTable.c.collection_id == collection_id)
     result = await conn.execute(query)
-    return [Card(**card) for card in result.mappings().all()]
+    return list(result.scalars().all())
 
 
 async def get_user_card_collections(
         conn: AsyncConnection, user_id: int, card_id: int
-) -> list[Collection]:
-    query = select(CollectionTable.c[*Collection.model_fields]).join(
+) -> list[CollectionShort]:
+    query = select(CollectionTable.c[*CollectionShort.model_fields]).join(
         CardCollectionTable, CollectionTable.c.id == CardCollectionTable.c.collection_id
     ).where(
         CollectionTable.c.owner_id == user_id, CardCollectionTable.c.card_id == card_id
     )
     result = await conn.execute(query)
-    return [Collection(**collection) for collection in result.mappings().all()]
+    return [CollectionShort(**collection) for collection in result.mappings().all()]
 
 
 async def _fetch_exist_collections(conn: AsyncConnection, collections: list[int]) -> list[int]:
