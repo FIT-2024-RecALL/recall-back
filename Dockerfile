@@ -32,6 +32,7 @@ COPY --from=builder ${VIRTUAL_ENV} ${VIRTUAL_ENV}
 
 EXPOSE 8000
 
+COPY ./config ./config
 COPY ./app ./app
 
 #CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]
