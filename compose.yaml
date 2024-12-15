@@ -27,7 +27,7 @@ services:
     environment:
       - "MINIO_SERVER_HOSTNAME=http://minio:9000"
     volumes:
-      - minio-volume:/mnt/minio-volume
+      - recall-minio-volume:/mnt/minio-volume
       - ./config/minio-setup.sh:/setup.sh
     entrypoint: bash /setup.sh
     restart: always
@@ -42,7 +42,7 @@ services:
       - "${MINIO_PORT}:9000"
       - "${MINIO_BROWSER_PORT}:9001"
     volumes:
-      - minio-volume:/mnt/minio-volume
+      - recall-minio-volume:/mnt/minio-volume
       - ./config/minio-server.env:/etc/config.env
     command: server --console-address ":9001"
     healthcheck:
@@ -61,7 +61,7 @@ services:
     ports:
       - ${POSTGRES_HOST_PORT}:5432
     volumes:
-      - pgdata-volume:/var/lib/postgresql/data
+      - recall-pgdata-volume:/var/lib/postgresql/data
     healthcheck:
       test: "pg_isready -U postgres_user -d postgres_db"
       interval: 3s
@@ -73,12 +73,12 @@ services:
       - dev
 
 volumes:
-  minio-volume:
+  recall-minio-volume:
     driver_opts:
       type: none
       o: bind
       device: $MINIO_VOLUME_PATH
-  pgdata-volume:
+  recall-pgdata-volume:
     driver_opts:
       type: none
       o: bind
