@@ -1,35 +1,38 @@
 # Этап сборки
-
 FROM python:3.11-slim AS builder
 
-RUN apt-get update && apt-get install -y curl
+RUN apt-get update && apt-get install -y curl && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
 # Установка зависимостей Poetry
 RUN curl -sSL https://install.python-poetry.org | python3 - --version 1.8.1
 
 # Добавление Poetry в PATH
-ENV PATH="/root/.local/bin:$PATH"
+ENV PATH="/root/.local/bin:$PATH" \
+    POETRY_NO_INTERACTION=1 \
+    POETRY_VIRTUALENVS_IN_PROJECT=1 \
+    POETRY_VIRTUALENVS_CREATE=1 \
 
 # Создание директории для приложения и установка зависимостей
 WORKDIR /code
-COPY pyproject.toml poetry.lock /code/
+COPY pyproject.toml poetry.lock ./
 
 # Устанавливаем зависимости с помощью Poetry
-RUN poetry config virtualenvs.create false && poetry install --no-dev --no-interaction --no-ansi
+RUN poetry install --no-dev --no-interaction --no-ansi
 
 
 # Этап запуска
 FROM python:3.11-slim AS runtime
 
-WORKDIR /code
+# Установка переменных окружения
+ENV PYTHONUNBUFFERED=1 \
+    VIRTUAL_ENV=/code/.venv \
+    PATH="/code/.venv/bin:$PATH"
 
-COPY --from=builder /code /code
-
-ENV PYTHONPATH=/code
+COPY --from=builder ${VIRTUAL_ENV} ${VIRTUAL_ENV}
 
 EXPOSE 8000
 
-COPY . /code
+COPY . .
 
-#CMD ["poetry", "run", "python", "-m", "app.main"]
-CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]
+#CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]
+CMD ["poetry", "run", "python", "-m", "app.main"]
