@@ -33,7 +33,6 @@ COPY --from=builder ${VIRTUAL_ENV} ${VIRTUAL_ENV}
 EXPOSE 8000
 
 COPY ./app ./app
-COPY ./config ./config
 
 #CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]
 CMD ["python", "-m", "app.main"]

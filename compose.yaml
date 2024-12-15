@@ -26,6 +26,8 @@ services:
   backend:
     container_name: recall-backend
     build: .
+    volumes:
+      - ./config:/config
     ports:
       - "8000:8000"
     depends_on:
