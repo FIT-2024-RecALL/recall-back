@@ -10,10 +10,10 @@ RUN curl -sSL https://install.python-poetry.org | python3 - --version 1.8.1
 ENV PATH="/root/.local/bin:$PATH" \
     POETRY_NO_INTERACTION=1 \
     POETRY_VIRTUALENVS_IN_PROJECT=1 \
-    POETRY_VIRTUALENVS_CREATE=1 \
+    POETRY_VIRTUALENVS_CREATE=1
 
 # Создание директории для приложения и установка зависимостей
-WORKDIR = /code
+WORKDIR /code
 COPY pyproject.toml poetry.lock ./
 
 # Устанавливаем зависимости с помощью Poetry
