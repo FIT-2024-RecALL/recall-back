@@ -16,7 +16,7 @@ services:
     networks:
       - dev
   minio-setup:
-    container_name: minio-setup
+    container_name: recall-minio-setup
     depends_on:
       minio:
         condition: service_healthy
@@ -34,13 +34,13 @@ services:
     networks:
       - dev
   minio:
-    container_name: minio
+    container_name: recall-minio
     image: minio/minio:latest
     environment:
       - MINIO_CONFIG_ENV_FILE=/etc/config.env
     ports:
-      - "${MINIO_PORT}:9000"
-      - "${MINIO_BROWSER_PORT}:9001"
+      - "9000:9000"
+      - "9001:9001"
     volumes:
       - recall-minio-volume:/mnt/minio-volume
       - ./config/minio-server.env:/etc/config.env
@@ -56,10 +56,10 @@ services:
       - dev
   postgres:
     image: postgres:17.0-alpine
-    container_name: postgres
+    container_name: recall-postgres
     env_file: ./config/postgres.env
     ports:
-      - ${POSTGRES_HOST_PORT}:5432
+      - "5432:5432"
     volumes:
       - recall-pgdata-volume:/var/lib/postgresql/data
     healthcheck:
