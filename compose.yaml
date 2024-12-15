@@ -22,13 +22,13 @@ services:
         condition: service_healthy
     image: minio/mc:latest
     env_file:
-      - /config/minio-server.env
-      - /config/minio-backend.env
+      - ./config/minio-server.env
+      - ./config/minio-backend.env
     environment:
       - "MINIO_SERVER_HOSTNAME=http://minio:9000"
     volumes:
       - minio-volume:/mnt/minio-volume
-      - /config/minio-setup.sh:/setup.sh
+      - ./config/minio-setup.sh:/setup.sh
     entrypoint: bash /setup.sh
     restart: always
     networks:
@@ -43,7 +43,7 @@ services:
       - "${MINIO_BROWSER_PORT}:9001"
     volumes:
       - minio-volume:/mnt/minio-volume
-      - /config/minio-server.env:/etc/config.env
+      - ./config/minio-server.env:/etc/config.env
     command: server --console-address ":9001"
     healthcheck:
       test: "curl -f http://localhost:9000/minio/health/live"
@@ -57,7 +57,7 @@ services:
   postgres:
     image: postgres:17.0-alpine
     container_name: postgres
-    env_file: /config/postgres.env
+    env_file: ./config/postgres.env
     ports:
       - ${POSTGRES_HOST_PORT}:5432
     volumes:
