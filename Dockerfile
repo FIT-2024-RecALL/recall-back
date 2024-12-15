@@ -13,7 +13,7 @@ ENV PATH="/root/.local/bin:$PATH" \
     POETRY_VIRTUALENVS_CREATE=1 \
 
 # Создание директории для приложения и установка зависимостей
-WORKDIR /code
+WORKDIR = /code
 COPY pyproject.toml poetry.lock ./
 
 # Устанавливаем зависимости с помощью Poetry
