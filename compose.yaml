@@ -18,7 +18,7 @@ services:
       - dev
   frontend:
     container_name: recall-frontend
-    build: ../recall-front
+    build: $RECALL_FRONTEND_PATH
     ports:
       - "8080:8080"
     networks:

@@ -55,7 +55,8 @@ SAMESITE=none
   - `MINIO_BROWSER_PORT` (**used only for debug**)
   - `POSTGRES_HOST_PORT`
 4. Create folders for MinIO object storage and Postgres DB then set their paths to env var `MINIO_VOLUME_PATH` and `POSTGRES_VOLUME_PATH`
-5. Run `docker compose up -d`
+5. Downloawd [frontend's source code](https://github.com/FIT-2024-RecALL/recall-front) and specify env var `RECALL_FRONTEND_PATH` as a path to it
+6. Run `docker compose up --build -d`
 
 ## How to start the service
 1. Environment configuration
