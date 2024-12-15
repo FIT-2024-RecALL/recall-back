@@ -4,7 +4,27 @@ networks:
   dev:
 
 services:
-  backend-app:
+  nginx:
+    container_name: recall-nginx
+    image: nginx:1.27.3-alpine
+    volumes:
+      - ./config/nginx.conf:/etc/nginx/nginx.conf
+    ports:
+      - "80:80"
+    depends_on:
+      - frontend
+      - backend
+    networks:
+      - dev
+  frontend:
+    container_name: recall-frontend
+    build: ../recall-front
+    ports:
+      - "8080:8080"
+    networks:
+      - dev
+  backend:
+    container_name: recall-backend
     build: .
     ports:
       - "8000:8000"
