@@ -47,11 +47,12 @@ async def create_train_record(
     return TrainRecord(**result.mappings().first())
 
 
-async def get_training_cards(conn: AsyncConnection, collection_id: int) -> list[int]:
+async def get_training_cards(conn: AsyncConnection, user_id: int, collection_id: int) -> list[int]:
     collection_card_ids: set[int] = set(await get_collection_cards(conn, collection_id))
     subquery = (
         select(TrainRecordTable.c.card_id, func.max(TrainRecordTable.c.id).label("last_id"))
-        .where(TrainRecordTable.c.card_id.in_(collection_card_ids))
+        .where(TrainRecordTable.c.card_id.in_(collection_card_ids),
+            TrainRecordTable.c.user_id == user_id)
         .group_by(TrainRecordTable.c.card_id)
         .subquery()
     )
