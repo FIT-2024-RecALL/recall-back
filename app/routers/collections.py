@@ -74,4 +74,4 @@ async def train_cards(
         await crud.check_collection_id(conn, collection_id)
     except ValueError as e:
         raise HTTPException(status_code=404, detail=str(e))
-    return await crud.get_training_cards(conn, collection_id)
+    return await crud.get_training_cards(conn, user_id, collection_id)
