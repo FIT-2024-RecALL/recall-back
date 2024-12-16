@@ -22,19 +22,19 @@ class CookieSettings(BaseModel):
 
 
 class AuthSettings(BaseSettings):
-    model_config = SettingsConfigDict(env_file="./config/auth.env")
+    model_config = SettingsConfigDict(env_file="./config/auth.env", extra="ignore")
 
     SECRET_KEY: SecretStr
     ALGORITHM: CryptoAlgorithm = CryptoAlgorithm.HS256
 
     ACCESS_TOKEN_KEY: str
     HTTPONLY: bool = True
-    SECURE: bool = True
-    SAMESITE: SameSiteEnum = SameSiteEnum.NONE
+    SECURE: bool = False
+    SAMESITE: SameSiteEnum = SameSiteEnum.LAX
 
 
 class PostgreSettings(BaseSettings):
-    model_config = SettingsConfigDict(env_prefix='POSTGRES_', env_file="./config/postgres.env")
+    model_config = SettingsConfigDict(env_prefix='POSTGRES_', env_file="./config/postgres.env", extra="ignore")
 
     USER: str
     PASSWORD: SecretStr
@@ -44,7 +44,7 @@ class PostgreSettings(BaseSettings):
 
 
 class MinioSettings(BaseSettings):
-    model_config = SettingsConfigDict(env_prefix='MINIO_', env_file="./config/minio-backend.env")
+    model_config = SettingsConfigDict(env_prefix='MINIO_', env_file="./config/minio-backend.env", extra="ignore")
 
     BUCKET_NAME: str
     HOSTNAME: str

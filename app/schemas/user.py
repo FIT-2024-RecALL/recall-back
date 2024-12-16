@@ -6,12 +6,12 @@ __all__ = ["User", "UserAuth", "UserBase", "UserCreate"]
 
 
 class UserBase(CamelCaseBaseModel):
-    nickname: str = Field(max_length=50)
+    nickname: str = Field(min_length=1, max_length=35)
     email: EmailStr
 
 
 class UserCreate(UserBase):
-    password: str = Field(min_length=13, max_length=64)
+    password: str = Field(min_length=8, max_length=40)
 
 
 class User(UserBase):
@@ -20,4 +20,4 @@ class User(UserBase):
 
 class UserAuth(CamelCaseBaseModel):
     email: EmailStr
-    password: str = Field(min_length=13, max_length=64)
+    password: str = Field(min_length=8, max_length=40)

@@ -13,7 +13,7 @@ UserTable = Table(
     _metadata,
     Column("id", Integer, primary_key=True),
     Column("email", String(100), unique=True, index=True, nullable=False),
-    Column("nickname", String(50), unique=True, index=True, nullable=False),
+    Column("nickname", String(35), unique=True, index=True, nullable=False),
     Column("hashed_password", String(1024), nullable=False)
 )
 
