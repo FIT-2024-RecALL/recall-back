@@ -18,7 +18,7 @@ services:
       - dev
   frontend:
     container_name: recall-frontend
-    build: ../recall-front
+    build: $RECALL_FRONTEND_PATH
     ports:
       - "8080:8080"
     networks:
@@ -26,8 +26,6 @@ services:
   backend:
     container_name: recall-backend
     build: .
-    volumes:
-      - ./config:/config
     ports:
       - "8000:8000"
     depends_on:

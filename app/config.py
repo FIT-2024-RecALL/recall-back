@@ -29,8 +29,8 @@ class AuthSettings(BaseSettings):
 
     ACCESS_TOKEN_KEY: str
     HTTPONLY: bool = True
-    SECURE: bool = True
-    SAMESITE: SameSiteEnum = SameSiteEnum.NONE
+    SECURE: bool = False
+    SAMESITE: SameSiteEnum = SameSiteEnum.LAX
 
 
 class PostgreSettings(BaseSettings):
