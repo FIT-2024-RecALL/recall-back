@@ -45,7 +45,7 @@ def upload_file(user_id: int, file: UploadFile) -> ObjectWriteResult:
     index = 0
     while is_file_exists(full_path):
         index += 1
-        full_path = f'{user_id}/{name}_{index}.{extension}'
+        full_path = f'{user_id}/{name}_{index}{extension}'
     return storage.put_object(
         _settings.minio.BUCKET_NAME,
         full_path, file.file, file.size

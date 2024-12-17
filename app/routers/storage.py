@@ -36,7 +36,7 @@ async def list_files(conn: DBConnection, user_id: UserID):
     except ValueError as e:
         raise HTTPException(401, str(e))
     return [
-        FileUploadedScheme(url=f"/storage/{quote(obj.object_name)}")
+        FileUploadedScheme(url=f"/storage/{quote(obj.object_name)}", filename=obj.object_name.split('/')[1])
         for obj in crud.get_files_list(user_id)
     ]
 
@@ -51,7 +51,8 @@ async def add_file(conn: DBConnection, user_id: UserID, file: UploadFile = File(
     try:
         obj = crud.upload_file(user_id, file)
         return FileUploadedScheme(
-            url=f"/storage/{quote(obj.object_name)}"
+            url=f"/storage/{quote(obj.object_name)}",
+            filename=obj.object_name.split('/')[1]
         )
     except ValueError as e:
         raise HTTPException(409, f"Failed to upload file: {str(e)}")

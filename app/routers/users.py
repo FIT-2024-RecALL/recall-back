@@ -1,7 +1,9 @@
+from datetime import datetime, timedelta, timezone
+
 from fastapi import APIRouter, HTTPException, Response
 
 from app import crud
-from app.helpers import DBConnection, UserID, create_access_token
+from app.helpers import DBConnection, UserID, create_access_token, get_expiration_datetime
 from app.schemas import User, UserAuth, UserBase, UserCreate, Collection, CollectionShort
 from app.config import _settings
 
@@ -33,6 +35,7 @@ async def create_user(
         access_token = create_access_token(new_user.id)
         response.set_cookie(
             key=_settings.access_token_key, value=access_token,
+            expires=get_expiration_datetime(),
             **_settings.cookie_kwargs.model_dump()
         )
     return new_user
@@ -55,7 +58,9 @@ async def authenticate_user(conn: DBConnection, response: Response, user_data: U
 
     access_token = create_access_token(user.id)
     response.set_cookie(
-        key=_settings.access_token_key, value=access_token, **_settings.cookie_kwargs.model_dump()
+        key=_settings.access_token_key, value=access_token, 
+        expires=get_expiration_datetime(),
+        **_settings.cookie_kwargs.model_dump()
     )
     return user
 

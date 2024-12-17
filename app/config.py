@@ -28,6 +28,7 @@ class AuthSettings(BaseSettings):
     ALGORITHM: CryptoAlgorithm = CryptoAlgorithm.HS256
 
     ACCESS_TOKEN_KEY: str
+    EXPIRE_HOURS: int = 12
     HTTPONLY: bool = True
     SECURE: bool = False
     SAMESITE: SameSiteEnum = SameSiteEnum.LAX
@@ -69,6 +70,10 @@ class Settings(BaseSettings):
     @property
     def access_token_key(self) -> str:
         return self.auth.ACCESS_TOKEN_KEY
+    
+    @property
+    def expire_hours(self) -> int:
+        return self.auth.EXPIRE_HOURS
 
     @property
     def cookie_kwargs(self) -> CookieSettings:

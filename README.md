@@ -24,9 +24,10 @@ Add config files into folder `config/` inside the root project directory:
 SECRET_KEY=<secret_key_for_encrypting>
 ALGORITHM=<encrypting_algorithm: e.g. HS256>
 ACCESS_TOKEN_KEY=<title_of_cookie_token_attribute>
+EXPIRE_HOURS=12
 HTTPONLY=true
 SECURE=true
-SAMESITE=none
+SAMESITE=strict # or lax or none
 ```
 - `minio-backend.env`:
 ```conf
@@ -72,6 +73,7 @@ If you want to deploy service using `docker compose`, follow these instructions:
 2. Create folders for MinIO object storage and Postgres DB
 3. Either wrote `.env` file inside project directory with described variables:
 ```conf
+CERTBOT_PATH=<path_to_folder_with_certificates>
 RECALL_FRONTEND_PATH=<path_to_frontend_project_dir>
 MINIO_VOLUME_PATH=<path_to_minio_storage_dir>
 POSTGRES_VOLUME_PATH=<path_to_postgres_database_dir>
@@ -91,6 +93,7 @@ MINIO_OPTS="--console-address :9001"
 ```
 
 5. Run `docker compose up --build`
+   - If necessary, you can create SSL certs using `docker compose run --rm certbot certonly --webroot --webroot-path /var/www/certbot/ -d <domain.addr>` and update it using `docker compose run --rm certbot renew`
 
 ## Project description
 

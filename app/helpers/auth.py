@@ -6,10 +6,7 @@ from passlib.context import CryptContext
 
 from app.config import _settings
 
-__all__ = ["get_password_hash", "verify_password", "create_access_token", "get_profile_id"]
-
-
-EXPIRATION = 50
+__all__ = ["get_password_hash", "verify_password", "get_expiration_datetime", "create_access_token", "get_profile_id"]
 
 __pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
@@ -21,8 +18,11 @@ def verify_password(plain_password: str, hashed_password: str) -> bool:
     return __pwd_context.verify(plain_password, hashed_password)
 
 
+def get_expiration_datetime() -> datetime:
+    return datetime.now(timezone.utc) + timedelta(hours=_settings.expire_hours)
+
 def create_access_token(user_id: int) -> str:
-    expire = datetime.now(timezone.utc) + timedelta(minutes=EXPIRATION)
+    expire = get_expiration_datetime()
     token_data = {"sub": str(user_id), "exp": expire}
     return jwt.encode(
         token_data,
@@ -32,7 +32,7 @@ def create_access_token(user_id: int) -> str:
 
 
 def get_token(request: Request) -> str:
-    token = request.cookies.get("users_access_token")
+    token = request.cookies.get(_settings.access_token_key)
     if not token:
         raise HTTPException(status_code=401, detail="Token not found")
     return token
