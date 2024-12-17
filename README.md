@@ -24,6 +24,7 @@ Add config files into folder `config/` inside the root project directory:
 SECRET_KEY=<secret_key_for_encrypting>
 ALGORITHM=<encrypting_algorithm: e.g. HS256>
 ACCESS_TOKEN_KEY=<title_of_cookie_token_attribute>
+EXPIRE_HOURS=12
 HTTPONLY=true
 SECURE=true
 SAMESITE=strict # or lax or none
