@@ -1,4 +1,4 @@
-__all__ = ["compute_repeat_interval_duration", "compute_new_card_progress"]
+__all__ = ["compute_repeat_interval_duration", "compute_card_new_progress"]
 
 
 BASE_MARK_EFFECT = 2.8

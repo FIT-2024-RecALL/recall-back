@@ -3,7 +3,7 @@ from sqlalchemy.ext.asyncio import AsyncConnection
 
 from .card_collection import get_collection_cards
 from app.models import TrainRecordTable
-from app.helpers import compute_new_card_progress, compute_repeat_interval_duration
+from app.helpers import compute_card_new_progress, compute_repeat_interval_duration
 from app.schemas import TrainRecord, TrainRecordCreate
 
 __all__ = [
@@ -35,7 +35,7 @@ async def create_train_record(
         train_data: TrainRecordCreate, prev_progress: float
 ) -> TrainRecord:
     repeat_date = func.now()
-    progress = compute_new_card_progress(prev_progress, train_data.mark)
+    progress = compute_card_new_progress(prev_progress, train_data.mark)
     repeat_interval = text(f"INTERVAL '{compute_repeat_interval_duration(progress)} minutes'")
     insert_query = insert(TrainRecordTable).values(
         card_id=card_id, user_id=user_id,
