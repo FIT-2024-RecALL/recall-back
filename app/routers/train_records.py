@@ -11,7 +11,7 @@ router = APIRouter(
 )
 
 
-@router.get("/last/{card_id}", response_model=TrainRecord | None)
+@router.get("/last/{card_id}", response_model=TrainRecord|None)
 async def read_card_last_train_record(
         conn: DBConnection, user_id: UserID, card_id: int
 ) -> TrainRecord | None:

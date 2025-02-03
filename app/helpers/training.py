@@ -8,7 +8,7 @@ MAX_INTERVAL_MINUTES_DURATION = 259_200
 INTERVAL_EXP_CHANGE_FACTOR = 5
 
 
-def compute_new_card_progress(prev_progress: float, mark: int) -> float:
+def compute_card_new_progress(prev_progress: float, mark: int) -> float:
     new_progress: float = (prev_progress + PROGRESS_CHANGE_FACTOR * (mark - BASE_MARK_EFFECT)
                     * (1 - prev_progress))
     if new_progress < 0.0:
