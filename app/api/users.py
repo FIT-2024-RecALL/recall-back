@@ -5,7 +5,7 @@ from app.core import create_access_token, get_expiration_datetime
 from app.schemas import User, UserAuth, UserBase, UserCreate, Collection, CollectionShort
 from app.core.config import _settings
 
-from .dependencies import DBConnection, UserID
+from app.core.dependencies import DBConnection, UserID
 
 
 router = APIRouter(

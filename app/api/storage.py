@@ -4,7 +4,7 @@ from urllib.parse import quote
 
 from app.schemas import FileUploadedScheme
 
-from .dependencies import DBConnection, UserID
+from app.core.dependencies import DBConnection, UserID
 
 
 router = APIRouter(

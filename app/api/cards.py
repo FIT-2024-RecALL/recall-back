@@ -3,7 +3,7 @@ from fastapi import APIRouter, HTTPException, Response
 from app import repositories
 from app.schemas import Card, CardCreate, CollectionShort
 
-from .dependencies import DBConnection, IntList, UserID
+from app.core.dependencies import DBConnection, IntList, UserID
 
 
 router = APIRouter(

@@ -1,10 +1,13 @@
 from abc import ABC, abstractmethod
-from sqlalchemy import Table
+from pydantic import BaseModel
+from sqlalchemy import Table, insert
+
+from app.db import get_db_engine
 
 
 class BaseRepository(ABC):
     @abstractmethod
-    async def create(self):
+    async def create(self, input_data: dict, output_schema: BaseModel):
         raise NotImplementedError
 
     @abstractmethod
@@ -31,18 +34,10 @@ class BaseRepository(ABC):
 class SQLAlchemyRepository(BaseRepository):
     table: Table = ...
 
-    async def create(self):
-        #####
-        result = await conn.execute(
-            insert(CardTable).values(owner_id=user_id, **card.model_dump())
-            .returning(CardTable.c[*Card.model_fields])
-        )
-        await conn.commit()
-        return Card(**result.mappings().first())
-        #####
-        query = insert(UserTable).values(
-            email=user.email, nickname=user.nickname, hashed_password=get_password_hash(user.password)
-        ).returning(UserTable.c[*User.model_fields])
-        result = await conn.execute(query)
-        await conn.commit()
-        return User(**result.mappings().first())
+    async def create(self, input_data: dict, output_schema: BaseModel):
+        async with get_db_engine().begin() as conn:
+            result = await conn.execute(
+                insert(self.table).values(**input_data)
+                .returning(self.table.c[*output_schema.model_fields])
+            )
+            return output_schema(**result.mappings().first())
