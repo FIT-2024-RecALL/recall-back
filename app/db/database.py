@@ -1,13 +1,16 @@
 from sqlalchemy.ext.asyncio import AsyncConnection, create_async_engine
 
-from .config import _settings
+from app.core.config import _settings
+
 from .models import _metadata
+
 
 __all__ = ["create_db_tables", "get_db_async_connection", "get_db_async_transaction",
            "close_db_connections", "delete_tables"]
 
 
 __engine = create_async_engine(url=_settings.db_url_asyncpg, echo=True)
+
 
 async def create_db_tables():
     async with __engine.begin() as conn:

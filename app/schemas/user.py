@@ -2,6 +2,7 @@ from pydantic import Field, EmailStr
 
 from .base import CamelCaseBaseModel
 
+
 __all__ = ["User", "UserAuth", "UserBase", "UserCreate"]
 
 

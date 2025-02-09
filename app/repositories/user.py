@@ -1,9 +1,10 @@
 from sqlalchemy import select, insert, exists, or_, delete, update
 from sqlalchemy.ext.asyncio import AsyncConnection
 
-from app.models import UserTable
-from app.helpers import get_password_hash, verify_password
+from app.db.models import UserTable
+from app.core import get_password_hash, verify_password
 from app.schemas import User, UserAuth, UserBase, UserCreate
+
 
 __all__ = [
     "get_user", "get_users", "check_user_id", "find_users_by_data", "create_user",

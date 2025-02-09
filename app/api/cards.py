@@ -1,8 +1,9 @@
 from fastapi import APIRouter, HTTPException, Response
 
-from app import crud
-from app.helpers import DBConnection, IntList, UserID
+from app import repositories
 from app.schemas import Card, CardCreate, CollectionShort
+
+from .dependencies import DBConnection, IntList, UserID
 
 
 router = APIRouter(
@@ -13,7 +14,7 @@ router = APIRouter(
 
 @router.get("/{card_id}", response_model=Card)
 async def read_card(conn: DBConnection, card_id: int):
-    card: Card | None = await crud.get_card(conn, card_id)
+    card: Card | None = await repositories.get_card(conn, card_id)
     if card is None:
         raise HTTPException(status_code=404, detail="Card not found")
     return card
@@ -23,10 +24,10 @@ async def read_card(conn: DBConnection, card_id: int):
 async def create_card(
         conn: DBConnection, user_id: UserID, card: CardCreate, collections: IntList
 ) -> Card:
-    result_card: Card = await crud.create_card(conn, user_id, card)
+    result_card: Card = await repositories.create_card(conn, user_id, card)
     try:
-        await crud.check_user_id(conn, user_id)
-        await crud.create_card_collection_connections(conn, user_id, result_card.id, collections)
+        await repositories.check_user_id(conn, user_id)
+        await repositories.create_card_collection_connections(conn, user_id, result_card.id, collections)
     except ValueError as e:
         raise HTTPException(status_code=404, detail=str(e))
     return result_card
@@ -35,11 +36,11 @@ async def create_card(
 @router.delete("/{card_id}", response_class=Response)
 async def delete_card(conn: DBConnection, user_id: UserID, card_id: int):
     try:
-        await crud.check_user_id(conn, user_id)
-        await crud.check_user_card_id(conn, user_id, card_id)
+        await repositories.check_user_id(conn, user_id)
+        await repositories.check_user_card_id(conn, user_id, card_id)
     except ValueError as e:
         raise HTTPException(status_code=404, detail=str(e))
-    await crud.delete_card(conn, card_id)
+    await repositories.delete_card(conn, card_id)
     return Response(status_code=200)
 
 
@@ -49,12 +50,12 @@ async def update_card(
         new_card: CardCreate, collections: IntList
 ) -> Card:
     try:
-        await crud.check_user_id(conn, user_id)
-        await crud.check_user_card_id(conn, user_id, card_id)
-        await crud.update_card_collection_connections(conn, user_id, card_id, collections)
+        await repositories.check_user_id(conn, user_id)
+        await repositories.check_user_card_id(conn, user_id, card_id)
+        await repositories.update_card_collection_connections(conn, user_id, card_id, collections)
     except ValueError as e:
         raise HTTPException(status_code=404, detail=str(e))
-    return await crud.update_card(conn, card_id, new_card)
+    return await repositories.update_card(conn, card_id, new_card)
 
 
 @router.get("/{card_id}/collections", response_model=list[CollectionShort])
@@ -62,8 +63,8 @@ async def read_card_collections(
         conn: DBConnection, user_id: UserID, card_id: int
 ) -> list[CollectionShort]:
     try:
-        await crud.check_user_id(conn, user_id)
-        await crud.check_user_card_id(conn, user_id, card_id)
+        await repositories.check_user_id(conn, user_id)
+        await repositories.check_user_card_id(conn, user_id, card_id)
     except ValueError as e:
         raise HTTPException(status_code=404, detail=str(e))
-    return await crud.get_user_card_collections(conn, user_id, card_id)
+    return await repositories.get_user_card_collections(conn, user_id, card_id)

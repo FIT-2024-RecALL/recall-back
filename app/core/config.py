@@ -1,5 +1,4 @@
 from enum import StrEnum
-
 from pydantic import SecretStr, BaseModel
 from pydantic_settings import BaseSettings, SettingsConfigDict
 

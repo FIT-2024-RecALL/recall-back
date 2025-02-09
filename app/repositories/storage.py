@@ -1,14 +1,13 @@
 import os.path
 from typing import AsyncGenerator, Iterator, Any
-
 from fastapi import UploadFile
-
 from minio import S3Error
 from minio.datatypes import Object, BaseHTTPResponse
 from minio.helpers import ObjectWriteResult
 
-from app.config import _settings
-from app.storage import storage
+from app.core.config import _settings
+from app.core.storage import storage
+
 
 __all__ = ["is_file_exists", "get_file_stream", "get_files_list", "upload_file", "delete_file"]
 

@@ -1,10 +1,12 @@
 from sqlalchemy import select, insert, desc, text, func
 from sqlalchemy.ext.asyncio import AsyncConnection
 
-from .card_collection import get_collection_cards
-from app.models import TrainRecordTable
-from app.helpers import compute_card_new_progress, compute_repeat_interval_duration
+from app.db.models import TrainRecordTable
+from app.core import compute_card_new_progress, compute_repeat_interval_duration
 from app.schemas import TrainRecord, TrainRecordCreate
+
+from .card_collection import get_collection_cards
+
 
 __all__ = [
     "get_train_records", "create_train_record", "get_training_cards",

@@ -1,7 +1,7 @@
 from sqlalchemy import select, insert, delete
 from sqlalchemy.ext.asyncio import AsyncConnection
 
-from app.models import CardCollectionTable, CollectionTable
+from app.db.models import CardCollectionTable, CollectionTable
 from app.schemas import CollectionShort
 
 __all__ = [

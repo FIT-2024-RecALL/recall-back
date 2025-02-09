@@ -1,8 +1,8 @@
 from datetime import datetime
-
 from pydantic import Field
 
 from .base import CamelCaseBaseModel
+
 
 __all__ = ["TrainRecord", "TrainRecordCreate"]
 

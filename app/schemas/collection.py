@@ -2,6 +2,7 @@ from pydantic import Field
 
 from .base import CamelCaseBaseModel
 
+
 __all__ = ["Collection", "CollectionCreate", "CollectionShort"]
 
 
