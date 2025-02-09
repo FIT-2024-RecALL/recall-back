@@ -2,7 +2,6 @@ from fastapi import APIRouter, HTTPException, UploadFile, File
 from fastapi.responses import StreamingResponse, Response
 from urllib.parse import quote
 
-from app import repositories
 from app.schemas import FileUploadedScheme
 
 from .dependencies import DBConnection, UserID
@@ -16,7 +15,7 @@ router = APIRouter(
 
 @router.get('/{user_id}/{filename}', response_class=StreamingResponse)
 def get_file(user_id: int, filename: str):
-    
+
     full_path = f'{user_id}/{filename}'
     if not repositories.is_file_exists(full_path):
         raise HTTPException(404, "File not found")

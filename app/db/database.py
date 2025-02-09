@@ -2,7 +2,7 @@ from sqlalchemy.ext.asyncio import AsyncConnection, create_async_engine
 
 from app.core.config import _settings
 
-from .models import _metadata
+from .models import get_metadata
 
 
 __all__ = ["create_db_tables", "get_db_async_connection", "get_db_async_transaction",
@@ -14,13 +14,13 @@ __engine = create_async_engine(url=_settings.db_url_asyncpg, echo=True)
 
 async def create_db_tables():
     async with __engine.begin() as conn:
-        await conn.run_sync(_metadata.create_all)
+        await conn.run_sync(get_metadata().create_all)
 
 
 ## shell: python -c "import asyncio; from app.database import delete_tables; asyncio.run(delete_tables())"
 async def delete_tables() -> None:
     async with __engine.begin() as conn:
-        await conn.run_sync(_metadata.drop_all)
+        await conn.run_sync(get_metadata().drop_all)
 
 
 async def close_db_connections():
