@@ -23,7 +23,7 @@ def get_file(user_id: int, filename: str):
         return StreamingResponse(
             crud.get_file_stream(full_path),
             media_type="application/octet-stream",
-            headers={"Content-Disposition": f"attachment; filename={filename}"}
+            headers={"Content-Disposition": f"attachment; filename={quote(filename)}"}
         )
     except ValueError as e:
         raise HTTPException(404, f"File not found: {str(e)}")
