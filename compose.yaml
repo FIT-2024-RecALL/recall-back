@@ -69,7 +69,7 @@ services:
       - recall-minio-volume:/mnt/minio-volume
       - ./config/minio-setup.sh:/setup.sh
     entrypoint: bash /setup.sh
-    restart: always
+    restart: on-failure
     networks:
       - dev
   minio:
@@ -110,6 +110,34 @@ services:
     restart: always
     networks:
       - dev
+  ollama-setup:
+    image: ubuntu:latest
+    container_name: recall-ollama-setup
+    depends_on:
+      - ollama
+    volumes:
+      - ./config/ollama-setup.sh:/setup.sh
+      - ./config/ollama-system.md:/ollama-system.md
+    entrypoint: bash /setup.sh
+    restart: on-failure
+    networks:
+      - dev
+  ollama:
+    container_name: recall-ollama
+    image: ollama/ollama
+    ports:
+      - "11434:11434"
+    volumes:
+      - recall-ollama-volume:/root/.ollama
+    healthcheck:
+      test: "curl -f http://localhost:11434 || exit 1"
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+    restart: always
+    networks:
+      - dev
 
 volumes:
   recall-minio-volume:
@@ -122,3 +150,8 @@ volumes:
       type: none
       o: bind
       device: $POSTGRES_VOLUME_PATH
+  recall-ollama-volume:
+    driver_opts:
+      type: none
+      o: bind
+      device: $OLLAMA_VOLUME_PATH
