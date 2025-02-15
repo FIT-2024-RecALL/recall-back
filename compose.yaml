@@ -122,16 +122,12 @@ services:
   ollama:
     container_name: recall-ollama
     image: ollama/ollama
-    ports:
-      - "11434:11434"
+    environment:
+      - "GIN_MODE=release"
     volumes:
       - recall-ollama-volume:/root/.ollama
-    healthcheck:
-      test: "curl -f http://localhost:11434 || exit 1"
-      interval: 30s
-      timeout: 10s
-      retries: 3
-      start_period: 10s
+    ports:
+      - "11434:11434"
     restart: always
     networks:
       - dev
