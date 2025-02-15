@@ -111,14 +111,11 @@ services:
     networks:
       - dev
   ollama-setup:
-    image: ubuntu:latest
+    build: ./config/ollama-setup-container
     container_name: recall-ollama-setup
     depends_on:
       - ollama
-    volumes:
-      - ./config/ollama-setup.sh:/setup.sh
-      - ./config/ollama-system.md:/ollama-system.md
-    entrypoint: bash /setup.sh
+    env_file: ./config/ollama.env
     restart: on-failure
     networks:
       - dev
