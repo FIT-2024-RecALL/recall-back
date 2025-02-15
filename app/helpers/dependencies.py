@@ -1,6 +1,6 @@
 from typing import Annotated
-
 from fastapi import Depends, Body
+
 from sqlalchemy.ext.asyncio import AsyncConnection
 
 from .auth import get_profile_id

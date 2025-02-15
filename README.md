@@ -45,6 +45,13 @@ POSTGRES_HOST=<postgres_addr>
 POSTGRES_HOST_PORT=<postgres_port>
 POSTGRES_DB=<postgres_db_name>
 ```
+- `ollama.env`:
+```conf
+OLLAMA_FROM_MODEL=<basic_model> # now allowed llama3.1 and mistral, actually needed only for configuration, not for backend running
+OLLAMA_HOSTNAME=<ollama_addr> # IP address - without protocol
+OLLAMA_PORT=<port>
+OLLAMA_MODEL=<name_for_modified_model>
+```
 
 ## How to start the service
 1. Environment configuration
