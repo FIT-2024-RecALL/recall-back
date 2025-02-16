@@ -1,6 +1,6 @@
 from abc import ABC, abstractmethod
 from pydantic import BaseModel
-from sqlalchemy import Table, insert
+from sqlalchemy import Table, insert, select
 from sqlalchemy.ext.asyncio import AsyncConnection
 from typing import Type, TypeVar
 
@@ -17,23 +17,23 @@ class BaseRepository(ABC):
         raise NotImplementedError
 
     @abstractmethod
-    async def get_by_id(self):
+    async def get_one_or_none(self, filter_data, output_schema, need_all):
         raise NotImplementedError
 
     @abstractmethod
-    async def get_all(self):
+    async def get_all(self, output_schema, limit, offset):
         raise NotImplementedError
 
     @abstractmethod
-    async def update_by_id(self):
+    async def update(self):
         raise NotImplementedError
 
     @abstractmethod
-    async def delete_by_id(self):
+    async def delete(self):
         raise NotImplementedError
 
     @abstractmethod
-    async def exists_by_id(self):
+    async def exists(self):
         raise NotImplementedError
 
 
@@ -49,6 +49,24 @@ class SQLAlchemyRepository(BaseRepository):
             .returning(self.table.c[*output_schema.model_fields])
         )
         return output_schema(**result.mappings().first())
+
+    async def get_one_or_none(
+            self, filter_data: dict, filter_func, output_schema: Type[SchemaType]
+    ) -> SchemaType:
+        result = await self.connection.execute(
+            select(self.table.c[*output_schema.model_fields]).where(filter_func(filter_data))
+        )
+        return result.mappings().first() and output_schema(**result.mappings().first())
+
+    async def get_all(
+            self, output_schema: Type[SchemaType], limit: int, offset: int
+    ) -> list[SchemaType]:
+        result = await self.connection.execute(
+            select(self.table.c[*output_schema.model_fields]).limit(limit).offset(offset)
+        )
+        return [output_schema(**elem) for elem in result.mappings().all()]
+
+
 
 
 """

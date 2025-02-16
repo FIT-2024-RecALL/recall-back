@@ -1,12 +1,10 @@
 from contextlib import asynccontextmanager
-
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 import uvicorn
 
-from app.db.database import create_db_tables, close_db_connections
-from app.api import train_records, users, collections, storage
-from app.api import cards
+from app.db import close_db_connections, create_db_tables
+from app.api import cards, collections, storage, train_records, users
 
 
 @asynccontextmanager
@@ -14,6 +12,7 @@ async def lifespan(app: FastAPI):
     await create_db_tables()
     yield
     await close_db_connections()
+
 
 app = FastAPI(lifespan=lifespan)
 app.add_middleware(
@@ -23,7 +22,6 @@ app.add_middleware(
     allow_methods=['*'],
     allow_headers=['*']
 )
-
 app.include_router(cards.router)
 app.include_router(collections.router)
 app.include_router(train_records.router)
