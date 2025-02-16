@@ -1,4 +1,4 @@
-from sqlalchemy import select, insert, exists, or_, delete, update
+from sqlalchemy import select, insert, exists, and_, or_, delete, update
 from sqlalchemy.ext.asyncio import AsyncConnection
 
 from app.db.models import UserTable
@@ -21,14 +21,35 @@ class UserService:
 
     async def create_user(self, user: UserCreate) -> User:
         input_data = user.model_dump()
-        return await self.user_repo.create(input_data, User)    
+        return await self.user_repo.create(input_data, User)
+        
+
+async def authenticate_user(conn: AsyncConnection, user_data: UserAuth) -> User:
+    user = await get_user_by_email(conn, user_data.email)
+    if user is None or not verify_password(user_data.password, user["hashed_password"]):
+        raise ValueError("Entered email or password is not correct")
+    return User(**user)  
 """
 
 
 class UserRepository(SQLAlchemyRepository):
     table = UserTable
 
+    async def get_user_by_id(self, user_id: int, output_fields: list[str]) -> dict:
+        id_filter = lambda data: self.table.c["id"] == data["id"]
+        filter_data = {"id": user_id}
+        return await self.get_one_or_none(filter_data, id_filter, output_fields)
 
+    async def get_user_by_email(self, email: str, output_fields: list[str]) -> dict:
+        email_filter = lambda data: self.table.c["email"] == data["email"]
+        filter_data = {"email": email}
+        return await self.get_one_or_none(filter_data, email_filter, output_fields)
+
+
+"""
+async def get_user_by_email(conn: AsyncConnection, email: str):
+    result = await conn.execute(select(UserTable).where(UserTable.c.email == email))
+    return result.mappings().first()
 
 
 async def get_user(conn: AsyncConnection, user_id: int) -> User | None:
@@ -36,6 +57,13 @@ async def get_user(conn: AsyncConnection, user_id: int) -> User | None:
         select(UserTable.c[*User.model_fields]).where(UserTable.c.id == user_id)
     )).mappings().first()
     return result if result is None else User(**result)
+"""
+
+
+async def check_user_id(conn: AsyncConnection, user_id: int) -> None:
+    result = await conn.execute(select(exists().where(UserTable.c.id == user_id)))
+    if not result.scalar():
+        raise ValueError("User not found")
 
 
 async def get_users(conn: AsyncConnection, *, limit: int, skip: int):
@@ -43,12 +71,6 @@ async def get_users(conn: AsyncConnection, *, limit: int, skip: int):
         select(UserTable.c[*User.model_fields]).limit(limit).offset(skip)
     )
     return result.mappings().all()
-
-
-async def check_user_id(conn: AsyncConnection, user_id: int) -> None:
-    result = await conn.execute(select(exists().where(UserTable.c.id == user_id)))
-    if not result.scalar():
-        raise ValueError("User not found")
 
 
 async def find_users_by_data(conn: AsyncConnection, user: UserBase) -> list[int]:
@@ -80,15 +102,3 @@ async def update_user(conn: AsyncConnection, user_id: int, user: UserBase) -> Us
     result = await conn.execute(query)
     await conn.commit()
     return User(**result.mappings().first())
-
-
-async def get_user_via_email(conn: AsyncConnection, email: str):
-    result = await conn.execute(select(UserTable).where(UserTable.c.email == email))
-    return result.mappings().first()
-
-
-async def authenticate_user(conn: AsyncConnection, user_data: UserAuth) -> User:
-    user = await get_user_via_email(conn, user_data.email)
-    if user is None or not verify_password(user_data.password, user["hashed_password"]):
-        raise ValueError("Entered email or password is not correct")
-    return User(**user)
