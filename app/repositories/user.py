@@ -5,11 +5,30 @@ from app.db.models import UserTable
 from app.core import get_password_hash, verify_password
 from app.schemas import User, UserAuth, UserBase, UserCreate
 
+from .base import SQLAlchemyRepository
+
 
 __all__ = [
     "get_user", "get_users", "check_user_id", "find_users_by_data", "create_user",
     "get_user_via_email", "authenticate_user", "delete_user", "update_user"
 ]
+
+
+"""
+class UserService:
+    def __init__(self, user_repo: UserRepository):
+        self.user_repo = user_repo
+
+    async def create_user(self, user: UserCreate) -> User:
+        input_data = user.model_dump()
+        return await self.user_repo.create(input_data, User)    
+"""
+
+
+class UserRepository(SQLAlchemyRepository):
+    table = UserTable
+
+
 
 
 async def get_user(conn: AsyncConnection, user_id: int) -> User | None:

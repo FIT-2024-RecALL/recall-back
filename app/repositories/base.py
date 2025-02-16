@@ -1,6 +1,6 @@
 from abc import ABC, abstractmethod
 from pydantic import BaseModel
-from sqlalchemy import Table, insert, select
+from sqlalchemy import Table, insert, select, update, delete, exists
 from sqlalchemy.ext.asyncio import AsyncConnection
 from typing import Type, TypeVar
 
@@ -17,7 +17,7 @@ class BaseRepository(ABC):
         raise NotImplementedError
 
     @abstractmethod
-    async def get_one_or_none(self, filter_data, output_schema, need_all):
+    async def get_one_or_none(self, filter_data, filter_func, output_schema):
         raise NotImplementedError
 
     @abstractmethod
@@ -25,15 +25,15 @@ class BaseRepository(ABC):
         raise NotImplementedError
 
     @abstractmethod
-    async def update(self):
+    async def update_one(self, filter_data, filter_func, update_values, output_schema):
         raise NotImplementedError
 
     @abstractmethod
-    async def delete(self):
+    async def delete(self, filter_data, filter_func):
         raise NotImplementedError
 
     @abstractmethod
-    async def exists(self):
+    async def exists(self, filter_data, filter_func):
         raise NotImplementedError
 
 
@@ -66,19 +66,21 @@ class SQLAlchemyRepository(BaseRepository):
         )
         return [output_schema(**elem) for elem in result.mappings().all()]
 
+    async def update_one(
+            self,
+            filter_data: dict, filter_func,
+            update_values: dict,
+            output_schema: Type[SchemaType]
+    ) -> SchemaType:
+        result = await self.connection.execute(
+            update(self.table).where(filter_func(filter_data)).values(**update_values)
+            .returning(self.table.c[*output_schema.model_fields])
+        )
+        return output_schema(**result.mappings().first())
 
+    async def delete(self, filter_data: dict, filter_func) -> None:
+        await self.connection.execute(delete(self.table).where(filter_func(filter_data)))
 
-
-"""
-class UserRepository(SQLAlchemyRepository):
-    table = UserTable
-
-
-class UserService:
-    def __init__(self, user_repo: UserRepository):
-        self.user_repo = user_repo
-
-    async def create_user(self, user: UserCreate) -> User:
-        input_data = user.model_dump()
-        return await self.user_repo.create(input_data, User)    
-"""
+    async def exists(self, filter_data: dict, filter_func) -> bool:
+        result = await self.connection.execute(select(exists().where(filter_func(filter_data))))
+        return result is not None
