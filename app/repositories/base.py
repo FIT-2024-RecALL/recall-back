@@ -12,7 +12,7 @@ class BaseRepository(ABC):
         raise NotImplementedError
 
     @abstractmethod
-    async def get_one_or_none(self, filter_data, filter_func, output_fields):
+    async def get_one_or_none(self, filter_expr, output_fields):
         raise NotImplementedError
 
     @abstractmethod
@@ -20,7 +20,7 @@ class BaseRepository(ABC):
         raise NotImplementedError
 
     @abstractmethod
-    async def update_one(self, filter_data, filter_func, update_values, output_fields):
+    async def update_one(self, filter_expr, update_values, output_fields):
         raise NotImplementedError
 
     @abstractmethod
@@ -44,13 +44,11 @@ class SQLAlchemyRepository(BaseRepository):
         )
         return dict(result.mappings().first())
 
-    async def get_one_or_none(
-            self, filter_data: dict, filter_func, output_fields: list[str]
-    ) -> dict | None:
-        result = (await self.connection.execute(
-            select(self.table.c[*output_fields]).where(filter_func(filter_data))
-        )).mappings().first()
-        return result
+    async def get_one_or_none(self, filter_expr, output_fields: list[str]) -> dict | None:
+        result = await self.connection.execute(
+            select(self.table.c[*output_fields]).where(filter_expr)
+        )
+        return result.mappings().first()
 
     async def get_all(
             self, output_fields: list[str], limit: int, offset: int
@@ -61,13 +59,10 @@ class SQLAlchemyRepository(BaseRepository):
         return [*result.mappings().all()]
 
     async def update_one(
-            self,
-            filter_data: dict, filter_func,
-            update_values: dict,
-            output_fields: list[str]
+            self, filter_expr, update_values: dict, output_fields: list[str]
     ) -> dict:
         result = await self.connection.execute(
-            update(self.table).where(filter_func(filter_data)).values(**update_values)
+            update(self.table).where(filter_expr).values(**update_values)
             .returning(self.table.c[*output_fields])
         )
         return dict(result.mappings().first())

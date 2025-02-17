@@ -8,12 +8,6 @@ from app.schemas import User, UserAuth, UserBase, UserCreate
 from .base import SQLAlchemyRepository
 
 
-__all__ = [
-    "get_user", "get_users", "check_user_id", "find_users_by_data", "create_user",
-    "get_user_via_email", "authenticate_user", "delete_user", "update_user"
-]
-
-
 """
 class UserService:
     def __init__(self, user_repo: UserRepository):
@@ -36,17 +30,14 @@ class UserRepository(SQLAlchemyRepository):
     table = UserTable
 
     async def get_user_by_id(self, user_id: int, output_fields: list[str]) -> dict:
-        id_filter = lambda data: self.table.c["id"] == data["id"]
-        filter_data = {"id": user_id}
-        return await self.get_one_or_none(filter_data, id_filter, output_fields)
+        id_filter = self.table.c["id"] == user_id
+        return await self.get_one_or_none(id_filter, output_fields)
 
     async def get_user_by_email(self, email: str, output_fields: list[str]) -> dict:
-        email_filter = lambda data: self.table.c["email"] == data["email"]
-        filter_data = {"email": email}
-        return await self.get_one_or_none(filter_data, email_filter, output_fields)
+        email_filter = self.table.c["email"] == email
+        return await self.get_one_or_none(email_filter, output_fields)
 
 
-"""
 async def get_user_by_email(conn: AsyncConnection, email: str):
     result = await conn.execute(select(UserTable).where(UserTable.c.email == email))
     return result.mappings().first()
@@ -57,20 +48,12 @@ async def get_user(conn: AsyncConnection, user_id: int) -> User | None:
         select(UserTable.c[*User.model_fields]).where(UserTable.c.id == user_id)
     )).mappings().first()
     return result if result is None else User(**result)
-"""
 
 
 async def check_user_id(conn: AsyncConnection, user_id: int) -> None:
     result = await conn.execute(select(exists().where(UserTable.c.id == user_id)))
     if not result.scalar():
         raise ValueError("User not found")
-
-
-async def get_users(conn: AsyncConnection, *, limit: int, skip: int):
-    result = await conn.execute(
-        select(UserTable.c[*User.model_fields]).limit(limit).offset(skip)
-    )
-    return result.mappings().all()
 
 
 async def find_users_by_data(conn: AsyncConnection, user: UserBase) -> list[int]:
@@ -95,10 +78,8 @@ async def delete_user(conn: AsyncConnection, user_id: int) -> None:
 
 
 async def update_user(conn: AsyncConnection, user_id: int, user: UserBase) -> User:
-    query = update(UserTable).where(UserTable.c.id == user_id).values(
-        email=user.email, nickname=user.nickname
-    ).returning(UserTable.c[*User.model_fields])
-
+    query = (update(UserTable).where(UserTable.c.id == user_id).values(**user.model_dump())
+             .returning(UserTable.c[*User.model_fields]))
     result = await conn.execute(query)
     await conn.commit()
     return User(**result.mappings().first())

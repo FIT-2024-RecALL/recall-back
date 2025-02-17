@@ -3,7 +3,7 @@ from pydantic import Field, EmailStr
 from .base import CamelCaseBaseModel
 
 
-__all__ = ["User", "UserAuth", "UserBase", "UserCreate"]
+__all__ = ["User", "UserAuth", "UserBase", "UserCreate", "UserDTO"]
 
 
 class UserBase(CamelCaseBaseModel):
@@ -22,3 +22,7 @@ class User(UserBase):
 class UserAuth(CamelCaseBaseModel):
     email: EmailStr
     password: str = Field(min_length=8, max_length=40)
+
+
+class UserDTO(User):
+    hashed_password: str = Field(min_length=8, max_length=40)
