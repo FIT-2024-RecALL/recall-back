@@ -1,34 +1,39 @@
 from abc import ABC, abstractmethod
+from pydantic import BaseModel
 from sqlalchemy import Table, insert, select, update, delete, exists
 from sqlalchemy.ext.asyncio import AsyncConnection
+from typing import Type, TypeVar
 
 
-__all__ = ["BaseRepository", "SQLAlchemyRepository"]
+__all__ = ["BaseRepository", "SchemaType", "SQLAlchemyRepository"]
+
+
+SchemaType = TypeVar("SchemaType", bound=BaseModel)
 
 
 class BaseRepository(ABC):
     @abstractmethod
-    async def create(self, input_data, output_fields):
+    async def create(self, input_data, output_schema):
         raise NotImplementedError
 
     @abstractmethod
-    async def get_one_or_none(self, filter_expr, output_fields):
+    async def get_one_or_none(self, filter_expr, output_schema):
         raise NotImplementedError
 
     @abstractmethod
-    async def get_all(self, output_fields, limit, offset):
+    async def get_all(self, output_schema, limit, offset):
         raise NotImplementedError
 
     @abstractmethod
-    async def update_one(self, filter_expr, update_values, output_fields):
+    async def update_one(self, filter_expr, update_values, output_schema):
         raise NotImplementedError
 
     @abstractmethod
-    async def delete(self, filter_data, filter_func):
+    async def delete(self, filter_expr):
         raise NotImplementedError
 
     @abstractmethod
-    async def exists(self, filter_data, filter_func):
+    async def exists(self, filter_expr):
         raise NotImplementedError
 
 
@@ -38,38 +43,39 @@ class SQLAlchemyRepository(BaseRepository):
     def __init__(self, conn: AsyncConnection):
         self.connection = conn
 
-    async def create(self, input_data: dict, output_fields: list[str]) -> dict:
+    async def create(self, input_data: dict, output_schema: Type[SchemaType]) -> SchemaType:
         result = await self.connection.execute(
-            insert(self.table).values(**input_data).returning(self.table.c[*output_fields])
+            insert(self.table).values(**input_data)
+            .returning(self.table.c[*output_schema.model_fields])
         )
-        return dict(result.mappings().first())
+        return output_schema(**result.mappings().first())
 
-    async def get_one_or_none(self, filter_expr, output_fields: list[str]) -> dict | None:
-        result = await self.connection.execute(
-            select(self.table.c[*output_fields]).where(filter_expr)
-        )
-        return result.mappings().first()
+    async def get_one_or_none(self, filter_expr, output_schema: Type[SchemaType]) -> SchemaType:
+        result = (await self.connection.execute(
+            select(self.table.c[*output_schema.model_fields]).where(filter_expr)
+        )).mappings().first()
+        return result and output_schema(**result)
 
     async def get_all(
-            self, output_fields: list[str], limit: int, offset: int
-    ) -> list[dict]:
+            self, output_schema: Type[SchemaType], limit: int, offset: int
+    ) -> list[SchemaType]:
         result = await self.connection.execute(
-            select(self.table.c[*output_fields]).limit(limit).offset(offset)
+            select(self.table.c[*output_schema.model_fields]).limit(limit).offset(offset)
         )
-        return [*result.mappings().all()]
+        return [output_schema(**elem) for elem in result.mappings().all()]
 
     async def update_one(
-            self, filter_expr, update_values: dict, output_fields: list[str]
-    ) -> dict:
+            self, filter_expr, update_values: dict, output_schema: Type[SchemaType]
+    ) -> SchemaType:
         result = await self.connection.execute(
             update(self.table).where(filter_expr).values(**update_values)
-            .returning(self.table.c[*output_fields])
+            .returning(self.table.c[*output_schema.model_fields])
         )
-        return dict(result.mappings().first())
+        return output_schema(**result.mappings().first())
 
-    async def delete(self, filter_data: dict, filter_func) -> None:
-        await self.connection.execute(delete(self.table).where(filter_func(filter_data)))
+    async def delete(self, filter_expr) -> None:
+        await self.connection.execute(delete(self.table).where(filter_expr))
 
-    async def exists(self, filter_data: dict, filter_func) -> bool:
-        result = await self.connection.execute(select(exists().where(filter_func(filter_data))))
+    async def exists(self, filter_expr) -> bool:
+        result = await self.connection.execute(select(exists().where(filter_expr)))
         return result is not None
