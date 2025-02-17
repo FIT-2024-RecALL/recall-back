@@ -20,7 +20,7 @@ async def unload_model():
 
 async def compare_answers(question: str, etalon: str, user: str) -> AIFeedback:
     response = await client.generate(
-        model=_settings.ollama.MODEL, stream=False, 
+        model=_settings.ollama.MODEL, keep_alive=-1,
         prompt=f'Вопрос: {question}\nЭталонный ответ: {etalon}\nОтвет пользователя: {user}',
         format=AIFeedback.model_json_schema()
     )
