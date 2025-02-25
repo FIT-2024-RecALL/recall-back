@@ -5,13 +5,18 @@ from fastapi.middleware.cors import CORSMiddleware
 import uvicorn
 
 from .database import create_db_tables, close_db_connections
+from .helpers import load_model, unload_model
 from app.routers import cards, collections, train_records, users, storage
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     await create_db_tables()
+    print()
+    print(await load_model())
     yield
+    print(await load_model())
+    print()
     await close_db_connections()
 
 app = FastAPI(lifespan=lifespan)

@@ -54,10 +54,19 @@ class MinioSettings(BaseSettings):
     PASSWORD: str
 
 
+class OllamaSettings(BaseSettings):
+    model_config = SettingsConfigDict(env_prefix='OLLAMA_', env_file="./config/ollama.env", extra="ignore")
+
+    MODEL: str
+    HOSTNAME: str
+    PORT: int
+
+
 class Settings(BaseSettings):
     auth: AuthSettings = AuthSettings()
     db: PostgreSettings = PostgreSettings()
     minio: MinioSettings = MinioSettings()
+    ollama: OllamaSettings = OllamaSettings()
 
     @property
     def auth_algorithm(self) -> CryptoAlgorithm:
@@ -85,6 +94,10 @@ class Settings(BaseSettings):
     def minio_url(self) -> str:
         """Hostname with port"""
         return f"{self.minio.HOSTNAME}:{self.minio.PORT}"
+
+    @property
+    def ollama_url(self) -> str:
+        return f'http://{self.ollama.HOSTNAME}:{self.ollama.PORT}'
 
     def __create_dialect_url(self, dialect: str) -> str:
         return (f"postgresql+{dialect}://{self.db.USER}:{self.db.PASSWORD.get_secret_value()}"
