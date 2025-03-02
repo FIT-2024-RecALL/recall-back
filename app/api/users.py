@@ -13,7 +13,7 @@ router = APIRouter(
     tags=["user"]
 )
 
-
+"""
 @router.get("/profile", response_model=User)
 async def read_user(conn: DBConnection, user_id: UserID) -> User:
     try:
@@ -39,6 +39,7 @@ async def create_user(
             **_settings.cookie_kwargs.model_dump()
         )
     return new_user
+"""
 
 
 @router.put("/edit_profile", response_model=User)

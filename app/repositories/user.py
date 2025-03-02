@@ -52,10 +52,4 @@ async def update_user(conn: AsyncConnection, user_id: int, user: UserBase) -> Us
 async def delete_user(conn: AsyncConnection, user_id: int) -> None:
     await conn.execute(delete(UserTable).where(UserTable.c.id == user_id))
     await conn.commit()
-
-# nothing
-async def check_user_id(conn: AsyncConnection, user_id: int) -> None:
-    result = await conn.execute(select(exists().where(UserTable.c.id == user_id)))
-    if not result.scalar():
-        raise ValueError("User not found")
 """
