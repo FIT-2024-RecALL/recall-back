@@ -1,9 +1,8 @@
 from fastapi import APIRouter, HTTPException, Response
 
 from app import repositories
-from app.core import create_access_token, get_expiration_datetime
+from app.core import create_access_token, delete_cookie, get_expiration_datetime
 from app.schemas import User, UserAuth, UserBase, UserCreate, Collection, CollectionShort
-from app.core.config import _settings
 
 from app.core.dependencies import DBConnection, UserID
 
@@ -13,7 +12,7 @@ router = APIRouter(
     tags=["user"]
 )
 
-"""
+############
 @router.get("/profile", response_model=User)
 async def read_user(conn: DBConnection, user_id: UserID) -> User:
     try:
@@ -22,7 +21,7 @@ async def read_user(conn: DBConnection, user_id: UserID) -> User:
         raise HTTPException(status_code=400, detail=str(e))
     return await repositories.get_user(conn, user_id)
 
-
+############
 @router.post("/register", response_model=User)
 async def create_user(
         conn: DBConnection, response: Response, user: UserCreate, auto_login: bool = True
@@ -39,9 +38,8 @@ async def create_user(
             **_settings.cookie_kwargs.model_dump()
         )
     return new_user
-"""
 
-
+############
 @router.put("/edit_profile", response_model=User)
 async def update_user(conn: DBConnection, user_id: UserID, user: UserBase) -> User:
     users_with_data: list[int] = await repositories.find_users_by_data(conn, user)
@@ -49,7 +47,17 @@ async def update_user(conn: DBConnection, user_id: UserID, user: UserBase) -> Us
         raise HTTPException(status_code=400, detail="Email or Nickname already registered")
     return await repositories.update_user(conn, user_id, user)
 
+############
+@router.delete("/delete_profile", response_class=Response)
+async def delete_user(conn: DBConnection, user_id: UserID, response: Response) -> None:
+    try:
+        await repositories.check_user_id(conn, user_id)
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+    await repositories.delete_user(conn, user_id)
+    delete_cookie(response)
 
+#
 @router.post("/login", response_model=User)
 async def authenticate_user(conn: DBConnection, response: Response, user_data: UserAuth) -> User:
     try:
@@ -78,7 +86,7 @@ async def read_cards(
 
 
 @router.get("/collections", response_model=list[CollectionShort])
-async def read_collections_short(
+async def read_collections(
         conn: DBConnection, user_id: UserID, skip: int = 0, limit: int | None = None
 ) -> list[CollectionShort]:
     try:
@@ -88,29 +96,7 @@ async def read_collections_short(
     return await repositories.get_user_collections_short(conn, user_id, limit=limit, skip=skip)
 
 
-@router.get("/collections/full", response_model=list[Collection])
-async def read_collections(
-        conn: DBConnection, user_id: UserID, skip: int = 0, limit: int | None = None
-) -> list[Collection]:
-    try:
-        await repositories.check_user_id(conn, user_id)
-    except ValueError as e:
-        raise HTTPException(status_code=404, detail=str(e))
-    return await repositories.get_user_collections(conn, user_id, limit=limit, skip=skip)
-
-
-@router.post("/logout", response_class=Response)
+############
+@router.post("/logout")
 async def logout_user(response: Response) -> None:
-    response.delete_cookie(key=_settings.access_token_key, **_settings.cookie_kwargs.model_dump())
-    response.status_code = 200
-    return
-
-
-@router.delete("/delete_profile", response_class=Response)
-async def delete_user(conn: DBConnection, user_id: UserID, response: Response) -> None:
-    try:
-        await repositories.check_user_id(conn, user_id)
-    except ValueError as e:
-        raise HTTPException(status_code=400, detail=str(e))
-    await repositories.delete_user(conn, user_id)
-    await logout_user(response)
+    delete_cookie(response)

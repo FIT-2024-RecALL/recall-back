@@ -1,6 +1,6 @@
 from sqlalchemy.ext.asyncio import create_async_engine
 
-from app.core.config import _settings
+from app.core import get_settings
 
 from .models import get_metadata
 
@@ -10,7 +10,7 @@ __all__ = ["create_db_tables", "get_db_engine", "close_db_connections", "delete_
 
 ## магические константы надо будет перенести в конфиг
 __engine = create_async_engine(
-    url=_settings.db_url_asyncpg,
+    url=get_settings().db_url_asyncpg,
     pool_size=10,
     max_overflow=2,
     pool_recycle=1800,  # в секундах

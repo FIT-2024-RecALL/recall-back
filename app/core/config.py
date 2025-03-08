@@ -3,6 +3,9 @@ from pydantic import SecretStr, BaseModel
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
+__all__ = ["get_settings", "Settings"]
+
+
 class CryptoAlgorithm(StrEnum):
     HS256 = "HS256"
     HS512 = "HS512"
@@ -102,4 +105,8 @@ class Settings(BaseSettings):
         return "sqlite:///./sql_app.db"
 
 
-_settings = Settings()
+__settings = Settings()
+
+
+def get_settings() -> Settings:
+    return __settings

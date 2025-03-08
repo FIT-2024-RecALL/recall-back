@@ -50,7 +50,7 @@ class SQLAlchemyRepository(BaseRepository):
         )
         return output_schema(**result.mappings().first())
 
-    async def get_one_or_none(self, filter_expr, output_schema: Type[SchemaType]) -> SchemaType:
+    async def get_one_or_none(self, filter_expr, output_schema: Type[SchemaType]) -> SchemaType | None:
         result = (await self.connection.execute(
             select(self.table.c[*output_schema.model_fields]).where(filter_expr)
         )).mappings().first()
