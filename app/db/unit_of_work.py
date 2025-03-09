@@ -37,7 +37,7 @@ class UnitOfWork:
                 yield self
             except Exception:
                 ## logging
-                self.connection.rollback()
+                await self.connection.rollback()
                 raise
             finally:
                 self.connection = None

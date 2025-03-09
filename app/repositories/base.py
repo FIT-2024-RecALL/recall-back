@@ -1,14 +1,15 @@
 from abc import ABC, abstractmethod
-from pydantic import BaseModel
 from sqlalchemy import Table, insert, select, update, delete, exists
 from sqlalchemy.ext.asyncio import AsyncConnection
 from typing import Type, TypeVar
 
+from app.schemas import CamelCaseBaseModel
 
-__all__ = ["BaseRepository", "SchemaType", "SQLAlchemyRepository"]
+
+__all__ = ["BaseRepository", "SQLAlchemyRepository"]
 
 
-SchemaType = TypeVar("SchemaType", bound=BaseModel)
+SchemaType = TypeVar("SchemaType", bound=CamelCaseBaseModel)
 
 
 class BaseRepository(ABC):
@@ -46,13 +47,13 @@ class SQLAlchemyRepository(BaseRepository):
     async def create(self, input_data: dict, output_schema: Type[SchemaType]) -> SchemaType:
         result = await self.connection.execute(
             insert(self.table).values(**input_data)
-            .returning(self.table.c[*output_schema.model_fields])
+            .returning(self.table.c[*output_schema.fields()])
         )
         return output_schema(**result.mappings().first())
 
     async def get_one_or_none(self, filter_expr, output_schema: Type[SchemaType]) -> SchemaType | None:
         result = (await self.connection.execute(
-            select(self.table.c[*output_schema.model_fields]).where(filter_expr)
+            select(self.table.c[*output_schema.fields()]).where(filter_expr)
         )).mappings().first()
         return result and output_schema(**result)
 
@@ -60,7 +61,7 @@ class SQLAlchemyRepository(BaseRepository):
             self, output_schema: Type[SchemaType], limit: int, offset: int
     ) -> list[SchemaType]:
         result = await self.connection.execute(
-            select(self.table.c[*output_schema.model_fields]).limit(limit).offset(offset)
+            select(self.table.c[*output_schema.fields()]).limit(limit).offset(offset)
         )
         return [output_schema(**elem) for elem in result.mappings().all()]
 
@@ -69,7 +70,7 @@ class SQLAlchemyRepository(BaseRepository):
     ) -> SchemaType:
         result = await self.connection.execute(
             update(self.table).where(filter_expr).values(**update_values)
-            .returning(self.table.c[*output_schema.model_fields])
+            .returning(self.table.c[*output_schema.fields()])
         )
         return output_schema(**result.mappings().first())
 

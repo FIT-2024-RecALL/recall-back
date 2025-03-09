@@ -51,6 +51,7 @@ class UserService:
         async with self.uow.begin():
             user_repo = self.uow.get_repository(UserRepository)
             auth_data = UserDTO(email=user_data.email).table_dict()
+
             user = await user_repo.get_user_by_columns(auth_data, UserDTO)
             if user is None or not verify_password(user_data.password, user.password):
                 raise HTTPException(status_code=400)  ## ТУТ ДОЛЖНО БЫТЬ КАСТОМНОЕ ИСКЛЮЧЕНИЕ!

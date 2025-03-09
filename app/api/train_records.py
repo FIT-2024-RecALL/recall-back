@@ -3,7 +3,7 @@ from fastapi import APIRouter, HTTPException
 from app import repositories
 from app.schemas import TrainRecord, TrainRecordCreate
 
-from app.core.dependencies import DBConnection, UserID
+from app.api.dependencies import DBConnection, UserID
 
 
 router = APIRouter(

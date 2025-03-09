@@ -1,7 +1,9 @@
 from fastapi import APIRouter, Response
 
-from app.core import delete_cookie, UserIdDep, UserServiceDep, set_authentication_cookie
+from app.core import delete_cookie, set_authentication_cookie
 from app.schemas import User, UserAuth, UserBase, UserCreate, CollectionShort
+
+from .dependencies import UserIdDep, UserServiceDep
 
 
 router = APIRouter(

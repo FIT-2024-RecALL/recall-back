@@ -30,6 +30,10 @@ class UserDTO(CamelCaseBaseModel):
     nickname: str | None = Field(None, min_length=1, max_length=35)
     password: str | None = Field(None, min_length=8, max_length=40)
 
+    @classmethod
+    def fields(cls) -> list[str]:
+        return ["id", "email", "nickname", "hashed_password"]
+
     def table_dict(self):
         table_repr = dict()
         if self.id is not None: table_repr["id"] = self.id

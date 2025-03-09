@@ -4,7 +4,7 @@ from fastapi.middleware.cors import CORSMiddleware
 import uvicorn
 
 from app.db import close_db_connections, create_db_tables
-from app.api import cards, collections, storage, train_records, users
+from app.api import users_router
 
 
 @asynccontextmanager
@@ -25,7 +25,7 @@ app.add_middleware(
 #app.include_router(cards.router)
 #app.include_router(collections.router)
 #app.include_router(train_records.router)
-app.include_router(users.router)
+app.include_router(users_router)
 #app.include_router(storage.router)
 
 
