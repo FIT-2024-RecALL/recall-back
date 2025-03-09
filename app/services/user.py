@@ -51,25 +51,7 @@ class UserService:
         async with self.uow.begin():
             user_repo = self.uow.get_repository(UserRepository)
             auth_data = UserDTO(email=user_data.email).table_dict()
-
             user = await user_repo.get_user_by_columns(auth_data, UserDTO)
             if user is None or not verify_password(user_data.password, user.password):
                 raise HTTPException(status_code=400)  ## ТУТ ДОЛЖНО БЫТЬ КАСТОМНОЕ ИСКЛЮЧЕНИЕ!
             return User(**user.model_dump())
-
-
-"""
-@router.post("/login", response_model=User)
-async def authenticate_user(conn: DBConnection, response: Response, user_data: UserAuth) -> User:
-    user = await get_user_by_email(conn, user_data.email)
-    if user is None or not verify_password(user_data.password, user["hashed_password"]):
-        raise HTTPException(status_code=401, detail="Entered email or password is not correct")
-
-    response.set_cookie(
-        key=_settings.access_token_key,
-        value=create_access_token(user.id),
-        expires=get_expiration_datetime(),
-        **_settings.cookie_kwargs.model_dump()
-    )
-    return User(**user)
-"""

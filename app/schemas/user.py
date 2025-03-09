@@ -1,4 +1,4 @@
-from pydantic import Field, EmailStr
+from pydantic import EmailStr, Field
 
 from .base import CamelCaseBaseModel
 
@@ -27,17 +27,17 @@ class UserAuth(CamelCaseBaseModel):
 class UserDTO(CamelCaseBaseModel):
     id: int | None = None
     email: EmailStr | None = None
-    nickname: str | None = Field(None, min_length=1, max_length=35)
-    password: str | None = Field(None, min_length=8, max_length=40)
+    nickname: str | None = None
+    password: str | None = Field(None, alias="hashed_password")
 
     @classmethod
     def fields(cls) -> list[str]:
-        return ["id", "email", "nickname", "hashed_password"]
+        mapping = {"password": "hashed_password"}
+        result_fields = super().fields()
+        for field, alias in mapping.items():
+            result_fields.remove(field)
+            result_fields.append(alias)
+        return result_fields
 
     def table_dict(self):
-        table_repr = dict()
-        if self.id is not None: table_repr["id"] = self.id
-        if self.email is not None: table_repr["email"] = self.email
-        if self.nickname is not None: table_repr["nickname"] = self.nickname
-        if self.password is not None: table_repr["hashed_password"] = self.password
-        return table_repr
+        return self.model_dump(exclude_unset=True, by_alias=True)
