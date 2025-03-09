@@ -22,11 +22,11 @@ app.add_middleware(
     allow_methods=['*'],
     allow_headers=['*']
 )
-app.include_router(cards.router)
-app.include_router(collections.router)
-app.include_router(train_records.router)
+#app.include_router(cards.router)
+#app.include_router(collections.router)
+#app.include_router(train_records.router)
 app.include_router(users.router)
-app.include_router(storage.router)
+#app.include_router(storage.router)
 
 
 ###################################################
