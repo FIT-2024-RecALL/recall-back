@@ -1,10 +1,7 @@
-from fastapi import APIRouter, HTTPException, Response
+from fastapi import APIRouter, Response
 
-from app import repositories
-from app.core import create_access_token, delete_cookie, get_expiration_datetime
-from app.schemas import User, UserAuth, UserBase, UserCreate, Collection, CollectionShort
-
-from app.core.dependencies import DBConnection, UserID
+from app.core import delete_cookie, UserIdDep, UserServiceDep, set_authentication_cookie
+from app.schemas import User, UserAuth, UserBase, UserCreate, CollectionShort
 
 
 router = APIRouter(
@@ -12,68 +9,49 @@ router = APIRouter(
     tags=["user"]
 )
 
-############
-@router.get("/profile", response_model=User)
-async def read_user(conn: DBConnection, user_id: UserID) -> User:
-    try:
-        await repositories.check_user_id(conn, user_id)
-    except ValueError as e:
-        raise HTTPException(status_code=400, detail=str(e))
-    return await repositories.get_user(conn, user_id)
 
-############
+@router.get("/profile", response_model=User)
+async def read_user(user_id: UserIdDep, user_service: UserServiceDep) -> User:
+    return await user_service.get_user(user_id)
+
+
 @router.post("/register", response_model=User)
 async def create_user(
-        conn: DBConnection, response: Response, user: UserCreate, auto_login: bool = True
+        response: Response, user: UserCreate, user_service: UserServiceDep, auto_login: bool = True
 ) -> User:
-    users_with_data: list[int] = await repositories.find_users_by_data(conn, user)
-    if len(users_with_data) > 0:
-        raise HTTPException(status_code=400, detail="Email or Nickname already registered")
-    new_user: User = await repositories.create_user(conn, user)
+    new_user = await user_service.register_user(user)
     if auto_login:
-        access_token = create_access_token(new_user.id)
-        response.set_cookie(
-            key=_settings.access_token_key, value=access_token,
-            expires=get_expiration_datetime(),
-            **_settings.cookie_kwargs.model_dump()
-        )
+        set_authentication_cookie(response, new_user.id)
     return new_user
 
-############
-@router.put("/edit_profile", response_model=User)
-async def update_user(conn: DBConnection, user_id: UserID, user: UserBase) -> User:
-    users_with_data: list[int] = await repositories.find_users_by_data(conn, user)
-    if len(users_with_data) == 1 and users_with_data[0] != user_id or len(users_with_data) > 1:
-        raise HTTPException(status_code=400, detail="Email or Nickname already registered")
-    return await repositories.update_user(conn, user_id, user)
 
-############
+@router.put("/edit_profile", response_model=User)
+async def update_user(user_id: UserIdDep, user: UserBase, user_service: UserServiceDep) -> User:
+    return await user_service.update_profile(user_id, user)
+
+
 @router.delete("/delete_profile", response_class=Response)
-async def delete_user(conn: DBConnection, user_id: UserID, response: Response) -> None:
-    try:
-        await repositories.check_user_id(conn, user_id)
-    except ValueError as e:
-        raise HTTPException(status_code=400, detail=str(e))
-    await repositories.delete_user(conn, user_id)
+async def delete_user(
+        response: Response, user_id: UserIdDep, user_service: UserServiceDep
+) -> None:
+    await user_service.delete_profile(user_id)
     delete_cookie(response)
 
-#
-@router.post("/login", response_model=User)
-async def authenticate_user(conn: DBConnection, response: Response, user_data: UserAuth) -> User:
-    try:
-        user = await repositories.authenticate_user(conn, user_data)
-    except ValueError as e:
-        raise HTTPException(status_code=401, detail=str(e))
 
-    access_token = create_access_token(user.id)
-    response.set_cookie(
-        key=_settings.access_token_key, value=access_token, 
-        expires=get_expiration_datetime(),
-        **_settings.cookie_kwargs.model_dump()
-    )
+@router.post("/login", response_model=User)
+async def authenticate_user(
+        response: Response, user_data: UserAuth, user_service: UserServiceDep
+) -> User:
+    user = await user_service.authenticate_user(user_data)
+    set_authentication_cookie(response, user.id)
     return user
 
 
+@router.post("/logout")
+async def logout_user(response: Response) -> None:
+    delete_cookie(response)
+
+"""
 @router.get("/cards", response_model=list[int])
 async def read_cards(
         conn: DBConnection, user_id: UserID, skip: int = 0, limit: int | None = None
@@ -94,9 +72,4 @@ async def read_collections(
     except ValueError as e:
         raise HTTPException(status_code=404, detail=str(e))
     return await repositories.get_user_collections_short(conn, user_id, limit=limit, skip=skip)
-
-
-############
-@router.post("/logout")
-async def logout_user(response: Response) -> None:
-    delete_cookie(response)
+"""

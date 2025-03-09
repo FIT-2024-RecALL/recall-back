@@ -1,9 +1,12 @@
 from fastapi import HTTPException
 
-from app.core import get_password_hash, verify_password, UserIdDep
+from app.core import get_password_hash, verify_password
 from app.db import UnitOfWork
 from app.repositories import UserRepository
 from app.schemas import User, UserAuth, UserBase, UserCreate, UserDTO
+
+
+__all__ = ["UserService"]
 
 
 class UserService:
@@ -19,7 +22,7 @@ class UserService:
             register_data["hashed_password"] = get_password_hash(register_data["hashed_password"])
             return await user_repo.create(register_data, User)
 
-    async def get_user(self, user_id: UserIdDep) -> User:
+    async def get_user(self, user_id: int) -> User:
         async with self.uow.begin():
             user_repo = self.uow.get_repository(UserRepository)
             is_user_in_db = user_repo.table.c.id == user_id
@@ -27,7 +30,7 @@ class UserService:
                 raise HTTPException(status_code=400)  ## ТУТ ДОЛЖНО БЫТЬ КАСТОМНОЕ ИСКЛЮЧЕНИЕ!
             return await user_repo.get_one_or_none(is_user_in_db, User)
 
-    async def update_profile(self, user_id: UserIdDep, user_data: UserBase) -> User:
+    async def update_profile(self, user_id: int, user_data: UserBase) -> User:
         async with (self.uow.begin()):
             user_repo = self.uow.get_repository(UserRepository)
             update_values = user_data.model_dump()
@@ -36,7 +39,7 @@ class UserService:
                 raise HTTPException(status_code=400)  ## ТУТ ДОЛЖНО БЫТЬ КАСТОМНОЕ ИСКЛЮЧЕНИЕ!
             return await user_repo.update_one(user_repo.table.c.id == user_id, update_values, User)
 
-    async def delete_profile(self, user_id: UserIdDep) -> None:
+    async def delete_profile(self, user_id: int) -> None:
         async with self.uow.begin():
             user_repo = self.uow.get_repository(UserRepository)
             is_user_in_db = user_repo.table.c.id == user_id
