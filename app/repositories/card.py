@@ -2,13 +2,33 @@ from sqlalchemy import select, insert, delete, update, exists
 from sqlalchemy.ext.asyncio import AsyncConnection
 
 from app.db.models import CardTable
+from app.repositories import BaseSQLAlchemyRepository
 from app.schemas import Card, CardCreate
 
 
-__all__ = [
-    "check_card_id", "check_user_card_id", "get_card", "get_cards", "get_user_cards",
-    "create_card", "delete_card", "update_card", "delete_cards"
-]
+__all__ = ["CardRepository"]
+
+
+class CardRepository(BaseSQLAlchemyRepository):
+    table = CardTable
+
+
+"""
+async def create_card(conn: AsyncConnection, user_id: int, card: CardCreate) -> Card:
+    result = await conn.execute(
+        insert(CardTable).values(owner_id=user_id, **card.model_dump())
+        .returning(CardTable.c[*Card.model_fields])
+    )
+    await conn.commit()
+    return Card(**result.mappings().first())
+
+async def get_card(conn: AsyncConnection, card_id: int) -> Card | None:
+    result = (await conn.execute(
+        select(CardTable.c[*Card.model_fields]).where(CardTable.c.id == card_id)
+    )).mappings().first()
+    return result if result is None else Card(**result)
+
+"""
 
 
 async def check_card_id(conn: AsyncConnection, card_id: int) -> None:
@@ -26,13 +46,6 @@ async def check_user_card_id(conn: AsyncConnection, user_id: int, card_id: int) 
         raise ValueError("Card not found in User collections")
 
 
-async def get_card(conn: AsyncConnection, card_id: int) -> Card | None:
-    result = (await conn.execute(
-        select(CardTable.c[*Card.model_fields]).where(CardTable.c.id == card_id)
-    )).mappings().first()
-    return result if result is None else Card(**result)
-
-
 async def get_cards(conn: AsyncConnection, *, limit: int | None, skip: int) -> list[Card]:
     query = select(CardTable.c[*Card.model_fields]).offset(skip)
     if limit is not None:
@@ -48,15 +61,6 @@ async def get_user_cards(conn: AsyncConnection, user_id: int, *, limit: int | No
         query = query.limit(limit)
     result = await conn.execute(query)
     return list(result.scalars().all())
-
-
-async def create_card(conn: AsyncConnection, user_id: int, card: CardCreate) -> Card:
-    result = await conn.execute(
-        insert(CardTable).values(owner_id=user_id, **card.model_dump())
-        .returning(CardTable.c[*Card.model_fields])
-    )
-    await conn.commit()
-    return Card(**result.mappings().first())
 
 
 async def delete_card(conn: AsyncConnection, card_id: int) -> None:

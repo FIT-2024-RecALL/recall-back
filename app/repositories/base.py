@@ -14,7 +14,7 @@ SchemaType = TypeVar("SchemaType", bound=CamelCaseBaseModel)
 
 class BaseRepository(ABC):
     @abstractmethod
-    async def create(self, input_data, output_schema):
+    async def create_one(self, input_data, output_schema):
         raise NotImplementedError
 
     @abstractmethod
@@ -44,7 +44,7 @@ class BaseSQLAlchemyRepository(BaseRepository):
     def __init__(self, conn: AsyncConnection):
         self.connection = conn
 
-    async def create(self, input_data: dict, output_schema: Type[SchemaType]) -> SchemaType:
+    async def create_one(self, input_data: dict, output_schema: Type[SchemaType]) -> SchemaType:
         result = await self.connection.execute(
             insert(self.table).values(**input_data)
             .returning(self.table.c[*output_schema.fields()])
@@ -79,4 +79,4 @@ class BaseSQLAlchemyRepository(BaseRepository):
 
     async def exists(self, filter_expr) -> bool:
         result = await self.connection.execute(select(exists().where(filter_expr)))
-        return result is not None
+        return result.scalar_one()

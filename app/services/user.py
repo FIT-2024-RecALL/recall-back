@@ -17,15 +17,14 @@ class UserService:
             if len(await user_repo.find_users_by_creds(register_data)) > 0:
                 raise HTTPException(status_code=400)  ## ТУТ ДОЛЖНО БЫТЬ КАСТОМНОЕ ИСКЛЮЧЕНИЕ!
             register_data["hashed_password"] = get_password_hash(register_data["hashed_password"])
-            return await user_repo.create(register_data, User)
+            return await user_repo.create_one(register_data, User)
 
     async def get_user(self, uow: UnitOfWork, user_id: int) -> User:
         async with uow.begin():
             user_repo = uow.get_repository(UserRepository)
-            is_user_in_db = user_repo.table.c.id == user_id#############################################################
-            if not await user_repo.exists(is_user_in_db):
+            if not await user_repo.exists_user_with_id(user_id):
                 raise HTTPException(status_code=400)  ## ТУТ ДОЛЖНО БЫТЬ КАСТОМНОЕ ИСКЛЮЧЕНИЕ!
-            return await user_repo.get_one_or_none(is_user_in_db, User)
+            return await user_repo.get_user_by_id(user_id, User)
 
     async def update_profile(self, uow: UnitOfWork, user_id: int, user_data: UserBase) -> User:
         async with uow.begin():
@@ -34,15 +33,14 @@ class UserService:
             users_with_data = await user_repo.find_users_by_creds(update_values)
             if len(users_with_data) == 1 and users_with_data[0] != user_id or len(users_with_data) > 1:
                 raise HTTPException(status_code=400)  ## ТУТ ДОЛЖНО БЫТЬ КАСТОМНОЕ ИСКЛЮЧЕНИЕ!
-            return await user_repo.update_one(user_repo.table.c.id == user_id, update_values, User)#####################
+            return await user_repo.update_user_by_id(user_id, update_values, User)
 
     async def delete_profile(self, uow: UnitOfWork, user_id: int) -> None:
         async with uow.begin():
             user_repo = uow.get_repository(UserRepository)
-            is_user_in_db = user_repo.table.c.id == user_id#############################################################
-            if not await user_repo.exists(is_user_in_db):
+            if not await user_repo.exists_user_with_id(user_id):
                 raise HTTPException(status_code=400)  ## ТУТ ДОЛЖНО БЫТЬ КАСТОМНОЕ ИСКЛЮЧЕНИЕ!
-            await user_repo.delete(is_user_in_db)
+            await user_repo.delete_user_by_id(user_id)
 
     async def authenticate_user(self, uow: UnitOfWork, user_data: UserAuth):
         async with uow.begin():
