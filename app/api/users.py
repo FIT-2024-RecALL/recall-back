@@ -1,10 +1,9 @@
 from fastapi import APIRouter, Response
 
 from app.core import delete_cookie, set_authentication_cookie
-from app.schemas import User, UserAuth, UserBase, UserCreate, CollectionShort
+from app.schemas import User, UserAuth, UserBase, UserCreate
 
-from .dependencies import UserIdDep, UserServiceDep
-
+from .dependencies import UserIdDep, UnitOfWorkDep, UserServiceDep
 
 router = APIRouter(
     prefix="/user",
@@ -13,38 +12,41 @@ router = APIRouter(
 
 
 @router.get("/profile", response_model=User)
-async def read_user(user_id: UserIdDep, user_service: UserServiceDep) -> User:
-    return await user_service.get_user(user_id)
+async def read_user(user_id: UserIdDep, user_service: UserServiceDep, uow: UnitOfWorkDep) -> User:
+    return await user_service.get_user(uow, user_id)
 
 
 @router.post("/register", response_model=User)
 async def create_user(
-        response: Response, user: UserCreate, user_service: UserServiceDep, auto_login: bool = True
+        response: Response, user: UserCreate, user_service: UserServiceDep, uow: UnitOfWorkDep,
+        auto_login: bool = True
 ) -> User:
-    new_user = await user_service.register_user(user)
+    new_user = await user_service.register_user(uow, user)
     if auto_login:
         set_authentication_cookie(response, new_user.id)
     return new_user
 
 
 @router.put("/edit_profile", response_model=User)
-async def update_user(user_id: UserIdDep, user: UserBase, user_service: UserServiceDep) -> User:
-    return await user_service.update_profile(user_id, user)
+async def update_user(
+        user_id: UserIdDep, user: UserBase, user_service: UserServiceDep, uow: UnitOfWorkDep
+) -> User:
+    return await user_service.update_profile(uow, user_id, user)
 
 
 @router.delete("/delete_profile", response_class=Response)
 async def delete_user(
-        response: Response, user_id: UserIdDep, user_service: UserServiceDep
+        response: Response, user_id: UserIdDep, user_service: UserServiceDep, uow: UnitOfWorkDep
 ) -> None:
-    await user_service.delete_profile(user_id)
+    await user_service.delete_profile(uow, user_id)
     delete_cookie(response)
 
 
 @router.post("/login", response_model=User)
 async def authenticate_user(
-        response: Response, user_data: UserAuth, user_service: UserServiceDep
+        response: Response, user_data: UserAuth, user_service: UserServiceDep, uow: UnitOfWorkDep
 ) -> User:
-    user = await user_service.authenticate_user(user_data)
+    user = await user_service.authenticate_user(uow, user_data)
     set_authentication_cookie(response, user.id)
     return user
 

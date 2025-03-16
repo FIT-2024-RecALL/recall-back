@@ -6,7 +6,7 @@ from typing import Type, TypeVar
 from app.schemas import CamelCaseBaseModel
 
 
-__all__ = ["BaseRepository", "SQLAlchemyRepository"]
+__all__ = ["BaseRepository", "BaseSQLAlchemyRepository", "SchemaType"]
 
 
 SchemaType = TypeVar("SchemaType", bound=CamelCaseBaseModel)
@@ -38,7 +38,7 @@ class BaseRepository(ABC):
         raise NotImplementedError
 
 
-class SQLAlchemyRepository(BaseRepository):
+class BaseSQLAlchemyRepository(BaseRepository):
     table: Table = ...
 
     def __init__(self, conn: AsyncConnection):

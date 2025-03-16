@@ -3,13 +3,13 @@ from typing import Type
 
 from app.db import UserTable
 
-from .base import SchemaType, SQLAlchemyRepository
+from .base import SchemaType, BaseSQLAlchemyRepository
 
 
 __all__ = ["UserRepository"]
 
 
-class UserRepository(SQLAlchemyRepository):
+class UserRepository(BaseSQLAlchemyRepository):
     table = UserTable
 
     async def get_user_by_columns(

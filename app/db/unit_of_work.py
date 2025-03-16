@@ -1,8 +1,8 @@
 from contextlib import asynccontextmanager
-from sqlalchemy.ext.asyncio import AsyncConnection
+from contextvars import ContextVar
 from typing import Type, TypeVar
 
-from app.repositories import SQLAlchemyRepository
+from app.repositories import BaseSQLAlchemyRepository
 
 from .database import get_db_engine
 
@@ -10,7 +10,7 @@ from .database import get_db_engine
 __all__ = ["UnitOfWork"]
 
 
-RepositoryType = TypeVar("RepositoryType", bound=SQLAlchemyRepository)
+RepositoryType = TypeVar("RepositoryType", bound=BaseSQLAlchemyRepository)
 
 
 class UnitOfWork:
@@ -21,28 +21,23 @@ class UnitOfWork:
     Этот класс обеспечивает выполнение ряда операций с базой данных в рамках одной транзакции,
     предоставляя методы для начала транзакции и инициализации репозиториев при установленном
     соединении.
-
-    Attributes:
-        connection (AsyncConnection | None): The active database connection, if any.
     """
-
-    def __init__(self):
-        self.connection: AsyncConnection | None = None
+    __connection = ContextVar("connection", default=None)
 
     @asynccontextmanager
     async def begin(self):
         async with get_db_engine().begin() as conn:
-            self.connection = conn
+            token = self.__connection.set(conn)
             try:
                 yield self
             except Exception:
                 ## logging
-                await self.connection.rollback()
-                raise
+                raise  # Без возбуждения исключения нужен явный rollback соединения
             finally:
-                self.connection = None
+                self.__connection.reset(token)
 
     def get_repository(self, repo_class: Type[RepositoryType]) -> RepositoryType:
-        if self.connection is None:
+        current_connection = self.__connection.get()
+        if current_connection is None:
             raise RuntimeError("Connection is not established. Use 'async with uow.begin()'.")
-        return repo_class(self.connection)
+        return repo_class(current_connection)
