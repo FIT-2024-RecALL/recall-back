@@ -44,6 +44,9 @@ class BaseSQLAlchemyRepository(BaseRepository):
     def __init__(self, conn: AsyncConnection):
         self.connection = conn
 
+    def _item_id_filter(self, item_id: int):
+        return self.table.c.id == item_id
+
     async def create_one(self, input_data: dict, output_schema: Type[SchemaType]) -> SchemaType:
         result = await self.connection.execute(
             insert(self.table).values(**input_data)

@@ -21,10 +21,10 @@ class UserService:
 
     async def get_user(self, uow: UnitOfWork, user_id: int) -> User:
         async with uow.begin():
-            user_repo = uow.get_repository(UserRepository)
-            if not await user_repo.exists_user_with_id(user_id):
+            user = await uow.get_repository(UserRepository).get_user_by_id(user_id, User)
+            if user is None:
                 raise HTTPException(status_code=400)  ## ТУТ ДОЛЖНО БЫТЬ КАСТОМНОЕ ИСКЛЮЧЕНИЕ!
-            return await user_repo.get_user_by_id(user_id, User)
+            return user
 
     async def update_profile(self, uow: UnitOfWork, user_id: int, user_data: UserBase) -> User:
         async with uow.begin():
@@ -44,9 +44,8 @@ class UserService:
 
     async def authenticate_user(self, uow: UnitOfWork, user_data: UserAuth):
         async with uow.begin():
-            user_repo = uow.get_repository(UserRepository)
             auth_data = UserDTO(email=user_data.email).table_dict()
-            user = await user_repo.get_user_by_columns(auth_data, UserDTO)
+            user = await uow.get_repository(UserRepository).get_user_by_columns(auth_data, UserDTO)
             if user is None or not verify_password(user_data.password, user.password):
                 raise HTTPException(status_code=400)  ## ТУТ ДОЛЖНО БЫТЬ КАСТОМНОЕ ИСКЛЮЧЕНИЕ!
             return User(**user.model_dump())

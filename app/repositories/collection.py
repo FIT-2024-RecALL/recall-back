@@ -1,18 +1,29 @@
-from sqlalchemy import select, insert, exists, delete, update
-from sqlalchemy.ext.asyncio import AsyncConnection
+from typing import Type
 
-from .card import delete_cards
-from app.db.models import CollectionTable, CardCollectionTable
-from app.schemas import Collection, CollectionCreate, CollectionShort
+from app.db import CollectionTable
 
-__all__ = [
-    "check_user_collection_id", "check_collection_id",
-    "get_collection",
-    "get_collections", "get_collections_short",
-    "get_user_collections", "get_user_collections_short",
-    "create_collection", "delete_collection", "update_collection",
-]
+from .base import BaseSQLAlchemyRepository, SchemaType
 
+
+__all__ = ["CollectionRepository"]
+
+
+class CollectionRepository(BaseSQLAlchemyRepository):
+    table = CollectionTable
+
+    async def get_collection_by_id(
+            self, collection_id: int, output_schema: Type[SchemaType]
+    ) -> SchemaType | None:
+        return await self.get_one_or_none(self._item_id_filter(collection_id), output_schema)
+
+    async def get_all(self):
+
+
+"""
+
+
+
+"""
 
 async def check_collection_id(conn: AsyncConnection, collection_id: int) -> None:
     result = await conn.execute(select(exists().where(CollectionTable.c.id == collection_id)))
@@ -27,14 +38,6 @@ async def check_user_collection_id(conn: AsyncConnection, user_id: int, collecti
     owner_id: int | None = result.scalar()
     if owner_id is None or owner_id != user_id:
         raise ValueError("User does not have this collection")
-
-
-async def get_collection(conn: AsyncConnection, collection_id: int) -> Collection | None:
-    query = select(CollectionTable.c[*Collection.model_fields]).where(
-        CollectionTable.c.id == collection_id
-    )
-    result = (await conn.execute(query)).mappings().first()
-    return result if result is None else Collection(**result)
 
 
 async def get_collections(conn: AsyncConnection, limit: int | None, skip: int) -> list[Collection]:
@@ -73,16 +76,6 @@ async def get_user_collections(
         query = query.limit(limit)
     result = await conn.execute(query)
     return [Collection(**collection) for collection in result.mappings().all()]
-
-
-async def create_collection(
-        conn: AsyncConnection, user_id: int, collection: CollectionCreate
-) -> Collection:
-    query = (insert(CollectionTable).values(owner_id=user_id, **collection.model_dump())
-             .returning(CollectionTable.c[*Collection.model_fields]))
-    result = await conn.execute(query)
-    await conn.commit()
-    return Collection(**result.mappings().first())
 
 
 async def _filter_connected_cards(conn: AsyncConnection, cards: set[int]) -> set[int]:

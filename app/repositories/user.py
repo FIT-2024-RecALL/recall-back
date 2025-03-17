@@ -3,7 +3,7 @@ from typing import Type
 
 from app.db import UserTable
 
-from .base import SchemaType, BaseSQLAlchemyRepository
+from .base import BaseSQLAlchemyRepository, SchemaType
 
 
 __all__ = ["UserRepository"]
@@ -15,7 +15,7 @@ class UserRepository(BaseSQLAlchemyRepository):
     async def get_user_by_id(
             self, user_id: int, output_schema: Type[SchemaType]
     ) -> SchemaType | None:
-        return await self.get_one_or_none(self.user_id_filter(user_id), output_schema)
+        return await self.get_one_or_none(self._item_id_filter(user_id), output_schema)
 
     async def get_user_by_columns(
             self, column_values: dict, output_schema: Type[SchemaType]
@@ -35,14 +35,10 @@ class UserRepository(BaseSQLAlchemyRepository):
     async def update_user_by_id(
             self, user_id: int, update_values: dict, output_schema: Type[SchemaType]
     ) -> SchemaType:
-        return await self.update_one(self.user_id_filter(user_id), update_values, output_schema)
+        return await self.update_one(self._item_id_filter(user_id), update_values, output_schema)
 
     async def delete_user_by_id(self, user_id) -> None:
-        await self.delete(self.user_id_filter(user_id))
+        await self.delete(self._item_id_filter(user_id))
 
     async def exists_user_with_id(self, user_id: int) -> bool:
-        return await self.exists(self.user_id_filter(user_id))
-
-    def user_id_filter(self, user_id: int):
-        return self.table.c.id == user_id
-
+        return await self.exists(self._item_id_filter(user_id))
