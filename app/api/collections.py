@@ -11,7 +11,7 @@ router = APIRouter(
     tags=["collection"]
 )
 
-
+#####
 @router.get("/{collection_id}", response_model=Collection)
 async def read_collection(conn: DBConnection, collection_id: int) -> Collection:
     collection: Collection | None = await repositories.get_collection(conn, collection_id)
@@ -19,12 +19,12 @@ async def read_collection(conn: DBConnection, collection_id: int) -> Collection:
         raise HTTPException(status_code=404, detail="Collection not found")
     return collection
 
-
+#####
 @router.get("/", response_model=list[CollectionShort], description="Returns collections' list without descriptions")
 async def read_collections(conn: DBConnection, limit: int = 100, skip: int = 0) -> list[CollectionShort]:
     return await repositories.get_collections_short(conn, limit=limit, skip=skip)
 
-
+#####
 @router.post("/", response_model=Collection)
 async def create_collection(conn: DBConnection, user_id: UserID, collection: CollectionCreate) -> Collection:
     try:
@@ -44,7 +44,7 @@ async def delete_collection(conn: DBConnection, user_id: UserID, collection_id: 
     await repositories.delete_collection(conn, collection_id)
     return Response(status_code=200)
 
-
+#####
 @router.put("/{collection_id}", response_model=Collection)
 async def update_collection(
         conn: DBConnection, user_id: UserID, collection_id: int, new_collection: CollectionCreate

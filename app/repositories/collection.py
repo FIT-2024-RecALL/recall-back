@@ -1,3 +1,4 @@
+from sqlalchemy import and_
 from typing import Type
 
 from app.db import CollectionTable
@@ -16,44 +17,26 @@ class CollectionRepository(BaseSQLAlchemyRepository):
     ) -> SchemaType | None:
         return await self.get_one_or_none(self._item_id_filter(collection_id), output_schema)
 
-    async def get_all(self):
+    async def update_collection_by_id(
+            self, collection_id: int, update_values: dict, output_schema: Type[SchemaType]
+    ) -> SchemaType:
+        return await self.update_one(self._item_id_filter(collection_id), update_values, output_schema)
+
+    async def exists_collection_with_owner(self, owner_id: int, collection_id: int) -> bool:
+        return await self.exists(
+            and_(self.table.c.owner_id == owner_id, self._item_id_filter(collection_id))
+        )
 
 
 """
 
-
-
 """
+
 
 async def check_collection_id(conn: AsyncConnection, collection_id: int) -> None:
     result = await conn.execute(select(exists().where(CollectionTable.c.id == collection_id)))
     if not result.scalar():
         raise ValueError("Collection not found")
-
-
-async def check_user_collection_id(conn: AsyncConnection, user_id: int, collection_id: int) -> None:
-    result = await conn.execute(
-        select(CollectionTable.c.owner_id).where(CollectionTable.c.id == collection_id).limit(1)
-    )
-    owner_id: int | None = result.scalar()
-    if owner_id is None or owner_id != user_id:
-        raise ValueError("User does not have this collection")
-
-
-async def get_collections(conn: AsyncConnection, limit: int | None, skip: int) -> list[Collection]:
-    query = select(CollectionTable.c[*Collection.model_fields]).offset(skip)
-    if limit is not None:
-        query = query.limit(limit)
-    result = await conn.execute(query)
-    return [Collection(**collection) for collection in result.mappings().all()]
-
-
-async def get_collections_short(conn: AsyncConnection, limit: int | None, skip: int) -> list[CollectionShort]:
-    query = select(CollectionTable.c[*CollectionShort.model_fields]).offset(skip)
-    if limit is not None:
-        query = query.limit(limit)
-    result = await conn.execute(query)
-    return [CollectionShort(**collection) for collection in result.mappings().all()]
 
 
 async def get_user_collections_short(
@@ -65,17 +48,6 @@ async def get_user_collections_short(
         query = query.limit(limit)
     result = await conn.execute(query)
     return [CollectionShort(**collection) for collection in result.mappings().all()]
-
-
-async def get_user_collections(
-        conn: AsyncConnection, user_id: int, limit: int | None, skip: int
-) -> list[Collection]:
-    query = select(CollectionTable.c[*Collection.model_fields]).where(
-        CollectionTable.c.owner_id == user_id).offset(skip)
-    if limit is not None:
-        query = query.limit(limit)
-    result = await conn.execute(query)
-    return [Collection(**collection) for collection in result.mappings().all()]
 
 
 async def _filter_connected_cards(conn: AsyncConnection, cards: set[int]) -> set[int]:
@@ -104,15 +76,3 @@ async def delete_collection(conn: AsyncConnection, collection_id: int) -> None:
     need_delete_cards: list[int] = list(checking_cards.difference(cards_with_collections))
     if need_delete_cards:
         await delete_cards(conn, need_delete_cards)
-
-
-async def update_collection(
-        conn: AsyncConnection, collection_id: int, collection: CollectionCreate
-) -> Collection:
-    result = await conn.execute(
-        update(CollectionTable).where(
-            CollectionTable.c.id == collection_id).values(**collection.model_dump()
-        ).returning(CollectionTable.c[*Collection.model_fields])
-    )
-    await conn.commit()
-    return Collection(**result.mappings().first())
