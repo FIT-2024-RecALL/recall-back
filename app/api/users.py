@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Response
 
 from app.core import delete_cookie, set_authentication_cookie
-from app.schemas import User, UserAuth, UserBase, UserCreate
+from app.schemas import CollectionShort, User, UserAuth, UserBase, UserCreate
 
 from .dependencies import UserIdDep, UnitOfWorkDep, UserServiceDep
 
@@ -14,6 +14,14 @@ router = APIRouter(
 @router.get("/profile", response_model=User)
 async def read_user(user_id: UserIdDep, user_service: UserServiceDep, uow: UnitOfWorkDep) -> User:
     return await user_service.get_user(uow, user_id)
+
+
+@router.get("/collections", response_model=list[CollectionShort])
+async def read_user_collections(
+        user_id: UserIdDep, user_service: UserServiceDep, uow: UnitOfWorkDep,
+        offset: int = 0, limit: int | None = None
+) -> list[CollectionShort]:
+    return await user_service.get_user_collections(uow, user_id, offset, limit)
 
 
 @router.post("/register", response_model=User)
@@ -65,15 +73,4 @@ async def read_cards(
     except ValueError as e:
         raise HTTPException(status_code=404, detail=str(e))
     return await repositories.get_user_cards(conn, user_id, limit=limit, skip=skip)
-
-
-@router.get("/collections", response_model=list[CollectionShort])
-async def read_collections(
-        conn: DBConnection, user_id: UserID, skip: int = 0, limit: int | None = None
-) -> list[CollectionShort]:
-    try:
-        await repositories.check_user_id(conn, user_id)
-    except ValueError as e:
-        raise HTTPException(status_code=404, detail=str(e))
-    return await repositories.get_user_collections_short(conn, user_id, limit=limit, skip=skip)
 """

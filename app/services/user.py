@@ -2,8 +2,8 @@ from fastapi import HTTPException
 
 from app.core import get_password_hash, verify_password
 from app.db import UnitOfWork
-from app.repositories import UserRepository
-from app.schemas import User, UserAuth, UserBase, UserCreate, UserDTO
+from app.repositories import UserRepository, CollectionRepository
+from app.schemas import CollectionShort, User, UserAuth, UserBase, UserCreate, UserDTO
 
 
 __all__ = ["UserService"]
@@ -49,3 +49,13 @@ class UserService:
             if user is None or not verify_password(user_data.password, user.password):
                 raise HTTPException(status_code=400)  ## ТУТ ДОЛЖНО БЫТЬ КАСТОМНОЕ ИСКЛЮЧЕНИЕ!
             return User(**user.model_dump())
+
+    async def get_user_collections(
+            self, uow: UnitOfWork, user_id: int, offset: int = 0, limit: int | None = None
+    ) -> list[CollectionShort]:
+        async with uow.begin():
+            user_repo = uow.get_repository(UserRepository)
+            if not await user_repo.exists_user_with_id(user_id):
+                raise HTTPException(status_code=400)  ## ТУТ ДОЛЖНО БЫТЬ КАСТОМНОЕ ИСКЛЮЧЕНИЕ!
+            collection_repo = uow.get_repository(CollectionRepository)
+            return await collection_repo.get_owner_collections(user_id, limit, offset, CollectionShort)

@@ -1,4 +1,4 @@
-from sqlalchemy import and_
+from sqlalchemy import and_, select
 from typing import Type
 
 from app.db import CollectionTable
@@ -17,48 +17,53 @@ class CollectionRepository(BaseSQLAlchemyRepository):
     ) -> SchemaType | None:
         return await self.get_one_or_none(self._item_id_filter(collection_id), output_schema)
 
+    async def get_owner_collections(
+            self, owner_id: int, limit: int | None, offset: int, output_schema: Type[SchemaType]
+    ) -> list[SchemaType]:
+        query = (select(self.table.c[*output_schema.fields()])
+                 .where(self.table.c.owner_id == owner_id).offset(offset))
+        if limit is not None:
+            query = query.limit(limit)
+        result = await self.connection.execute(query)
+        return [output_schema(**elem) for elem in result.mappings().all()]
+
+    async def fetch_exist_owner_collections(
+            self, owner_id: int, collections_id: list[int]
+    ) -> list[int]:
+        exist_unique_collections = await self.connection.execute(
+            select(self.table.c.id).where(and_(
+                self.table.c.id.in_(set(collections_id)), self.table.c.owner_id == owner_id
+            ))
+        )
+        return list(exist_unique_collections.scalars().all())
+
     async def update_collection_by_id(
             self, collection_id: int, update_values: dict, output_schema: Type[SchemaType]
     ) -> SchemaType:
-        return await self.update_one(self._item_id_filter(collection_id), update_values, output_schema)
+        return await self.update_one(
+            self._item_id_filter(collection_id), update_values, output_schema
+        )
 
     async def exists_collection_with_owner(self, owner_id: int, collection_id: int) -> bool:
         return await self.exists(
             and_(self.table.c.owner_id == owner_id, self._item_id_filter(collection_id))
         )
 
+    async def exists_collection_with_id(self, collection_id: int) -> bool:
+        return await self.exists(self._item_id_filter(collection_id))
+
 
 """
 
 """
-
-
-async def check_collection_id(conn: AsyncConnection, collection_id: int) -> None:
-    result = await conn.execute(select(exists().where(CollectionTable.c.id == collection_id)))
-    if not result.scalar():
-        raise ValueError("Collection not found")
-
-
-async def get_user_collections_short(
-        conn: AsyncConnection, user_id: int, limit: int | None, skip: int
-) -> list[CollectionShort]:
-    query = select(CollectionTable.c[*CollectionShort.model_fields]).where(
-        CollectionTable.c.owner_id == user_id).offset(skip)
-    if limit is not None:
-        query = query.limit(limit)
-    result = await conn.execute(query)
-    return [CollectionShort(**collection) for collection in result.mappings().all()]
 
 
 async def _filter_connected_cards(conn: AsyncConnection, cards: set[int]) -> set[int]:
-    """
-    Фильтрует исходное множество идентификаторов карт, оставляя только те,
-    которые имеют связь хотя бы с одной коллекцией в таблице CardCollectionTable.
-
-    :param conn: Асинхронное соединение с базой данных.
-    :param cards: Исходное множество идентификаторов карт.
-    :return: Множество идентификаторов карт, которые имеют связь хотя бы с одной коллекцией.
-    """
+    # Фильтрует исходное множество идентификаторов карт, оставляя только те,
+    # которые имеют связь хотя бы с одной коллекцией в таблице CardCollectionTable.
+    # :param conn: Асинхронное соединение с базой данных.
+    # :param cards: Исходное множество идентификаторов карт.
+    # :return: Множество идентификаторов карт, которые имеют связь хотя бы с одной коллекцией.
     connected_cards = await conn.execute(
         select(CardCollectionTable.c.card_id).where(CardCollectionTable.c.card_id.in_(cards))
     )
