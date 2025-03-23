@@ -33,7 +33,7 @@ async def create_collection(conn: DBConnection, user_id: UserID, collection: Col
         raise HTTPException(status_code=400, detail=str(e))
     return await repositories.create_collection(conn, user_id, collection)
 
-
+##
 @router.delete("/{collection_id}", response_class=Response)
 async def delete_collection(conn: DBConnection, user_id: UserID, collection_id: int):
     try:
@@ -56,7 +56,7 @@ async def update_collection(
         raise HTTPException(status_code=404, detail=str(e))
     return await repositories.update_collection(conn, collection_id, new_collection)
 
-
+#####
 @router.get("/{collection_id}/cards", response_model=list[int])
 async def read_collection_cards(conn: DBConnection, collection_id: int) -> list[int]:
     try:
