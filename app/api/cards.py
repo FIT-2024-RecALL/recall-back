@@ -19,7 +19,7 @@ async def read_card(conn: DBConnection, card_id: int):
         raise HTTPException(status_code=404, detail="Card not found")
     return card
 
-
+#####
 @router.post("/", response_model=Card)
 async def create_card(
         conn: DBConnection, user_id: UserID, card: CardCreate, collections: IntList
@@ -27,7 +27,7 @@ async def create_card(
     result_card: Card = await repositories.create_card(conn, user_id, card)
     try:
         await repositories.check_user_id(conn, user_id)
-        await repositories.create_card_collection_connections(conn, user_id, result_card.id, collections)
+        await repositories.create_connections(conn, user_id, result_card.id, collections)
     except ValueError as e:
         raise HTTPException(status_code=404, detail=str(e))
     return result_card

@@ -13,8 +13,7 @@ class CollectionService:
             self, uow: UnitOfWork, user_id: int, collection: CollectionCreate
     ) -> Collection:
         async with uow.begin():
-            user_repo = uow.get_repository(UserRepository)
-            if not await user_repo.exists_user_with_id(user_id):
+            if not await uow.get_repository(UserRepository).exists_user_with_id(user_id):
                 raise HTTPException(status_code=400)  ## ТУТ ДОЛЖНО БЫТЬ КАСТОМНОЕ ИСКЛЮЧЕНИЕ!
             collection_data = collection.model_dump()
             collection_data["owner_id"] = user_id
