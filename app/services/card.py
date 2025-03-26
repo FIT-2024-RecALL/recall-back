@@ -5,6 +5,9 @@ from app.repositories import CardCollectionRepository, UserRepository, CardRepos
 from app.schemas import Card, CardCreate, CollectionShort
 
 
+__all__ = ["CardService"]
+
+
 class CardService:
     @staticmethod
     async def __create_connections(
