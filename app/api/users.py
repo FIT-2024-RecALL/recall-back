@@ -5,6 +5,7 @@ from app.schemas import CollectionShort, User, UserAuth, UserBase, UserCreate
 
 from .dependencies import UserIdDep, UnitOfWorkDep, UserServiceDep
 
+
 router = APIRouter(
     prefix="/user",
     tags=["user"]

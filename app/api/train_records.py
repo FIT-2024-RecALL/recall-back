@@ -1,9 +1,8 @@
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter
 
-from app import repositories
-from app.schemas import TrainRecord, TrainRecordCreate
+from app.schemas import AIFeedback, TrainRecord, TrainRecordCreate, UserAnswer
 
-from app.api.dependencies import DBConnection, UserID
+from .dependencies import TrainRecordServiceDep, UnitOfWorkDep, UserIdDep
 
 
 router = APIRouter(
@@ -14,27 +13,23 @@ router = APIRouter(
 
 @router.get("/last/{card_id}", response_model=TrainRecord|None)
 async def read_card_last_train_record(
-        conn: DBConnection, user_id: UserID, card_id: int
+        user_id: UserIdDep, card_id: int,
+        train_record_service: TrainRecordServiceDep, uow: UnitOfWorkDep
 ) -> TrainRecord | None:
-    try:
-        await repositories.check_user_id(conn, user_id)
-        await repositories.check_card_id(conn, card_id)
-    except ValueError as e:
-        raise HTTPException(status_code=400, detail=str(e))
-    return await repositories.get_user_card_last_train_record(conn, user_id, card_id)
+    return await train_record_service.get_user_card_last_train_record(uow, user_id, card_id)
 
 
 @router.post("/{card_id}", response_model=TrainRecord)
 async def create_train_record(
-        conn: DBConnection, user_id: UserID, card_id: int, train_record: TrainRecordCreate
+        user_id: UserIdDep, card_id: int, train_record: TrainRecordCreate,
+        train_record_service: TrainRecordServiceDep, uow: UnitOfWorkDep
 ):
-    try:
-        await repositories.check_user_id(conn, user_id)
-        await repositories.check_card_id(conn, card_id)
-    except ValueError as e:
-        raise HTTPException(status_code=400, detail=str(e))
-    last_train_record = await repositories.get_user_card_last_train_record(conn, user_id, card_id)
-    return await repositories.create_train_record(
-        conn, card_id, user_id, train_record,
-        0.0 if last_train_record is None else last_train_record.progress
-    )
+    return await train_record_service.create_train_record(uow, user_id, card_id, train_record)
+
+
+@router.post("/{card_id}/compare", response_model=AIFeedback)
+async def compare_answers_by_ai(
+        user_id: UserIdDep, card_id: int, user_answer: UserAnswer,
+        train_record_service: TrainRecordServiceDep, uow: UnitOfWorkDep
+):
+    train_record_service.compare_answers_by_ai(uow, user_id, card_id, user_answer)

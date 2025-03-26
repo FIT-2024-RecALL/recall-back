@@ -4,6 +4,7 @@ from app.schemas import Card, CardCreate, CollectionShort
 
 from .dependencies import CardServiceDep, IntListBody, UserIdDep, UnitOfWorkDep
 
+
 router = APIRouter(
     prefix="/cards",
     tags=["card"]

@@ -3,14 +3,19 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 import uvicorn
 
+from app.api import all_routers
+from app.core import load_model
 from app.db import close_db_connections, create_db_tables
-from app.api import users_router
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     await create_db_tables()
+    print()
+    print(await load_model())
     yield
+    print(await load_model())
+    print()
     await close_db_connections()
 
 
@@ -22,11 +27,10 @@ app.add_middleware(
     allow_methods=['*'],
     allow_headers=['*']
 )
-#app.include_router(cards.router)
-#app.include_router(collections.router)
-#app.include_router(train_records.router)
-app.include_router(users_router)
-#app.include_router(storage.router)
+
+
+for router in all_routers:
+    app.include_router(router)
 
 
 ###################################################

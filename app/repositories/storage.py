@@ -5,8 +5,7 @@ from minio import S3Error
 from minio.datatypes import Object, BaseHTTPResponse
 from minio.helpers import ObjectWriteResult
 
-from app.core.config import _settings
-from app.core.storage import storage
+from app.core import get_settings, get_storage
 
 
 __all__ = ["is_file_exists", "get_file_stream", "get_files_list", "upload_file", "delete_file"]
@@ -14,7 +13,7 @@ __all__ = ["is_file_exists", "get_file_stream", "get_files_list", "upload_file",
 
 def is_file_exists(path_to_object: str) -> bool:
     try:
-        return storage.stat_object(_settings.minio.BUCKET_NAME, path_to_object) is not None
+        return get_storage().stat_object(get_settings().minio.BUCKET_NAME, path_to_object) is not None
     except S3Error as e:
         return False
 
@@ -29,12 +28,12 @@ async def __file_stream_generator(file_response: BaseHTTPResponse) -> AsyncGener
 
 
 def get_file_stream(full_path: str) -> AsyncGenerator[bytes, Any]:
-    file_response = storage.get_object(_settings.minio.BUCKET_NAME, full_path)
+    file_response = get_storage().get_object(get_settings().minio.BUCKET_NAME, full_path)
     return __file_stream_generator(file_response)
 
 
 def get_files_list(user_id: int) -> Iterator[Object]:
-    return storage.list_objects(_settings.minio.BUCKET_NAME, f'{user_id}/')
+    return get_storage().list_objects(get_settings().minio.BUCKET_NAME, f'{user_id}/')
 
 
 def upload_file(user_id: int, file: UploadFile) -> ObjectWriteResult:
@@ -45,12 +44,12 @@ def upload_file(user_id: int, file: UploadFile) -> ObjectWriteResult:
     while is_file_exists(full_path):
         index += 1
         full_path = f'{user_id}/{name}_{index}{extension}'
-    return storage.put_object(
-        _settings.minio.BUCKET_NAME,
+    return get_storage().put_object(
+        get_settings().minio.BUCKET_NAME,
         full_path, file.file, file.size
     )
 
 
 def delete_file(full_path: str) -> bool:
-    storage.remove_object(_settings.minio.BUCKET_NAME, full_path)
+    get_storage().remove_object(get_settings().minio.BUCKET_NAME, full_path)
     return True

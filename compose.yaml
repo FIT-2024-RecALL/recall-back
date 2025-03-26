@@ -30,13 +30,21 @@ services:
   frontend:
     container_name: recall-frontend
     build: $RECALL_FRONTEND_PATH
+    restart: always
     ports:
       - "8080:8080"
     networks:
       - dev
+    healthcheck:
+      test: "curl -f http://127.0.0.1:8080/"
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
   backend:
     container_name: recall-backend
     build: .
+    restart: always
     ports:
       - "8000:8000"
     depends_on:
@@ -61,7 +69,7 @@ services:
       - recall-minio-volume:/mnt/minio-volume
       - ./config/minio-setup.sh:/setup.sh
     entrypoint: bash /setup.sh
-    restart: always
+    restart: on-failure
     networks:
       - dev
   minio:
@@ -102,6 +110,25 @@ services:
     restart: always
     networks:
       - dev
+  ollama-setup:
+    build: ./config/ollama-setup-container
+    container_name: recall-ollama-setup
+    depends_on:
+      - ollama
+    env_file: ./config/ollama.env
+    restart: on-failure
+    networks:
+      - dev
+  ollama:
+    container_name: recall-ollama
+    image: ollama/ollama
+    volumes:
+      - recall-ollama-volume:/root/.ollama
+    ports:
+      - "11434:11434"
+    restart: always
+    networks:
+      - dev
 
 volumes:
   recall-minio-volume:
@@ -114,3 +141,8 @@ volumes:
       type: none
       o: bind
       device: $POSTGRES_VOLUME_PATH
+  recall-ollama-volume:
+    driver_opts:
+      type: none
+      o: bind
+      device: $OLLAMA_VOLUME_PATH
