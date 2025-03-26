@@ -24,6 +24,14 @@ async def read_user_collections(
     return await user_service.get_user_collections(uow, user_id, offset, limit)
 
 
+@router.get("/cards", response_model=list[int])
+async def read_user_cards(
+        user_id: UserIdDep, user_service: UserServiceDep, uow: UnitOfWorkDep,
+        skip: int = 0, limit: int | None = None
+) -> list[int]:
+    return await user_service.get_user_cards(uow, user_id, skip, limit)
+
+
 @router.post("/register", response_model=User)
 async def create_user(
         response: Response, user: UserCreate, user_service: UserServiceDep, uow: UnitOfWorkDep,
@@ -62,15 +70,3 @@ async def authenticate_user(
 @router.post("/logout")
 async def logout_user(response: Response) -> None:
     delete_cookie(response)
-
-"""
-@router.get("/cards", response_model=list[int])
-async def read_cards(
-        conn: DBConnection, user_id: UserID, skip: int = 0, limit: int | None = None
-) -> list[int]:
-    try:
-        await repositories.check_user_id(conn, user_id)
-    except ValueError as e:
-        raise HTTPException(status_code=404, detail=str(e))
-    return await repositories.get_user_cards(conn, user_id, limit=limit, skip=skip)
-"""

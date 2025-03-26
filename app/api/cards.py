@@ -11,7 +11,7 @@ router = APIRouter(
     tags=["card"]
 )
 
-
+#####
 @router.get("/{card_id}", response_model=Card)
 async def read_card(conn: DBConnection, card_id: int):
     card: Card | None = await repositories.get_card(conn, card_id)
@@ -32,7 +32,7 @@ async def create_card(
         raise HTTPException(status_code=404, detail=str(e))
     return result_card
 
-
+#####
 @router.delete("/{card_id}", response_class=Response)
 async def delete_card(conn: DBConnection, user_id: UserID, card_id: int):
     try:
@@ -43,7 +43,7 @@ async def delete_card(conn: DBConnection, user_id: UserID, card_id: int):
     await repositories.delete_card(conn, card_id)
     return Response(status_code=200)
 
-
+#####
 @router.put("/{card_id}", response_model=Card)
 async def update_card(
         conn: DBConnection, user_id: UserID, card_id: int,
@@ -57,7 +57,7 @@ async def update_card(
         raise HTTPException(status_code=404, detail=str(e))
     return await repositories.update_card(conn, card_id, new_card)
 
-
+#####
 @router.get("/{card_id}/collections", response_model=list[CollectionShort])
 async def read_card_collections(
         conn: DBConnection, user_id: UserID, card_id: int

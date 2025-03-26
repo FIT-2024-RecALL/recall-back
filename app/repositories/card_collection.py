@@ -61,16 +61,12 @@ class CardCollectionRepository(BaseSQLAlchemyRepository):
         )
         return list(result.scalars().all())
 
-    async def get_owner_card_collections(
-            self, owner_id: int, card_id: int, output_schema: Type[SchemaType]
+    async def get_card_collections(
+            self, card_id: int, output_schema: Type[SchemaType]
     ) -> list[SchemaType]:
-        """
-        Запрос такой сложный, потому что мы исходим из предположения,
-        что одна карточка может принадлежать разным пользователям.
-        """
         result = await self.connection.execute(
             select(self.collection_table.c[*output_schema.fields()])
             .join(self.table, self.collection_table.c.id == self.table.c.collection_id)
-            .where(self.collection_table.c.owner_id == owner_id, self.table.c.card_id == card_id)
+            .where(self.table.c.card_id == card_id)
         )
         return [output_schema(**elem) for elem in result.mappings().all()]

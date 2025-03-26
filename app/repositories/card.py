@@ -1,9 +1,9 @@
-from sqlalchemy import select, insert, delete, update, exists
-from sqlalchemy.ext.asyncio import AsyncConnection
+from sqlalchemy import and_, select, delete, update, exists
+from typing import Type
 
-from app.db.models import CardTable
-from app.repositories import BaseSQLAlchemyRepository
-from app.schemas import Card, CardCreate
+from app.db import CardTable
+
+from .base import BaseSQLAlchemyRepository, SchemaType
 
 
 __all__ = ["CardRepository"]
@@ -12,62 +12,33 @@ __all__ = ["CardRepository"]
 class CardRepository(BaseSQLAlchemyRepository):
     table = CardTable
 
+    async def get_card_by_id(
+            self, card_id: int, output_schema: Type[SchemaType]
+    ) -> SchemaType | None:
+        return await self.get_one_or_none(self._item_id_filter(card_id), output_schema)
 
-"""
-async def get_card(conn: AsyncConnection, card_id: int) -> Card | None:
-    result = (await conn.execute(
-        select(CardTable.c[*Card.model_fields]).where(CardTable.c.id == card_id)
-    )).mappings().first()
-    return result if result is None else Card(**result)
-"""
+    async def get_owner_cards(self, owner_id: int, limit: int | None, offset: int) -> list[int]:
+        query = select(self.table.c.id).where(self.table.c.owner_id == owner_id).offset(offset)
+        if limit is not None:
+            query = query.limit(limit)
+        result = await self.connection.execute(query)
+        return list(result.scalars().all())
 
+    async def update_card_by_id(
+            self, card_id: int, update_values: dict, output_schema: Type[SchemaType]
+    ) -> SchemaType:
+        return await self.update_one(self._item_id_filter(card_id), update_values, output_schema)
 
-async def check_card_id(conn: AsyncConnection, card_id: int) -> None:
-    result = await conn.execute(select(exists().where(CardTable.c.id == card_id)))
-    if not result.scalar():
-        raise ValueError("Card not found")
+    async def delete_card(self, card_id: int) -> None:
+        await self.delete(self._item_id_filter(card_id))
 
+    async def delete_cards(self, cards: list[int]) -> None:
+        await self.delete(self.table.c.id.in_(cards))
 
-async def check_user_card_id(conn: AsyncConnection, user_id: int, card_id: int) -> None:
-    result = await conn.execute(select(CardTable.c.owner_id).where(
-        CardTable.c.id == card_id).limit(1)
-    )
-    owner_id: int | None = result.scalar()
-    if owner_id is None or owner_id != user_id:
-        raise ValueError("Card not found in User collections")
+    async def exists_card_with_id(self, card_id: int) -> bool:
+        return await self.exists(self._item_id_filter(card_id))
 
-
-async def get_cards(conn: AsyncConnection, *, limit: int | None, skip: int) -> list[Card]:
-    query = select(CardTable.c[*Card.model_fields]).offset(skip)
-    if limit is not None:
-        query = query.limit(limit)
-    result = await conn.execute(query)
-    return [Card(**card) for card in result.mappings().all()]
-
-
-async def get_user_cards(conn: AsyncConnection, user_id: int, *, limit: int | None, skip: int) -> list[int]:
-    query = select(CardTable.c.id).where(
-        CardTable.c.owner_id == user_id).offset(skip)
-    if limit is not None:
-        query = query.limit(limit)
-    result = await conn.execute(query)
-    return list(result.scalars().all())
-
-
-async def delete_card(conn: AsyncConnection, card_id: int) -> None:
-    await conn.execute(delete(CardTable).where(CardTable.c.id == card_id))
-    await conn.commit()
-
-
-async def delete_cards(conn: AsyncConnection, cards: list[int]) -> None:
-    await conn.execute(delete(CardTable).where(CardTable.c.id.in_(cards)))
-    await conn.commit()
-
-
-async def update_card(conn: AsyncConnection, card_id: int, card: CardCreate) -> Card:
-    result = await conn.execute(
-        update(CardTable).where(CardTable.c.id == card_id).values(**card.model_dump())
-        .returning(CardTable.c[*Card.model_fields])
-    )
-    await conn.commit()
-    return Card(**result.mappings().first())
+    async def exists_card_with_owner(self, owner_id: int, card_id: int) -> bool:
+        return await self.exists(
+            and_(self.table.c.owner_id == owner_id, self._item_id_filter(card_id))
+        )

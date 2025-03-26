@@ -37,10 +37,10 @@ class CollectionRepository(BaseSQLAlchemyRepository):
     async def delete_collection(self, collection_id: int) -> None:
         await self.delete(self._item_id_filter(collection_id))
 
+    async def exists_collection_with_id(self, collection_id: int) -> bool:
+        return await self.exists(self._item_id_filter(collection_id))
+
     async def exists_collection_with_owner(self, owner_id: int, collection_id: int) -> bool:
         return await self.exists(
             and_(self.table.c.owner_id == owner_id, self._item_id_filter(collection_id))
         )
-
-    async def exists_collection_with_id(self, collection_id: int) -> bool:
-        return await self.exists(self._item_id_filter(collection_id))
