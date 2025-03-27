@@ -38,8 +38,8 @@ class TrainRecordRepository(BaseSQLAlchemyRepository):
             .where(self.table.c.card_id.in_(collection_cards), self.table.c.user_id == user_id)
             .group_by(self.table.c.card_id).subquery()
         )
-        not_training_cards = set((await self.connection.execute(
+        training_cards = await self.connection.execute(
             select(self.table.c.card_id).join(subquery, self.table.c.id == subquery.c.last_id)
-            .where(self.table.c.next_repeat_date > func.now())
-        )).scalars().all())
-        return list(set(collection_cards).difference(not_training_cards))
+            .where(self.table.c.next_repeat_date <= func.now())
+        )
+        return list(training_cards.scalars().all())

@@ -2,18 +2,16 @@ from typing import Annotated
 from fastapi import Depends, Body
 
 from app.core import get_profile_id
-from app.db import UnitOfWork
 from app.services import CardService, UserService, CollectionService, TrainRecordService
 
 
 __all__ = [
-    "CardServiceDep", "CollectionServiceDep", "TrainRecordServiceDep",
-    "UnitOfWorkDep", "UserIdDep", "UserServiceDep", "IntListBody"
+    "CardServiceDep", "CollectionServiceDep", "TrainRecordServiceDep", "UserIdDep",
+    "UserServiceDep", "IntListBody"
 ]
 
 
 UserIdDep = Annotated[int, Depends(get_profile_id)]
-UnitOfWorkDep = Annotated[UnitOfWork, Depends()]
 UserServiceDep = Annotated[UserService, Depends()]
 CardServiceDep = Annotated[CardService, Depends()]
 CollectionServiceDep = Annotated[CollectionService, Depends()]

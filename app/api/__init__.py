@@ -5,4 +5,10 @@ from .train_records import router as training_router
 from .users import router as users_router
 
 
-all_routers = [cards_router, collections_router, storage_router, training_router, users_router]
+all_routers = [
+    cards_router,
+    collections_router,
+    storage_router,
+    training_router,
+    users_router
+]

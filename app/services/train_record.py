@@ -1,24 +1,25 @@
 from fastapi import HTTPException
 
 from app.core import compute_card_new_progress, compute_repeat_interval_duration, compare_answers
-from app.db import UnitOfWork
 from app.repositories import CardRepository, TrainRecordRepository, UserRepository
 from app.schemas import AIFeedback, Card, TrainRecord, TrainRecordCreate, UserAnswer
+
+from .base import BaseService
 
 
 __all__ = ["TrainRecordService"]
 
 
-class TrainRecordService:
+class TrainRecordService(BaseService):
     async def create_train_record(
-            self, uow: UnitOfWork, user_id: int, card_id: int, training: TrainRecordCreate
+            self, user_id: int, card_id: int, training: TrainRecordCreate
     ) -> TrainRecord:
-        async with uow.begin():
-            if not await uow.get_repository(UserRepository).exists_user_with_id(user_id):
+        async with self.uow.begin():
+            if not await self.uow.get_repository(UserRepository).exists_user_with_id(user_id):
                 raise HTTPException(status_code=400)  ## ТУТ ДОЛЖНО БЫТЬ КАСТОМНОЕ ИСКЛЮЧЕНИЕ!
-            if not await uow.get_repository(CardRepository).exists_card_with_id(card_id):
+            if not await self.uow.get_repository(CardRepository).exists_card_with_id(card_id):
                 raise HTTPException(status_code=400)  ## ТУТ ДОЛЖНО БЫТЬ КАСТОМНОЕ ИСКЛЮЧЕНИЕ!
-            train_record_repo = uow.get_repository(TrainRecordRepository)
+            train_record_repo = self.uow.get_repository(TrainRecordRepository)
             last_training = await (train_record_repo
                                    .get_user_card_last_train_record(user_id, card_id, TrainRecord))
             prev_progress = 0.0 if last_training is None else last_training.progress
@@ -29,23 +30,23 @@ class TrainRecordService:
             return await train_record_repo.create_train_record(train_data, interval, TrainRecord)
 
     async def get_user_card_last_train_record(
-            self, uow: UnitOfWork, user_id: int, card_id: int
+            self, user_id: int, card_id: int
     ) -> TrainRecord | None:
-        async with uow.begin():
-            if not await uow.get_repository(UserRepository).exists_user_with_id(user_id):
+        async with self.uow.begin():
+            if not await self.uow.get_repository(UserRepository).exists_user_with_id(user_id):
                 raise HTTPException(status_code=400)  ## ТУТ ДОЛЖНО БЫТЬ КАСТОМНОЕ ИСКЛЮЧЕНИЕ!
-            if not await uow.get_repository(CardRepository).exists_card_with_id(card_id):
+            if not await self.uow.get_repository(CardRepository).exists_card_with_id(card_id):
                 raise HTTPException(status_code=400)  ## ТУТ ДОЛЖНО БЫТЬ КАСТОМНОЕ ИСКЛЮЧЕНИЕ!
-            train_record_repo = uow.get_repository(TrainRecordRepository)
+            train_record_repo = self.uow.get_repository(TrainRecordRepository)
             return await train_record_repo.get_user_card_last_train_record(user_id, card_id, TrainRecord)
 
     async def compare_answers_by_ai(
-            self, uow: UnitOfWork, user_id, card_id, user_answer: UserAnswer
+            self, user_id, card_id, user_answer: UserAnswer
     ) -> AIFeedback:
-        async with uow.begin():
-            if not await uow.get_repository(UserRepository).exists_user_with_id(user_id):
+        async with self.uow.begin():
+            if not await self.uow.get_repository(UserRepository).exists_user_with_id(user_id):
                 raise HTTPException(status_code=400)  ## ТУТ ДОЛЖНО БЫТЬ КАСТОМНОЕ ИСКЛЮЧЕНИЕ!
-            card_repo = uow.get_repository(CardRepository)
+            card_repo = self.uow.get_repository(CardRepository)
             if not await card_repo.exists_card_with_id(card_id):
                 raise HTTPException(status_code=400)  ## ТУТ ДОЛЖНО БЫТЬ КАСТОМНОЕ ИСКЛЮЧЕНИЕ!
             if (card := await card_repo.get_card_by_id(card_id, Card)) is None:
