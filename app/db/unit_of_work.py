@@ -1,13 +1,14 @@
 from contextlib import asynccontextmanager
 from contextvars import ContextVar
-from typing import Type, TypeVar
+from fastapi import Depends
+from typing import Annotated, Type, TypeVar
 
 from app.repositories import BaseSQLAlchemyRepository
 
 from .database import get_db_engine
 
 
-__all__ = ["UnitOfWork"]
+__all__ = ["UnitOfWork", "UnitOfWorkDep"]
 
 
 RepositoryType = TypeVar("RepositoryType", bound=BaseSQLAlchemyRepository)
@@ -41,3 +42,6 @@ class UnitOfWork:
         if current_connection is None:
             raise RuntimeError("Connection is not established. Use 'async with uow.begin()'.")
         return repo_class(current_connection)
+
+
+UnitOfWorkDep = Annotated[UnitOfWork, Depends()]

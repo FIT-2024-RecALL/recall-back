@@ -2,8 +2,8 @@ from fastapi import APIRouter, HTTPException, UploadFile, File
 from fastapi.responses import StreamingResponse, Response
 from urllib.parse import quote
 
+from app.db import UnitOfWorkDep
 from app.schemas import FileUploadedScheme
-from app.services import UnitOfWorkDep
 from app.repositories import storage, UserRepository
 
 from .dependencies import UserIdDep

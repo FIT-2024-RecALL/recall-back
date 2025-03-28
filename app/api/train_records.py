@@ -31,4 +31,4 @@ async def compare_answers_by_ai(
         user_id: UserIdDep, card_id: int, user_answer: UserAnswer,
         train_record_service: TrainRecordServiceDep
 ):
-    await train_record_service.compare_answers_by_ai(user_id, card_id, user_answer)
+    return await train_record_service.compare_answers_by_ai(user_id, card_id, user_answer)

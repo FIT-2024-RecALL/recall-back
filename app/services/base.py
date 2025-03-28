@@ -1,14 +1,9 @@
 from abc import ABC
-from fastapi import Depends
-from typing import Annotated
 
-from app.db import UnitOfWork
+from app.db import UnitOfWorkDep
 
 
-__all__ = ["BaseService", "UnitOfWorkDep"]
-
-
-UnitOfWorkDep = Annotated[UnitOfWork, Depends()]
+__all__ = ["BaseService"]
 
 
 class BaseService(ABC):
