@@ -1,5 +1,6 @@
 from .base import CamelCaseBaseModel
 
+
 __all__ = ["FileUploadedScheme"]
 
 
