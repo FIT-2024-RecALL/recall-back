@@ -1,6 +1,7 @@
+from typing import Optional
 from fastapi import HTTPException
 
-from app.schemas import Collection, CollectionCreate, CollectionShort
+from app.schemas import Collection, CollectionCreate, CollectionExt, CollectionShort
 from app.repositories import (
     CardRepository, CardCollectionRepository, CollectionRepository,
     UserRepository, TrainRecordRepository
@@ -16,30 +17,32 @@ class CollectionService(BaseService):
     @with_unit_of_work
     async def add_collection(self, user_id: int, collection: CollectionCreate) -> Collection:
         if not await self.uow.get_repository(UserRepository).exists_user_with_id(user_id):
-            raise HTTPException(status_code=400)  ## ТУТ ДОЛЖНО БЫТЬ КАСТОМНОЕ ИСКЛЮЧЕНИЕ!
+            raise HTTPException(status_code=401, detail="Authorize to create collection")
         collection_data = collection.model_dump()
         collection_data["owner_id"] = user_id
         collection_repo = self.uow.get_repository(CollectionRepository)
         return await collection_repo.create_one(collection_data, Collection)
 
     @with_unit_of_work
-    async def get_collection(self,collection_id: int) -> Collection:
+    async def get_collection(self, collection_id: int, user_id: Optional[int]) -> Collection:
         collection_repo = self.uow.get_repository(CollectionRepository)
-        collection = await collection_repo.get_collection_by_id(collection_id, Collection)
-        if collection is None:
-            raise HTTPException(status_code=400)  ## ТУТ ДОЛЖНО БЫТЬ КАСТОМНОЕ ИСКЛЮЧЕНИЕ!
-        return collection
+        collection_ext = await collection_repo.get_collection_by_id(collection_id, CollectionExt)
+        if collection_ext is None:
+            raise HTTPException(status_code=404, detail="Collection not found")
+        if not collection_ext.is_public and collection_ext.owner_id is not user_id:
+            raise HTTPException(status_code=403, detail="This collection is private")
+        return Collection(**collection_ext.model_dump())
 
     @with_unit_of_work
-    async def get_collections(self, limit: int, offset: int) -> list[CollectionShort]:
+    async def get_collections(self, user_id: Optional[int], limit: int, offset: int) -> list[CollectionShort]:
         collection_repo = self.uow.get_repository(CollectionRepository)
-        return await collection_repo.get_all(CollectionShort, limit, offset)
+        return await collection_repo.get_all_visible_collections(
+            user_id, CollectionShort, limit, offset
+        )
 
     @with_unit_of_work
-    async def get_collection_cards(self, collection_id: int) -> list[int]:
-        collection_repo = self.uow.get_repository(CollectionRepository)
-        if not await collection_repo.exists_collection_with_id(collection_id):
-            raise HTTPException(status_code=400)  ## ТУТ ДОЛЖНО БЫТЬ КАСТОМНОЕ ИСКЛЮЧЕНИЕ!
+    async def get_collection_cards(self, collection_id: int, user_id: Optional[int]) -> list[int]:
+        await self.get_collection(collection_id, user_id) # Проверка существования коллекции и правтности
         return await self.uow.get_repository(CardCollectionRepository).get_collection_cards(collection_id)
 
     @with_unit_of_work
@@ -48,16 +51,27 @@ class CollectionService(BaseService):
     ) -> Collection:
         collection_repo = self.uow.get_repository(CollectionRepository)
         if not await collection_repo.exists_collection_with_owner(user_id, collection_id):
-            raise HTTPException(status_code=400)  ## ТУТ ДОЛЖНО БЫТЬ КАСТОМНОЕ ИСКЛЮЧЕНИЕ!
+            raise HTTPException(status_code=401, detail="Only authorized owners can edit collections")
         return await collection_repo.update_collection_by_id(
             collection_id, new_collection.model_dump(), Collection
+        )
+    
+    @with_unit_of_work
+    async def update_publicity(
+            self, user_id: int, collection_id: int, is_public: bool
+    ) -> CollectionExt:
+        collection_repo = self.uow.get_repository(CollectionRepository)
+        if not await collection_repo.exists_collection_with_owner(user_id, collection_id):
+            raise HTTPException(status_code=401, detail="Only authorized owners can change their collections' publicity")
+        return await collection_repo.update_collection_by_id(
+            collection_id, {'is_public': is_public}, CollectionExt
         )
 
     @with_unit_of_work
     async def delete_collection(self, user_id: int, collection_id: int) -> None:
         collection_repo = self.uow.get_repository(CollectionRepository)
         if not await collection_repo.exists_collection_with_owner(user_id, collection_id):
-            raise HTTPException(status_code=400)  ## ТУТ ДОЛЖНО БЫТЬ КАСТОМНОЕ ИСКЛЮЧЕНИЕ!
+            raise HTTPException(status_code=401, detail="Only authorized owners can delete collections")
         card_collection_repo = self.uow.get_repository(CardCollectionRepository)
         collection_cards = set(await card_collection_repo.get_collection_cards(collection_id))
         await collection_repo.delete_collection(collection_id)
@@ -69,10 +83,8 @@ class CollectionService(BaseService):
     @with_unit_of_work
     async def get_collection_training_cards(self, user_id: int, collection_id: int) -> list[int]:
         if not await self.uow.get_repository(UserRepository).exists_user_with_id(user_id):
-            raise HTTPException(status_code=400)  ## ТУТ ДОЛЖНО БЫТЬ КАСТОМНОЕ ИСКЛЮЧЕНИЕ!
-        collection_repo = self.uow.get_repository(CollectionRepository)
-        if not await collection_repo.exists_collection_with_id(collection_id):
-            raise HTTPException(status_code=400)  ## ТУТ ДОЛЖНО БЫТЬ КАСТОМНОЕ ИСКЛЮЧЕНИЕ!
+            raise HTTPException(status_code=401, detail="Only authorized users can train collections")
+        await self.get_collection(collection_id, user_id) # Проверка существования коллекции и правтности
         card_collection_repo = self.uow.get_repository(CardCollectionRepository)
         cards = await card_collection_repo.get_collection_cards(collection_id)
         train_record_repo = self.uow.get_repository(TrainRecordRepository)
