@@ -22,6 +22,7 @@ class CardService(BaseService):
         if not new_collections:
             raise HTTPException(status_code=409, detail="Invalid collections")
         await card_collection_repo.set_card_collection_connections(card_id, new_collections)
+        await card_collection_repo.refresh_card_publicity(card_id)
 
     @staticmethod
     async def __update_connections(
@@ -33,11 +34,16 @@ class CardService(BaseService):
         if not request_collections:
             raise HTTPException(status_code=409, detail="Invalid collections")
         old_collections = set(await card_collection_repo.fetch_card_collections(card_id))
+        collections_changed = False
         if delete_collections := list(old_collections.difference(request_collections)):
             await (card_collection_repo
                    .unset_card_collection_connections(card_id, delete_collections))
+            collections_changed = True
         if new_collections := list(request_collections.difference(old_collections)):
             await card_collection_repo.set_card_collection_connections(card_id, new_collections)
+            collections_changed = True
+        if collections_changed:
+            await card_collection_repo.refresh_card_publicity(card_id)
 
     @with_unit_of_work
     async def add_card(self, user_id: int, collections: list[int], card: CardCreate) -> Card:

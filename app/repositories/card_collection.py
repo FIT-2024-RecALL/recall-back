@@ -80,7 +80,7 @@ class CardCollectionRepository(BaseSQLAlchemyRepository):
                 return True
         return False
 
-    async def __refresh_card_publicity(self, card_id: int) -> int:
+    async def refresh_card_publicity(self, card_id: int) -> int:
         return (await self.connection.execute(
             update(self.card_table)
                 .where(self.card_table.c.id == self.table.c.card_id)
@@ -103,6 +103,6 @@ class CardCollectionRepository(BaseSQLAlchemyRepository):
             return list(result.scalars().all())
         else:
             return [
-                await self.__refresh_card_publicity(card_id)
+                await self.refresh_card_publicity(card_id)
                 for card_id in await self.get_collection_cards(collection_id)
             ]
