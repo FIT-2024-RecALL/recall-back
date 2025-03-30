@@ -29,7 +29,7 @@ class CollectionService(BaseService):
         collection = await collection_repo.get_collection_by_id(collection_id, Collection)
         if collection is None:
             raise HTTPException(status_code=404, detail="Collection not found")
-        if not collection.is_public and collection.owner_id is not user_id:
+        if not collection.is_public and collection.owner_id != user_id:
             raise HTTPException(status_code=403, detail="This collection is private")
         return collection
 
