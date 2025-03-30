@@ -1,7 +1,8 @@
-from sqlalchemy import and_, select, insert
+from sqlalchemy import and_, select, insert, update
 from typing import Type
 
-from app.db.models import CardCollectionTable, CollectionTable
+from app.db.models import CardCollectionTable, CollectionTable, CardTable
+from app.schemas import Collection
 
 from .base import BaseSQLAlchemyRepository, SchemaType
 
@@ -11,6 +12,7 @@ __all__ = ["CardCollectionRepository"]
 
 class CardCollectionRepository(BaseSQLAlchemyRepository):
     collection_table = CollectionTable
+    card_table = CardTable
     table = CardCollectionTable
 
     async def set_card_collection_connections(
@@ -60,6 +62,7 @@ class CardCollectionRepository(BaseSQLAlchemyRepository):
             select(self.table.c.card_id).where(self.table.c.collection_id == collection_id)
         )
         return list(result.scalars().all())
+                
 
     async def get_card_collections(
             self, card_id: int, output_schema: Type[SchemaType]
@@ -70,3 +73,36 @@ class CardCollectionRepository(BaseSQLAlchemyRepository):
             .where(self.table.c.card_id == card_id)
         )
         return [output_schema(**elem) for elem in result.mappings().all()]
+    
+    async def __is_card_public_by_collections(self, card_id: int) -> bool:
+        for collection in await self.get_card_collections(card_id, Collection):
+            if collection.is_public:
+                return True
+        return False
+
+    async def __refresh_card_publicity(self, card_id: int) -> int:
+        return (await self.connection.execute(
+            update(self.card_table)
+                .where(self.card_table.c.id == self.table.c.card_id)
+                .where(self.card_table.c.id == card_id)
+                .values(is_public=await self.__is_card_public_by_collections(card_id))
+                .returning(self.card_table.c.id)
+        )).scalars().one()
+    
+    async def update_cards_publicity(
+            self, collection_id: int, is_public: bool
+    ) -> list[int]:
+        if is_public:
+            result = await self.connection.execute(
+                update(self.card_table)
+                    .where(self.card_table.c.id == self.table.c.card_id)
+                    .where(self.table.c.collection_id == collection_id)
+                    .values(is_public=True)
+                    .returning(self.card_table.c.id)
+            )
+            return list(result.scalars().all())
+        else:
+            return [
+                await self.__refresh_card_publicity(card_id)
+                for card_id in await self.get_collection_cards(collection_id)
+            ]

@@ -17,7 +17,7 @@ class CollectionService(BaseService):
     @with_unit_of_work
     async def add_collection(self, user_id: int, collection: CollectionCreate) -> Collection:
         if not await self.uow.get_repository(UserRepository).exists_user_with_id(user_id):
-            raise HTTPException(status_code=401, detail="Authorize to create collection")
+            raise HTTPException(status_code=401, detail="Authorized user doesn't exist")
         collection_data = collection.model_dump()
         collection_data["owner_id"] = user_id
         collection_repo = self.uow.get_repository(CollectionRepository)
@@ -63,9 +63,12 @@ class CollectionService(BaseService):
         collection_repo = self.uow.get_repository(CollectionRepository)
         if not await collection_repo.exists_collection_with_owner(user_id, collection_id):
             raise HTTPException(status_code=401, detail="Only authorized owners can change their collections' publicity")
-        return await collection_repo.update_collection_by_id(
+        collection = await collection_repo.update_collection_by_id(
             collection_id, {'is_public': is_public}, Collection
         )
+        card_collection_repo = self.uow.get_repository(CardCollectionRepository)
+        await card_collection_repo.update_cards_publicity(collection_id, is_public)
+        return collection
 
     @with_unit_of_work
     async def delete_collection(self, user_id: int, collection_id: int) -> None:

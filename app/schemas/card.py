@@ -14,3 +14,4 @@ class CardCreate(CamelCaseBaseModel):
 class Card(CardCreate):
     id: int
     owner_id: int
+    is_public: bool
