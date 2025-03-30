@@ -1,7 +1,7 @@
 from typing import Optional
 from fastapi import APIRouter, Response
 
-from app.schemas import Collection, CollectionCreate, CollectionExt, CollectionShort
+from app.schemas import Collection, CollectionCreate, CollectionShort
 
 from .dependencies import CollectionServiceDep, UserIdDep, UserIdSoftDep
 
@@ -58,11 +58,11 @@ async def update_collection(
     return await collection_service.update_user_collection(user_id, collection_id, new_collection)
 
 
-@router.put("/{collection_id}/publicity", response_model=CollectionExt)
+@router.put("/{collection_id}/publicity", response_model=Collection)
 async def update_collection(
         user_id: UserIdDep, collection_id: int, is_public: bool,
         collection_service: CollectionServiceDep
-) -> CollectionExt:
+) -> Collection:
     return await collection_service.update_publicity(user_id, collection_id, is_public)
 
 

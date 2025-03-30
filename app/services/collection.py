@@ -1,7 +1,7 @@
 from typing import Optional
 from fastapi import HTTPException
 
-from app.schemas import Collection, CollectionCreate, CollectionExt, CollectionShort
+from app.schemas import Collection, CollectionCreate, CollectionShort
 from app.repositories import (
     CardRepository, CardCollectionRepository, CollectionRepository,
     UserRepository, TrainRecordRepository
@@ -26,12 +26,12 @@ class CollectionService(BaseService):
     @with_unit_of_work
     async def get_collection(self, collection_id: int, user_id: Optional[int]) -> Collection:
         collection_repo = self.uow.get_repository(CollectionRepository)
-        collection_ext = await collection_repo.get_collection_by_id(collection_id, CollectionExt)
-        if collection_ext is None:
+        collection = await collection_repo.get_collection_by_id(collection_id, Collection)
+        if collection is None:
             raise HTTPException(status_code=404, detail="Collection not found")
-        if not collection_ext.is_public and collection_ext.owner_id is not user_id:
+        if not collection.is_public and collection.owner_id is not user_id:
             raise HTTPException(status_code=403, detail="This collection is private")
-        return Collection(**collection_ext.model_dump())
+        return collection
 
     @with_unit_of_work
     async def get_collections(self, user_id: Optional[int], limit: int, offset: int) -> list[CollectionShort]:
@@ -59,12 +59,12 @@ class CollectionService(BaseService):
     @with_unit_of_work
     async def update_publicity(
             self, user_id: int, collection_id: int, is_public: bool
-    ) -> CollectionExt:
+    ) -> Collection:
         collection_repo = self.uow.get_repository(CollectionRepository)
         if not await collection_repo.exists_collection_with_owner(user_id, collection_id):
             raise HTTPException(status_code=401, detail="Only authorized owners can change their collections' publicity")
         return await collection_repo.update_collection_by_id(
-            collection_id, {'is_public': is_public}, CollectionExt
+            collection_id, {'is_public': is_public}, Collection
         )
 
     @with_unit_of_work

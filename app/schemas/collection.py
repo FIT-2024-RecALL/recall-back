@@ -3,7 +3,7 @@ from pydantic import Field
 from .base import CamelCaseBaseModel
 
 
-__all__ = ["Collection", "CollectionCreate", "CollectionExt", "CollectionShort"]
+__all__ = ["Collection", "CollectionCreate", "CollectionShort"]
 
 
 class CollectionCreate(CamelCaseBaseModel):
@@ -14,9 +14,6 @@ class CollectionCreate(CamelCaseBaseModel):
 class Collection(CollectionCreate):
     id: int
     owner_id: int
-
-
-class CollectionExt(Collection):
     is_public: bool
 
 
