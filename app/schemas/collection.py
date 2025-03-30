@@ -21,3 +21,4 @@ class CollectionShort(CamelCaseBaseModel):
     id: int
     owner_id: int
     title: str = Field(min_length=1, max_length=100)
+    is_public: bool

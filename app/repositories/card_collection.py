@@ -81,11 +81,12 @@ class CardCollectionRepository(BaseSQLAlchemyRepository):
         return False
 
     async def refresh_card_publicity(self, card_id: int) -> int:
+        is_public_new = await self.__is_card_public_by_collections(card_id)
         return (await self.connection.execute(
             update(self.card_table)
                 .where(self.card_table.c.id == self.table.c.card_id)
                 .where(self.card_table.c.id == card_id)
-                .values(is_public=await self.__is_card_public_by_collections(card_id))
+                .values(is_public=is_public_new)
                 .returning(self.card_table.c.id)
         )).scalars().one()
     

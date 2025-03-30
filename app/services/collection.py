@@ -82,6 +82,8 @@ class CollectionService(BaseService):
                                         .filter_cards_with_collection(collection_cards))
         if cards_without_collections := collection_cards.difference(cards_with_collections):
             await self.uow.get_repository(CardRepository).delete_cards(list(cards_without_collections))
+        for card_id in cards_with_collections:
+            await card_collection_repo.refresh_card_publicity(card_id)
 
     @with_unit_of_work
     async def get_collection_training_cards(self, user_id: int, collection_id: int) -> list[int]:
