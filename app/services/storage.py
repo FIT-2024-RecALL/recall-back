@@ -1,7 +1,7 @@
 from fastapi import HTTPException, UploadFile
 
 from app.repositories import UserRepository, FileRepository
-from app.schemas import FileCreate, FileScheme, StreamingFile
+from app.schemas import FileCreate, get_allowed_types, get_allowed_exts, FileScheme, StreamingFile
 from app.core import minio
 
 from .base import BaseService, with_unit_of_work
@@ -11,16 +11,25 @@ __all__ = ["StorageService"]
 
 
 class StorageService(BaseService):
+
     @with_unit_of_work
     async def upload_file(self, user_id: int, file: UploadFile) -> FileScheme:
         if not await self.uow.get_repository(UserRepository).exists_user_with_id(user_id):
             raise HTTPException(status_code=401, detail="Only authorized users can upload files")
+        file_type, file_ext = file.content_type.split("/")
+        if file_type is None or file_ext is None or file_type not in get_allowed_types() or file_ext not in get_allowed_exts():
+            raise HTTPException(status_code=409, detail="Invalid file type")
         try:
             obj = minio.upload_file(file)
         except ValueError as e:
             raise HTTPException(409, f"Failed to upload file: {str(e)}")
         return await self.uow.get_repository(FileRepository).create_one(
-            FileCreate(owner_id=user_id, filename=obj.object_name).model_dump(),
+            FileCreate(
+                owner_id=user_id,
+                type=file_type,
+                ext=file_ext,
+                filename=obj.object_name
+            ).model_dump(),
             FileScheme
         ) # TODO: Надо удостоверяться, что добавление в minio и БД происходит по ACID
     
