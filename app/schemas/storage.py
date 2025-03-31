@@ -1,7 +1,7 @@
 from typing import Literal
 from pydantic import BaseModel, ConfigDict
 
-from .base import CamelCaseBaseModel
+from .base import CamelCaseBaseModel, IsPublicModelMixin
 
 from app.core.minio import FileStream
 
@@ -29,9 +29,8 @@ class FileCreate(CamelCaseBaseModel):
     ext: AllowedExts
 
 
-class FileScheme(FileCreate):
+class FileScheme(FileCreate, IsPublicModelMixin):
     id: int
-    is_public: bool
 
 
 class StreamingFile(BaseModel):

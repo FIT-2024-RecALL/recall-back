@@ -38,7 +38,10 @@ async def get_file(
     return StreamingResponse(
         file.stream,
         media_type="application/octet-stream",
-        headers={"Content-Disposition": f"attachment; filename={quote(file.metadata.filename)}"}
+        headers={
+            "Content-Disposition": f"attachment; filename={quote(file.metadata.filename)}",
+            'Content-Type': f'{file.metadata.type}/{file.metadata.ext}'
+        }
     )
 
 

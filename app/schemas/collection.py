@@ -1,6 +1,6 @@
 from pydantic import Field
 
-from .base import CamelCaseBaseModel
+from .base import CamelCaseBaseModel, IsPublicModelMixin
 
 
 __all__ = ["Collection", "CollectionCreate", "CollectionShort"]
@@ -11,14 +11,12 @@ class CollectionCreate(CamelCaseBaseModel):
     description: str | None = None
 
 
-class Collection(CollectionCreate):
+class Collection(CollectionCreate, IsPublicModelMixin):
     id: int
     owner_id: int
-    is_public: bool
 
 
-class CollectionShort(CamelCaseBaseModel):
+class CollectionShort(CamelCaseBaseModel, IsPublicModelMixin):
     id: int
     owner_id: int
     title: str = Field(min_length=1, max_length=100)
-    is_public: bool

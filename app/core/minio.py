@@ -11,7 +11,7 @@ from .config import get_settings
 __all__ = ["FileStream", "is_file_uploaded", "get_file_stream", "get_files_list", "upload_file", "delete_file"]
 
 
-type FileStream = AsyncGenerator[bytes, Any]
+FileStream = AsyncGenerator[bytes, Any]
 
 
 __storage = Minio(
