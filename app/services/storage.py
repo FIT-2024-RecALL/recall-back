@@ -1,6 +1,6 @@
 from fastapi import HTTPException, UploadFile
 
-from app.repositories import UserRepository, FileRepository
+from app.repositories import UserRepository, FileRepository, FileCardRepository
 from app.schemas import FileCreate, get_allowed_types, get_allowed_exts, FileScheme, StreamingFile
 from app.core import minio
 
@@ -41,6 +41,13 @@ class StorageService(BaseService):
         if not file.is_public and file.owner_id != user_id:
             raise HTTPException(status_code=403, detail="File is private")
         return file
+    
+    @with_unit_of_work
+    async def get_file_cards(self, file_id: int, user_id: int) -> list[int]:
+        file_meta = await self.get_file_meta(file_id, user_id)
+        if file_meta.owner_id != user_id:
+            raise HTTPException(status_code=401, detail="Only authorized owners can get file's cards")
+        return await self.uow.get_repository(FileCardRepository).get_file_cards_ids(file_id)
     
     @with_unit_of_work
     async def get_file(self, file_id: int, user_id: int | None) -> StreamingFile:

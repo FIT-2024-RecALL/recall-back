@@ -29,6 +29,14 @@ async def get_file_meta(
     return await storage_service.get_file_meta(file_id, user_id)
 
 
+@router.get('/{file_id}/cards', response_model=list[int])
+async def get_file_meta(
+    file_id: int, user_id: UserIdDep, 
+    storage_service: StorageServiceDep
+) -> FileScheme:
+    return await storage_service.get_file_cards(file_id, user_id)
+
+
 @router.get('/{file_id}', response_class=StreamingResponse)
 async def get_file(
     file_id: int, user_id: UserIdSoftDep, 
