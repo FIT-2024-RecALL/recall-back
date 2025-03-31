@@ -2,7 +2,7 @@ from sqlalchemy import and_, select, insert, update
 from typing import Type
 
 from app.db.models import CardCollectionTable, CollectionTable, CardTable
-from app.schemas import Collection
+from app.schemas import Collection, Card
 
 from .base import BaseSQLAlchemyRepository, SchemaType
 
@@ -80,27 +80,28 @@ class CardCollectionRepository(BaseSQLAlchemyRepository):
                 return True
         return False
 
-    async def refresh_card_publicity(self, card_id: int) -> int:
+    async def refresh_card_publicity(self, card_id: int) -> Card:
         is_public_new = await self.__is_card_public_by_collections(card_id)
-        return (await self.connection.execute(
+        result = await self.connection.execute(
             update(self.card_table)
                 .where(self.card_table.c.id == card_id)
                 .values(is_public=is_public_new)
-                .returning(self.card_table.c.id)
-        )).scalars().one()
+                .returning(self.card_table.c[*Card.fields()])
+        )
+        return Card(**result.mappings().first())
     
     async def update_cards_publicity(
             self, collection_id: int, is_public: bool
-    ) -> list[int]:
+    ) -> list[Card]:
         if is_public:
             result = await self.connection.execute(
                 update(self.card_table)
                     .where(self.card_table.c.id == self.table.c.card_id)
                     .where(self.table.c.collection_id == collection_id)
                     .values(is_public=True)
-                    .returning(self.card_table.c.id)
+                    .returning(self.card_table.c[*Card.fields()])
             )
-            return list(result.scalars().all())
+            return [Card(**elem) for elem in result.mappings().all()]
         else:
             return [
                 await self.refresh_card_publicity(card_id)

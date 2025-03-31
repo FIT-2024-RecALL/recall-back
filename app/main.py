@@ -4,7 +4,7 @@ from fastapi.middleware.cors import CORSMiddleware
 import uvicorn
 
 from app.api import all_routers
-from app.core import load_model
+from app.core import load_model, get_settings
 from app.db import close_db_connections, create_db_tables
 
 
@@ -22,7 +22,7 @@ async def lifespan(app: FastAPI):
 app = FastAPI(lifespan=lifespan)
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=['http://letsrecall.ru', 'http://localhost:5173'],
+    allow_origins=get_settings().allowed_hosts(),
     allow_credentials=True,
     allow_methods=['*'],
     allow_headers=['*']
