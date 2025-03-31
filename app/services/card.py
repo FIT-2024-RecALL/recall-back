@@ -61,7 +61,7 @@ class CardService(BaseService):
         card = await self.uow.get_repository(CardRepository).get_card_by_id(card_id, Card)
         if card is None:
             raise HTTPException(status_code=404, detail="Card not found")
-        if not card.is_public and card.owner_id is not user_id:
+        if not card.is_public and card.owner_id != user_id:
             raise HTTPException(status_code=403, detail="This card is private")
         return card
 

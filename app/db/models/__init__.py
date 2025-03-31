@@ -4,3 +4,4 @@ from .collection import *
 from .metadata import *
 from .train_record import *
 from .user import *
+from .file import *
