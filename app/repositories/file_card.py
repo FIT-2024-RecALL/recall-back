@@ -49,9 +49,11 @@ class FileCardRepository(BaseSQLAlchemyRepository):
         files_connections_changed = False
         if deleted_file_ids := list(current_file_ids.difference(new_file_ids)):
             await self.__unset_card_files_connections(card_id, deleted_file_ids)
+            await self.refresh_files_publicity(deleted_file_ids)
             files_connections_changed = True
         if not_inserted_file_ids := list(new_file_ids.difference(current_file_ids)):
             await self.__set_card_files_connections(card_id, not_inserted_file_ids)
+            await self.refresh_files_publicity(not_inserted_file_ids)
             files_connections_changed = True
         return files_connections_changed
 
@@ -102,6 +104,9 @@ class FileCardRepository(BaseSQLAlchemyRepository):
                 .returning(self.file_table.c[*FileScheme.fields()])
         )
         return FileScheme(**result.mappings().first())
+
+    async def refresh_files_publicity(self, file_ids: list[int]) -> FileScheme:
+        return [await self.refresh_file_publicity(file_id) for file_id in file_ids]
     
     async def update_files_publicity(
             self, card_id: int, is_public: bool

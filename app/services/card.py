@@ -71,10 +71,9 @@ class CardService(BaseService):
             user_id, new_card.id, collections
         )
         file_card_repo = self.uow.get_repository(FileCardRepository)
-        if await file_card_repo.update_card_files_connections(
+        await file_card_repo.update_card_files_connections(
             user_id, new_card.id, self.__parse_file_ids(new_card)
-        ):
-            await file_card_repo.update_files_publicity(new_card.id, new_card.is_public)
+        )
         return new_card
 
     @with_unit_of_work
@@ -111,10 +110,9 @@ class CardService(BaseService):
             card_id, new_card.model_dump(), Card
         )
         file_card_repo = self.uow.get_repository(FileCardRepository)
-        if await file_card_repo.update_card_files_connections(
+        await file_card_repo.update_card_files_connections(
             user_id, updated_card.id, self.__parse_file_ids(updated_card)
-        ):
-            await file_card_repo.update_files_publicity(updated_card.id, updated_card.is_public)
+        )
         return updated_card
 
 
@@ -126,6 +124,5 @@ class CardService(BaseService):
             raise HTTPException(status_code=401, detail="Only authorized owners can delete cards")
         file_ids = await file_card_repo.get_card_files_ids(card_id)
         await card_repo.delete_card(card_id)
-        for file_id in file_ids:
-            await file_card_repo.refresh_file_publicity(file_id)
+        await file_card_repo.refresh_files_publicity(file_ids)
 
