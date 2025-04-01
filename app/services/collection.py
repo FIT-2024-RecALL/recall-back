@@ -24,7 +24,7 @@ class CollectionService(BaseService):
         return await collection_repo.create_one(collection_data, Collection)
 
     @with_unit_of_work
-    async def get_collection(self, collection_id: int, user_id: Optional[int]) -> Collection:
+    async def get_collection(self, collection_id: int, user_id: int | None) -> Collection:
         collection_repo = self.uow.get_repository(CollectionRepository)
         collection = await collection_repo.get_collection_by_id(collection_id, Collection)
         if collection is None:
@@ -34,14 +34,14 @@ class CollectionService(BaseService):
         return collection
 
     @with_unit_of_work
-    async def get_collections(self, user_id: Optional[int], limit: int, offset: int) -> list[CollectionShort]:
+    async def get_collections(self, user_id: int | None, limit: int, offset: int) -> list[CollectionShort]:
         collection_repo = self.uow.get_repository(CollectionRepository)
         return await collection_repo.get_all_visible_collections(
             user_id, CollectionShort, limit, offset
         )
 
     @with_unit_of_work
-    async def get_collection_cards(self, collection_id: int, user_id: Optional[int]) -> list[int]:
+    async def get_collection_cards(self, collection_id: int, user_id: int | None) -> list[int]:
         await self.get_collection(collection_id, user_id) # Проверка существования коллекции и правтности
         return await self.uow.get_repository(CardCollectionRepository).get_collection_cards(collection_id)
 

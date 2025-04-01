@@ -78,7 +78,7 @@ class CardService(BaseService):
         return new_card
 
     @with_unit_of_work
-    async def get_card(self, card_id: int, user_id: Optional[int]) -> Card:
+    async def get_card(self, card_id: int, user_id: int | None) -> Card:
         card = await self.uow.get_repository(CardRepository).get_card_by_id(card_id, Card)
         if card is None:
             raise HTTPException(status_code=404, detail="Card not found")

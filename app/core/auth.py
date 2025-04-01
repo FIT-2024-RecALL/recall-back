@@ -36,14 +36,14 @@ def create_access_token(user_id: int) -> str:
     )
 
 
-def get_token(request: Request) -> Optional[str]:
+def get_token(request: Request) -> str | None:
     token = request.cookies.get(get_settings().access_token_key)
     if not token:
         return None
     return token
 
 
-def get_profile_id(token: Optional[str] = Depends(get_token)) -> int:
+def get_profile_id(token: str | None = Depends(get_token)) -> int:
     """Бросает исключение, если есть проблемы с токеном"""
     if not token:
         raise HTTPException(status_code=401, detail="This action requires authorization")
@@ -62,7 +62,7 @@ def get_profile_id(token: Optional[str] = Depends(get_token)) -> int:
     return int(user_id)
 
 
-def get_profile_id_soft(token: Optional[str] = Depends(get_token)) -> Optional[int]:
+def get_profile_id_soft(token: str | None = Depends(get_token)) -> int | None:
     """Возвращает `None`, если есть проблемы с токеном"""
     try:
         return int(get_profile_id(token))

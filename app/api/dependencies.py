@@ -1,4 +1,4 @@
-from typing import Annotated, Optional
+from typing import Annotated
 from fastapi import Depends, Body
 
 from app.core import get_profile_id, get_profile_id_soft
@@ -14,7 +14,7 @@ __all__ = [
 
 
 UserIdDep = Annotated[int, Depends(get_profile_id)]
-UserIdSoftDep = Annotated[Optional[int], Depends(get_profile_id_soft)]
+UserIdSoftDep = Annotated[int | None, Depends(get_profile_id_soft)]
 UserServiceDep = Annotated[UserService, Depends()]
 CardServiceDep = Annotated[CardService, Depends()]
 CollectionServiceDep = Annotated[CollectionService, Depends()]
