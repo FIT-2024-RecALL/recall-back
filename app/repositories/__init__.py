@@ -4,3 +4,5 @@ from .card_collection import *
 from .collection import *
 from .train_record import *
 from .user import *
+from .file import *
+from .file_card import *
