@@ -31,6 +31,13 @@ async def read_user_cards(
     return await user_service.get_user_cards(user_id, skip, limit)
 
 
+@router.get("/files", response_model=list[int])
+async def read_user_files(
+        user_id: UserIdDep, user_service: UserServiceDep, skip: int = 0, limit: int | None = None
+) -> list[int]:
+    return await user_service.get_user_files(user_id, skip, limit)
+
+
 @router.post("/register", response_model=User)
 async def create_user(
         response: Response, user: UserCreate, user_service: UserServiceDep, auto_login: bool = True

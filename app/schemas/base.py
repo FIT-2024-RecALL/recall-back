@@ -2,7 +2,7 @@ from pydantic import BaseModel, ConfigDict
 from pydantic.alias_generators import to_camel
 
 
-__all__ = ['CamelCaseBaseModel']
+__all__ = ["CamelCaseBaseModel", "IsPublicModelMixin"]
 
 
 class CamelCaseBaseModel(BaseModel):
@@ -11,3 +11,7 @@ class CamelCaseBaseModel(BaseModel):
     @classmethod
     def fields(cls) -> list[str]:
         return list(cls.model_fields.keys())
+
+
+class IsPublicModelMixin(BaseModel):
+    is_public: bool

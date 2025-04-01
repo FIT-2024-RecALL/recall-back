@@ -4,7 +4,7 @@ from fastapi import HTTPException
 from app.schemas import Collection, CollectionCreate, CollectionShort
 from app.repositories import (
     CardRepository, CardCollectionRepository, CollectionRepository,
-    UserRepository, TrainRecordRepository
+    UserRepository, TrainRecordRepository, FileCardRepository
 )
 
 from .base import BaseService, with_unit_of_work
@@ -67,7 +67,12 @@ class CollectionService(BaseService):
             collection_id, {'is_public': is_public}, Collection
         )
         card_collection_repo = self.uow.get_repository(CardCollectionRepository)
-        await card_collection_repo.update_cards_publicity(collection_id, is_public)
+        for updated_card in await card_collection_repo.update_cards_publicity(
+            collection_id, is_public
+        ):
+            await self.uow.get_repository(FileCardRepository).update_files_publicity(
+                updated_card.id, updated_card.is_public
+            )
         return collection
 
     @with_unit_of_work
@@ -83,7 +88,10 @@ class CollectionService(BaseService):
         if cards_without_collections := collection_cards.difference(cards_with_collections):
             await self.uow.get_repository(CardRepository).delete_cards(list(cards_without_collections))
         for card_id in cards_with_collections:
-            await card_collection_repo.refresh_card_publicity(card_id)
+            updated_card = await card_collection_repo.refresh_card_publicity(card_id)
+            await self.uow.get_repository(FileCardRepository).update_files_publicity(
+                updated_card.id, updated_card.is_public
+            )
 
     @with_unit_of_work
     async def get_collection_training_cards(self, user_id: int, collection_id: int) -> list[int]:
