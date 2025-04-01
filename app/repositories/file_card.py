@@ -2,7 +2,7 @@ from sqlalchemy import and_, select, insert, update
 from typing import Type
 
 from app.db.models import FileCardTable, FileTable, CardTable
-from app.schemas import Card, FileScheme
+from app.schemas import Card, FileScheme, IsPublicIdModel
 
 from .base import BaseSQLAlchemyRepository, SchemaType
 
@@ -95,31 +95,31 @@ class FileCardRepository(BaseSQLAlchemyRepository):
                 return True
         return False
 
-    async def refresh_file_publicity(self, file_id: int) -> FileScheme:
+    async def refresh_file_publicity(self, file_id: int) -> IsPublicIdModel:
         is_public_new = await self.__is_file_public_by_cards(file_id)
         result = await self.connection.execute(
             update(self.file_table)
                 .where(self.file_table.c.id == file_id)
                 .values(is_public=is_public_new)
-                .returning(self.file_table.c[*FileScheme.fields()])
+                .returning(self.file_table.c[*IsPublicIdModel.fields()])
         )
-        return FileScheme(**result.mappings().first())
+        return IsPublicIdModel(**result.mappings().first())
 
-    async def refresh_files_publicity(self, file_ids: list[int]) -> FileScheme:
+    async def refresh_files_publicity(self, file_ids: list[int]) -> list[IsPublicIdModel]:
         return [await self.refresh_file_publicity(file_id) for file_id in file_ids]
     
     async def update_files_publicity(
             self, card_id: int, is_public: bool
-    ) -> list[FileScheme]:
+    ) -> list[IsPublicIdModel]:
         if is_public:
             result = await self.connection.execute(
                 update(self.file_table)
                     .where(self.file_table.c.id == self.table.c.file_id)
                     .where(self.table.c.card_id == card_id)
                     .values(is_public=True)
-                .returning(self.file_table.c[*FileScheme.fields()])
+                .returning(self.file_table.c[*IsPublicIdModel.fields()])
             )
-            return [FileScheme(**elem) for elem in result.mappings().all()]
+            return [IsPublicIdModel(**elem) for elem in result.mappings().all()]
         else:
             return [
                 await self.refresh_file_publicity(file_id)
