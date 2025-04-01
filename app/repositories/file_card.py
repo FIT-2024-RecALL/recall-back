@@ -42,20 +42,20 @@ class FileCardRepository(BaseSQLAlchemyRepository):
         return list(result.scalars().all())
 
     async def update_card_files_connections(
-            self, user_id: int, card_id: int, file_ids: list[int]
-    ) -> bool:
+            self, user_id: int, card_id: int, is_public: bool, file_ids: list[int]
+    ) -> None:
+        """
+        Обновляет связи карточки, удаляя не упомянутые в списке и добавляя связи, которых прежде не было
+        - Обновляет публичность для всех отвязанных и привязанных файлов (новых и старых)
+        """
         new_file_ids = set(await self.__filter_owned_files(user_id, file_ids))
         current_file_ids = set(await self.get_card_files_ids(card_id))
-        files_connections_changed = False
         if deleted_file_ids := list(current_file_ids.difference(new_file_ids)):
             await self.__unset_card_files_connections(card_id, deleted_file_ids)
             await self.refresh_files_publicity(deleted_file_ids)
-            files_connections_changed = True
         if not_inserted_file_ids := list(new_file_ids.difference(current_file_ids)):
             await self.__set_card_files_connections(card_id, not_inserted_file_ids)
-            await self.refresh_files_publicity(not_inserted_file_ids)
-            files_connections_changed = True
-        return files_connections_changed
+        await self.update_files_publicity(card_id, is_public)
 
     async def get_card_files_ids(self, card_id: int) -> list[int]:
         result = await self.connection.execute(

@@ -72,7 +72,8 @@ class CardService(BaseService):
         )
         file_card_repo = self.uow.get_repository(FileCardRepository)
         await file_card_repo.update_card_files_connections(
-            user_id, new_card.id, self.__parse_file_ids(new_card)
+            user_id, card_id=new_card.id, is_public=new_card.is_public,
+            file_ids=self.__parse_file_ids(new_card)
         )
         return new_card
 
@@ -111,10 +112,10 @@ class CardService(BaseService):
         )
         file_card_repo = self.uow.get_repository(FileCardRepository)
         await file_card_repo.update_card_files_connections(
-            user_id, updated_card.id, self.__parse_file_ids(updated_card)
+            user_id, card_id=updated_card.id, is_public=updated_card.is_public,
+            file_ids=self.__parse_file_ids(updated_card)
         )
         return updated_card
-
 
     @with_unit_of_work
     async def delete_card(self, user_id: int, card_id: int) -> None:
