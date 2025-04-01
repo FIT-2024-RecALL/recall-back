@@ -51,7 +51,7 @@ class CardService(BaseService):
         if collections_changed:
             await card_collection_repo.refresh_card_publicity(card_id)
 
-    __PATTERN = rf"(?:{'|'.join(get_settings().allowed_hosts())})/storage/(\d+)"
+    __PATTERN = rf"(?:{'|'.join(get_settings().get_api_hosts())})/storage/(\d+)"
     @staticmethod
     def __parse_file_ids(card: Card) -> list[int]:
         matches = re.findall(CardService.__PATTERN, card.front_side)

@@ -59,7 +59,7 @@ async def update_collection(
 
 
 @router.put("/{collection_id}/publicity", response_model=Collection)
-async def update_collection(
+async def update_collection_publicity(
         user_id: UserIdDep, collection_id: int, is_public: bool,
         collection_service: CollectionServiceDep
 ) -> Collection:

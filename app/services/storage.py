@@ -1,7 +1,7 @@
 from fastapi import HTTPException, UploadFile
 
 from app.repositories import UserRepository, FileRepository, FileCardRepository
-from app.schemas import FileCreate, get_allowed_types, get_allowed_exts, FileScheme, StreamingFile
+from app.schemas import FileCreate, get_allowed_types, get_allowed_exts, FileMeta, StreamingFile
 from app.core import minio
 
 from .base import BaseService, with_unit_of_work
@@ -13,7 +13,7 @@ __all__ = ["StorageService"]
 class StorageService(BaseService):
 
     @with_unit_of_work
-    async def upload_file(self, user_id: int, file: UploadFile) -> FileScheme:
+    async def upload_file(self, user_id: int, file: UploadFile) -> FileMeta:
         if not await self.uow.get_repository(UserRepository).exists_user_with_id(user_id):
             raise HTTPException(status_code=401, detail="Only authorized users can upload files")
         file_type, file_ext = file.content_type.split("/")
@@ -30,12 +30,12 @@ class StorageService(BaseService):
                 ext=file_ext,
                 filename=obj.object_name
             ).model_dump(),
-            FileScheme
+            FileMeta
         ) # TODO: Надо удостоверяться, что добавление в minio и БД происходит по ACID
     
     @with_unit_of_work
-    async def get_file_meta(self, file_id: int, user_id: int | None) -> FileScheme:
-        file = await self.uow.get_repository(FileRepository).get_by_id(file_id, FileScheme)
+    async def get_file_meta(self, file_id: int, user_id: int | None) -> FileMeta:
+        file = await self.uow.get_repository(FileRepository).get_by_id(file_id, FileMeta)
         if file is None:
             raise HTTPException(status_code=404, detail="File not found")
         if not file.is_public and file.owner_id != user_id:

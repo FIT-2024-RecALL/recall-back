@@ -6,7 +6,7 @@ from .base import CamelCaseBaseModel, IsPublicModelMixin
 from app.core.minio import FileStream
 
 
-__all__ = ["get_allowed_types", "get_allowed_exts", "FileCreate", "FileScheme", "StreamingFile"]
+__all__ = ["get_allowed_types", "get_allowed_exts", "FileCreate", "FileMeta", "StreamingFile"]
 
 
 AllowedTypes = Literal["image", "video", "audio"]
@@ -29,7 +29,7 @@ class FileCreate(CamelCaseBaseModel):
     ext: AllowedExts
 
 
-class FileScheme(FileCreate, IsPublicModelMixin):
+class FileMeta(FileCreate, IsPublicModelMixin):
     id: int
 
 
@@ -37,5 +37,5 @@ class StreamingFile(BaseModel):
     """NOT FOR RESPONSES"""
     model_config = ConfigDict(arbitrary_types_allowed=True)
 
-    metadata: FileScheme
+    metadata: FileMeta
     stream: FileStream

@@ -2,7 +2,7 @@ from fastapi import APIRouter, UploadFile, File
 from fastapi.responses import StreamingResponse, Response
 from urllib.parse import quote
 
-from app.schemas import FileScheme
+from app.schemas import FileMeta
 
 from .dependencies import UserIdDep, UserIdSoftDep, StorageServiceDep
 
@@ -13,27 +13,27 @@ router = APIRouter(
 )
 
 
-@router.post('/', response_model=FileScheme)
+@router.post('/', response_model=FileMeta)
 async def add_file(
     user_id: UserIdDep, storage_service: StorageServiceDep, 
     file: UploadFile = File(...)
-) -> FileScheme:
+) -> FileMeta:
     return await storage_service.upload_file(user_id, file)
 
 
-@router.get('/{file_id}/meta', response_model=FileScheme)
+@router.get('/{file_id}/meta', response_model=FileMeta)
 async def get_file_meta(
     file_id: int, user_id: UserIdSoftDep, 
     storage_service: StorageServiceDep
-) -> FileScheme:
+) -> FileMeta:
     return await storage_service.get_file_meta(file_id, user_id)
 
 
 @router.get('/{file_id}/cards', response_model=list[int])
-async def get_file_meta(
+async def get_file_cards(
     file_id: int, user_id: UserIdDep, 
     storage_service: StorageServiceDep
-) -> FileScheme:
+) -> FileMeta:
     return await storage_service.get_file_cards(file_id, user_id)
 
 

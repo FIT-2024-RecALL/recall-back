@@ -71,8 +71,8 @@ class Settings(BaseSettings):
     ollama: OllamaSettings = OllamaSettings()
 
     @staticmethod
-    def allowed_hosts() -> list[str]:
-        return ['https://letsrecall.ru', 'http://letsrecall.ru', 'http://localhost:5173']
+    def get_api_hosts() -> list[str]:
+        return ['https://letsrecall.ru/api', 'http://letsrecall.ru/api', 'http://localhost:8000']
 
     @property
     def auth_algorithm(self) -> CryptoAlgorithm:
