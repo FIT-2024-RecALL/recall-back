@@ -4,7 +4,7 @@ from fastapi.middleware.cors import CORSMiddleware
 import uvicorn
 
 from app.api import all_routers
-from app.core import load_model
+from app.core import load_model, unload_model
 from app.db import close_db_connections, create_db_tables
 
 
@@ -14,7 +14,7 @@ async def lifespan(app: FastAPI):
     print()
     print(await load_model())
     yield
-    print(await load_model())
+    print(await unload_model())
     print()
     await close_db_connections()
 
@@ -50,4 +50,4 @@ async def read_item(item_id: int | None = None):
 
 
 if __name__ == "__main__":
-    uvicorn.run("app.main:app", host="0.0.0.0", port=8000, reload=True)
+    uvicorn.run("app.main:app", host="0.0.0.0", port=8000)
