@@ -33,7 +33,7 @@ async def get_file_meta(
 async def get_file_cards(
     file_id: int, user_id: UserIdDep, 
     storage_service: StorageServiceDep
-) -> FileMeta:
+) -> list[int]:
     return await storage_service.get_file_cards(file_id, user_id)
 
 
