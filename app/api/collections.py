@@ -1,8 +1,9 @@
+from typing import Optional
 from fastapi import APIRouter, Response
 
 from app.schemas import Collection, CollectionCreate, CollectionShort
 
-from .dependencies import CollectionServiceDep, UserIdDep
+from .dependencies import CollectionServiceDep, UserIdDep, UserIdSoftDep
 
 
 router = APIRouter(
@@ -13,23 +14,26 @@ router = APIRouter(
 
 @router.get("/{collection_id}", response_model=Collection)
 async def read_collection(
-        collection_id: int, collection_service: CollectionServiceDep
+        collection_id: int, user_id: UserIdSoftDep, 
+        collection_service: CollectionServiceDep
 ) -> Collection:
-    return await collection_service.get_collection(collection_id)
+    return await collection_service.get_collection(collection_id, user_id)
 
 
 @router.get("/", response_model=list[CollectionShort], description="Returns collections' list without descriptions")
 async def read_collections(
-        collection_service: CollectionServiceDep, limit: int = 100, skip: int = 0
+        user_id: UserIdSoftDep, collection_service: CollectionServiceDep, 
+        limit: int = 100, skip: int = 0
 ) -> list[CollectionShort]:
-    return await collection_service.get_collections(limit, skip)
+    return await collection_service.get_collections(user_id, limit, skip)
 
 
 @router.get("/{collection_id}/cards", response_model=list[int])
 async def read_collection_cards(
-        collection_id: int, collection_service: CollectionServiceDep
+        collection_id: int, user_id: UserIdSoftDep,
+        collection_service: CollectionServiceDep,
 ) -> list[int]:
-    return await collection_service.get_collection_cards(collection_id)
+    return await collection_service.get_collection_cards(collection_id, user_id)
 
 
 @router.get("/{collection_id}/cards/train", response_model=list[int])
@@ -52,6 +56,14 @@ async def update_collection(
         collection_service: CollectionServiceDep
 ) -> Collection:
     return await collection_service.update_user_collection(user_id, collection_id, new_collection)
+
+
+@router.put("/{collection_id}/publicity", response_model=Collection)
+async def update_collection_publicity(
+        user_id: UserIdDep, collection_id: int, is_public: bool,
+        collection_service: CollectionServiceDep
+) -> Collection:
+    return await collection_service.update_publicity(user_id, collection_id, is_public)
 
 
 @router.delete("/{collection_id}", response_class=Response)

@@ -30,6 +30,10 @@ class BaseRepository(ABC):
         raise NotImplementedError
 
     @abstractmethod
+    async def update_many(self, filter_expr, update_values, output_schema):
+        raise NotImplementedError
+
+    @abstractmethod
     async def delete(self, filter_expr):
         raise NotImplementedError
 
@@ -76,6 +80,15 @@ class BaseSQLAlchemyRepository(BaseRepository):
             .returning(self.table.c[*output_schema.fields()])
         )
         return output_schema(**result.mappings().first())
+
+    async def update_many(
+            self, filter_expr, update_values: dict, output_schema: Type[SchemaType]
+    ) -> list[SchemaType]:
+        result = await self.connection.execute(
+            update(self.table).where(filter_expr).values(**update_values)
+            .returning(self.table.c[*output_schema.fields()])
+        )
+        return [output_schema(**elem) for elem in result.mappings().all()]
 
     async def delete(self, filter_expr) -> None:
         await self.connection.execute(delete(self.table).where(filter_expr))
