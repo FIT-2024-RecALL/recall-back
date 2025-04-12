@@ -51,9 +51,12 @@ async def __file_stream_generator(file_response: BaseHTTPResponse) -> FileStream
         file_response.release_conn()
 
 
-def get_file_stream(full_path: str) -> FileStream:
-    file_response = __storage.get_object(get_settings().minio.BUCKET_NAME, full_path)
-    return __file_stream_generator(file_response)
+def get_file_stream(full_path: str) -> FileStream | None:
+    try:
+        file_response = __storage.get_object(get_settings().minio.BUCKET_NAME, full_path)
+        return __file_stream_generator(file_response)
+    except S3Error:
+        return None
 
 
 def get_files_list(user_id: int) -> Iterator[Object]:

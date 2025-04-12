@@ -52,9 +52,12 @@ class StorageService(BaseService):
     @with_unit_of_work
     async def get_file(self, file_id: int, user_id: int | None) -> StreamingFile:
         file_meta = await self.get_file_meta(file_id, user_id)
+        stream = minio.get_file_stream(file_meta.filename)
+        if not stream:
+            raise HTTPException(status_code=400, detail="Filed to get file")
         return StreamingFile(
             metadata=file_meta, 
-            stream=minio.get_file_stream(file_meta.filename)
+            stream=stream
         )
     
     @with_unit_of_work
