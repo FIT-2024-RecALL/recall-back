@@ -13,7 +13,7 @@ AllowedTypes = Literal["image", "video", "audio"]
 AllowedExts = Literal[
     "bmp", "gif", "jpg", "jpeg", "png", "svg", "tif", "tiff", "webp",
     "avi", "m4v", "mkv", "mov", "mpg", "mp4", "ogv", "webm", "wmv",
-    "aac", "flac", "m4a", "mp3", "oga", "ogg", "wav"
+    "aac", "flac", "m4a", "mp3", "mpeg", "oga", "ogg", "wav"
 ]
 
 def get_allowed_types() -> list[str]:
