@@ -70,6 +70,10 @@ class Settings(BaseSettings):
     minio: MinioSettings = MinioSettings()
     ollama: OllamaSettings = OllamaSettings()
 
+    @staticmethod
+    def get_api_hosts() -> list[str]:
+        return ['https://letsrecall.ru/api', 'http://letsrecall.ru/api', 'http://localhost:8000']
+
     @property
     def auth_algorithm(self) -> CryptoAlgorithm:
         return self.auth.ALGORITHM
