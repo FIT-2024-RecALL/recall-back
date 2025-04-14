@@ -1,4 +1,4 @@
-from fastapi import APIRouter, UploadFile, File
+from fastapi import APIRouter, UploadFile
 from fastapi.responses import StreamingResponse, Response
 from urllib.parse import quote
 
@@ -16,7 +16,7 @@ router = APIRouter(
 @router.post('/', response_model=FileMeta)
 async def add_file(
     user_id: UserIdDep, storage_service: StorageServiceDep, 
-    file: UploadFile = File(...)
+    file: UploadFile
 ) -> FileMeta:
     return await storage_service.upload_file(user_id, file)
 

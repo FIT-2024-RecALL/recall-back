@@ -96,8 +96,10 @@ class CardCollectionRepository(BaseSQLAlchemyRepository):
         if is_public:
             result = await self.connection.execute(
                 update(self.card_table)
-                    .where(self.card_table.c.id == self.table.c.card_id)
-                    .where(self.table.c.collection_id == collection_id)
+                    .where(and_(
+                        self.card_table.c.id == self.table.c.card_id,
+                        self.table.c.collection_id == collection_id
+                    ))
                     .values(is_public=True)
                     .returning(self.card_table.c[*IsPublicIdModel.fields()])
             )

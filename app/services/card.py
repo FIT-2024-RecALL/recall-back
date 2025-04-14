@@ -56,7 +56,6 @@ class CardService(BaseService):
     def __parse_file_ids(card: Card) -> list[int]:
         matches = re.findall(CardService.__PATTERN, card.front_side)
         matches += re.findall(CardService.__PATTERN, card.back_side)
-        print(matches)
         return [int(match) for match in matches]
 
     @with_unit_of_work
