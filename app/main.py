@@ -4,18 +4,18 @@ from fastapi.middleware.cors import CORSMiddleware
 import uvicorn
 
 from app.api import all_routers
-from app.core import load_model, get_settings
+from app.core import load_model, unload_model, get_settings, is_bucket_available
 from app.db import close_db_connections, create_db_tables
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     await create_db_tables()
-    print()
+    if not await is_bucket_available():
+        raise RuntimeError("Minio server's bucket isn't available")
     print(await load_model())
     yield
-    print(await load_model())
-    print()
+    print(await unload_model())
     await close_db_connections()
 
 

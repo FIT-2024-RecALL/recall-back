@@ -8,7 +8,7 @@ from miniopy_async.datatypes import ClientResponse, ClientSession
 from .config import get_settings
 
 
-__all__ = ["FileStream", "is_file_uploaded", "get_file_stream", "upload_file", "delete_file"]
+__all__ = ["FileStream", "is_bucket_available", "is_file_uploaded", "get_file_stream", "upload_file", "delete_file"]
 
 
 FileStream = AsyncGenerator[bytes, Any]
@@ -22,6 +22,13 @@ __storage = Minio(
     __settings.minio.PASSWORD,
     secure=False
 )
+
+
+async def is_bucket_available() -> bool:
+    try:
+        return await __storage.bucket_exists(__settings.minio.BUCKET_NAME)
+    except ValueError:
+        return False
 
 
 async def is_file_uploaded(path_to_object: str) -> bool:
