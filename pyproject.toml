@@ -21,6 +21,7 @@ bcrypt = "^4.2.0"
 passlib = {extras = ["bcrypt"], version = "^1.7.4"}
 uvicorn = "^0.33.0"
 ollama = "^0.4.7"
+miniopy-async = "^1.22.1"
 
 
 [build-system]
