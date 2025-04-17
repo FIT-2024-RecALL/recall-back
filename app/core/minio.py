@@ -3,7 +3,7 @@ from typing import AsyncGenerator, Any
 from fastapi import UploadFile
 from miniopy_async import Minio, S3Error
 from miniopy_async.helpers import ObjectWriteResult
-from miniopy_async.datatypes import ClientResponse, ClientSession
+from miniopy_async.datatypes import ClientResponse, ClientSession, Object
 
 from .config import get_settings
 
@@ -36,13 +36,22 @@ async def is_file_uploaded(path_to_object: str) -> bool:
         return await __storage.stat_object(__settings.minio.BUCKET_NAME, path_to_object) is not None
     except S3Error as e:
         return False
-    
+
+
+async def get_same_name_files(prefix: str) -> list[Object]:
+    return await __storage.list_objects(__settings.minio.BUCKET_NAME, prefix)
+
+
+def is_file_in_list(full_path: str, files: list[Object]) -> bool:
+    return any(file.object_name == full_path for file in files)
+
 
 async def upload_file(file: UploadFile) -> ObjectWriteResult:
     full_path = file.filename
     name, extension = os.path.splitext(file.filename)
+    files = await get_same_name_files(name)
     index = 0
-    while await is_file_uploaded(full_path):
+    while is_file_in_list(full_path, files):
         index += 1
         full_path = f'{name}_{index}{extension}'
     return await __storage.put_object(
