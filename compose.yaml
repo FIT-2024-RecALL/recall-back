@@ -4,56 +4,56 @@ networks:
   dev:
 
 services:
-  nginx:
-    container_name: recall-nginx
-    image: nginx:1.27.3-alpine
-    restart: always
-    volumes:
-      - ./config/nginx.conf:/etc/nginx/nginx.conf
-      - $CERTBOT_PATH/www/:/var/www/certbot/:ro
-      - $CERTBOT_PATH/conf/:/etc/nginx/ssl/:ro
-    ports:
-      - "80:80"
-      - "443:443"
-    depends_on:
-      - frontend
-      - backend
-    networks:
-      - dev
-  certbot:
-    image: certbot/certbot:latest
-    volumes:
-      - $CERTBOT_PATH/www/:/var/www/certbot/:rw
-      - $CERTBOT_PATH/conf/:/etc/letsencrypt/:rw
-    networks:
-      - dev
-  frontend:
-    container_name: recall-frontend
-    build: $RECALL_FRONTEND_PATH
-    restart: always
-    ports:
-      - "8080:8080"
-    networks:
-      - dev
-    healthcheck:
-      test: "curl -f http://127.0.0.1:8080/"
-      interval: 30s
-      timeout: 10s
-      retries: 3
-      start_period: 10s
-  backend:
-    container_name: recall-backend
-    build: .
-    restart: always
-    ports:
-      - "8000:8000"
-    depends_on:
-      postgres:
-        condition: service_healthy
-      minio:
-        condition: service_healthy
-    networks:
-      - dev
+  # nginx:
+  #   container_name: recall-nginx
+  #   image: nginx:1.27.3-alpine
+  #   restart: always
+  #   volumes:
+  #     - ./config/nginx.conf:/etc/nginx/nginx.conf
+  #     - $CERTBOT_PATH/www/:/var/www/certbot/:ro
+  #     - $CERTBOT_PATH/conf/:/etc/nginx/ssl/:ro
+  #   ports:
+  #     - "80:80"
+  #     - "443:443"
+  #   depends_on:
+  #     - frontend
+  #     - backend
+  #   networks:
+  #     - dev
+  # certbot:
+  #   image: certbot/certbot:latest
+  #   volumes:
+  #     - $CERTBOT_PATH/www/:/var/www/certbot/:rw
+  #     - $CERTBOT_PATH/conf/:/etc/letsencrypt/:rw
+  #   networks:
+  #     - dev
+  # frontend:
+  #   container_name: recall-frontend
+  #   build: $RECALL_FRONTEND_PATH
+  #   restart: always
+  #   ports:
+  #     - "8080:8080"
+  #   networks:
+  #     - dev
+  #   healthcheck:
+  #     test: "curl -f http://127.0.0.1:8080/"
+  #     interval: 30s
+  #     timeout: 10s
+  #     retries: 3
+  #     start_period: 10s
+  # backend:
+  #   container_name: recall-backend
+  #   build: .
+  #   restart: always
+  #   ports:
+  #     - "8000:8000"
+  #   depends_on:
+  #     postgres:
+  #       condition: service_healthy
+  #     minio:
+  #       condition: service_healthy
+  #   networks:
+  #     - dev
   minio-setup:
     container_name: recall-minio-setup
     depends_on:
