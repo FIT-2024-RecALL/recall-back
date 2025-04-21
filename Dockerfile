@@ -21,7 +21,7 @@ RUN poetry install --no-dev --no-interaction --no-ansi
 
 
 # Этап запуска
-FROM python:3.14-rcpython:3.11-slim AS runtime
+FROM python:3.14-rc AS runtime
 
 # Установка переменных окружения
 ENV PYTHONUNBUFFERED=1 \
