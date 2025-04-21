@@ -17,7 +17,7 @@ WORKDIR /code
 COPY pyproject.toml poetry.lock ./
 
 # Устанавливаем зависимости с помощью Poetry
-RUN poetry install --no-dev --no-interaction --no-ansi
+RUN poetry install --only main --no-interaction --no-ansi
 
 
 # Этап запуска
