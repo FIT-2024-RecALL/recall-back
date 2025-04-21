@@ -1,5 +1,5 @@
 # Этап сборки
-FROM python:3.14-rc AS builder
+FROM python:3.12.10 AS builder
 
 RUN apt-get update && apt-get install -y curl && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
@@ -21,7 +21,7 @@ RUN poetry install --only main --no-interaction --no-ansi
 
 
 # Этап запуска
-FROM python:3.14-rc AS runtime
+FROM python:3.12.10 AS runtime
 
 # Установка переменных окружения
 ENV PYTHONUNBUFFERED=1 \
