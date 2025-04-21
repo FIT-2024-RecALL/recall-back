@@ -1,5 +1,5 @@
 # Этап сборки
-FROM python:3.11-slim AS builder
+FROM python:3.14-rc AS builder
 
 RUN apt-get update && apt-get install -y curl && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
@@ -21,7 +21,7 @@ RUN poetry install --no-dev --no-interaction --no-ansi
 
 
 # Этап запуска
-FROM python:3.11-slim AS runtime
+FROM python:3.14-rcpython:3.11-slim AS runtime
 
 # Установка переменных окружения
 ENV PYTHONUNBUFFERED=1 \

@@ -4,25 +4,25 @@ from fastapi.middleware.cors import CORSMiddleware
 import uvicorn
 
 from app.api import all_routers
-from app.core import load_model, unload_model
+from app.core import load_model, unload_model, get_settings, is_bucket_available
 from app.db import close_db_connections, create_db_tables
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     await create_db_tables()
-    print()
+    if not await is_bucket_available():
+        raise RuntimeError("Minio server's bucket isn't available")
     print(await load_model())
     yield
     print(await unload_model())
-    print()
     await close_db_connections()
 
 
 app = FastAPI(lifespan=lifespan)
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=['http://letsrecall.ru', 'http://localhost:5173'],
+    allow_origins=['https://letsrecall.ru', 'http://letsrecall.ru', 'http://localhost:5173'],
     allow_credentials=True,
     allow_methods=['*'],
     allow_headers=['*']
@@ -50,4 +50,4 @@ async def read_item(item_id: int | None = None):
 
 
 if __name__ == "__main__":
-    uvicorn.run("app.main:app", host="0.0.0.0", port=8000)
+    uvicorn.run("app.main:app", host="0.0.0.0", port=8000, reload=True)

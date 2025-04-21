@@ -1,7 +1,8 @@
-from sqlalchemy import and_, select, insert
+from sqlalchemy import and_, select, insert, update
 from typing import Type
 
-from app.db.models import CardCollectionTable, CollectionTable
+from app.db.models import CardCollectionTable, CollectionTable, CardTable
+from app.schemas import Collection, IsPublicIdModel
 
 from .base import BaseSQLAlchemyRepository, SchemaType
 
@@ -11,6 +12,7 @@ __all__ = ["CardCollectionRepository"]
 
 class CardCollectionRepository(BaseSQLAlchemyRepository):
     collection_table = CollectionTable
+    card_table = CardTable
     table = CardCollectionTable
 
     async def set_card_collection_connections(
@@ -70,3 +72,39 @@ class CardCollectionRepository(BaseSQLAlchemyRepository):
             .where(self.table.c.card_id == card_id)
         )
         return [output_schema(**elem) for elem in result.mappings().all()]
+    
+    async def __is_card_public_by_collections(self, card_id: int) -> bool:
+        for collection in await self.get_card_collections(card_id, Collection):
+            if collection.is_public:
+                return True
+        return False
+
+    async def refresh_card_publicity(self, card_id: int) -> IsPublicIdModel:
+        is_public_new = await self.__is_card_public_by_collections(card_id)
+        result = await self.connection.execute(
+            update(self.card_table)
+                .where(self.card_table.c.id == card_id)
+                .values(is_public=is_public_new)
+                .returning(self.card_table.c[*IsPublicIdModel.fields()])
+        )
+        return IsPublicIdModel(**result.mappings().first())
+    
+    async def update_cards_publicity(
+            self, collection_id: int, is_public: bool
+    ) -> list[IsPublicIdModel]:
+        if is_public:
+            result = await self.connection.execute(
+                update(self.card_table)
+                    .where(and_(
+                        self.card_table.c.id == self.table.c.card_id,
+                        self.table.c.collection_id == collection_id
+                    ))
+                    .values(is_public=True)
+                    .returning(self.card_table.c[*IsPublicIdModel.fields()])
+            )
+            return [IsPublicIdModel(**elem) for elem in result.mappings().all()]
+        else:
+            return [
+                await self.refresh_card_publicity(card_id)
+                for card_id in await self.get_collection_cards(collection_id)
+            ]
