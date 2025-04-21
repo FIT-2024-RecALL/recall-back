@@ -57,7 +57,7 @@ services:
     deploy:
       resources:
         limits:
-          memory: 10G
+          memory: 6G
   minio-setup:
     container_name: recall-minio-setup
     depends_on:
