@@ -24,7 +24,13 @@ RUN poetry install --only main --no-interaction --no-ansi
 FROM python:3.12.10 AS runtime
 
 # Установка переменных окружения
-ENV PYTHONUNBUFFERED=1 \
+ENV PYTHONFAULTHANDLER=1 \
+    PYTHONUNBUFFERED=1 \
+    PYTHONHASHSEED=random \
+    PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONOPTIMIZE=1 \
+    PYTHONGCSTATS=1 \
+    PYTHONGIL=0 \
     VIRTUAL_ENV=/code/.venv \
     PATH="/code/.venv/bin:$PATH"
 
@@ -35,5 +41,5 @@ EXPOSE 8000
 COPY ./config ./config
 COPY ./app ./app
 
-#CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]
-CMD ["python", "-m", "app.main"]
+CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000", "--workers", "2", "--limit-max-requests", "1000"]
+

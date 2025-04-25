@@ -31,23 +31,3 @@ app.add_middleware(
 
 for router in all_routers:
     app.include_router(router)
-
-
-###################################################
-### ВРЕМЕННЫЙ КОД, КОТОРЫЙ БУДЕТ УДАЛЕН ПОЗДНЕЕ ###
-###################################################
-from fastapi import status
-
-@app.get("/items/{item_id}", responses={
-    status.HTTP_404_NOT_FOUND: {"description": "Item not found"},
-    status.HTTP_500_INTERNAL_SERVER_ERROR: {"description": "Internal Server Error"},
-})
-async def read_item(item_id: int | None = None):
-    return {"item_id": item_id}
-############################
-### БУДЕТ УДАЛЕН ПОЗДНЕЕ ###
-############################
-
-
-if __name__ == "__main__":
-    uvicorn.run("app.main:app", host="0.0.0.0", port=8000, reload=True)
