@@ -81,5 +81,8 @@ async def get_file_stream(full_path: str) -> FileStream | None:
 
 
 async def delete_file(full_path: str) -> bool:
-    await __storage.remove_object(__settings.minio.BUCKET_NAME, full_path)
+    try:
+        await __storage.remove_object(__settings.minio.BUCKET_NAME, full_path)
+    except S3Error as e:
+        raise ValueError(e.message)
     return True
