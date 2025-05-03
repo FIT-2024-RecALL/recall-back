@@ -27,14 +27,15 @@ __storage = Minio(
 async def is_bucket_available() -> bool:
     try:
         return await __storage.bucket_exists(__settings.minio.BUCKET_NAME)
-    except ValueError:
+    except S3Error:
         return False
 
 
 async def is_file_uploaded(path_to_object: str) -> bool:
     try:
-        return await __storage.stat_object(__settings.minio.BUCKET_NAME, path_to_object) is not None
-    except S3Error as e:
+        await __storage.stat_object(__settings.minio.BUCKET_NAME, path_to_object)
+        return True
+    except S3Error:
         return False
 
 
@@ -53,7 +54,7 @@ async def upload_file(file: UploadFile) -> ObjectWriteResult:
     index = 0
     while is_file_in_list(full_path, files):
         index += 1
-        full_path = f'{name}_{index}{extension}'
+        full_path = f"{name}_{index}{extension}"
     return await __storage.put_object(
         __settings.minio.BUCKET_NAME,
         full_path, file.file, file.size

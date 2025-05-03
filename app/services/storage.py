@@ -72,4 +72,3 @@ class StorageService(BaseService):
         except ValueError as e:
             raise HTTPException(404, f"Failed to delete file: {str(e)}")
         await self.uow.get_repository(FileRepository).delete_by_id(file_id) # TODO: Надо удостоверяться, что удаление из minio и БД происходит по ACID
-        
