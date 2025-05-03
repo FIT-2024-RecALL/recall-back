@@ -27,7 +27,7 @@ __storage = Minio(
 async def is_bucket_available() -> bool:
     try:
         return await __storage.bucket_exists(__settings.minio.BUCKET_NAME)
-    except S3Error:
+    except S3Error | ValueError:
         return False
 
 
