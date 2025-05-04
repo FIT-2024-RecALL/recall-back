@@ -1,4 +1,5 @@
 from enum import StrEnum
+from functools import cache
 from pydantic import SecretStr, BaseModel
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
@@ -71,6 +72,7 @@ class Settings(BaseSettings):
     ollama: OllamaSettings = OllamaSettings()
 
     @staticmethod
+    @cache
     def get_api_hosts() -> list[str]:
         return ['https://letsrecall.ru/api', 'http://letsrecall.ru/api', 'http://localhost:8000']
 
@@ -91,20 +93,24 @@ class Settings(BaseSettings):
         return self.auth.EXPIRE_HOURS
 
     @property
+    @cache
     def cookie_kwargs(self) -> CookieSettings:
         return CookieSettings(
             httponly=self.auth.HTTPONLY, secure=self.auth.SECURE, samesite=self.auth.SAMESITE
         )
 
     @property
+    @cache
     def minio_url(self) -> str:
         """Hostname with port"""
         return f"{self.minio.HOSTNAME}:{self.minio.PORT}"
 
     @property
+    @cache
     def ollama_url(self) -> str:
-        return f'http://{self.ollama.HOSTNAME}:{self.ollama.PORT}'
+        return f"http://{self.ollama.HOSTNAME}:{self.ollama.PORT}"
 
+    @cache
     def __create_postgres_dialect_url(self, dialect: str) -> str:
         return (f"postgresql+{dialect}://{self.db.USER}:{self.db.PASSWORD.get_secret_value()}"
                 f"@{self.db.HOST}:{self.db.HOST_PORT}/{self.db.DB}")

@@ -1,9 +1,8 @@
-from typing import Literal
-from pydantic import BaseModel, ConfigDict
+from functools import cache
+from typing import AsyncGenerator, Any, Literal, get_args
+from pydantic import BaseModel
 
 from .base import CamelCaseBaseModel, IsPublicModelMixin
-
-from app.core.minio import FileStream
 
 
 __all__ = ["get_allowed_types", "get_allowed_exts", "FileCreate", "FileMeta", "StreamingFile"]
@@ -16,11 +15,18 @@ AllowedExts = Literal[
     "aac", "flac", "m4a", "mp3", "mpeg", "oga", "ogg", "wav"
 ]
 
-def get_allowed_types() -> list[str]:
-    return list(AllowedTypes.__args__)
 
+@cache
+def get_allowed_types() -> list[str]:
+    """Возвращает список допустимых типов файлов."""
+    return list(get_args(AllowedTypes))
+
+
+@cache
 def get_allowed_exts() -> list[str]:
-    return list(AllowedExts.__args__)
+    """Возвращает список допустимых расширений файлов."""
+    return list(get_args(AllowedExts))
+
 
 class FileCreate(CamelCaseBaseModel):
     owner_id: int
@@ -30,12 +36,10 @@ class FileCreate(CamelCaseBaseModel):
 
 
 class FileMeta(FileCreate, IsPublicModelMixin):
-    id: int
+    pass
 
 
 class StreamingFile(BaseModel):
-    """NOT FOR RESPONSES"""
-    model_config = ConfigDict(arbitrary_types_allowed=True)
-
+    """Модель для потоковой передачи файла с метаданными. Не используется в ответах API."""
     metadata: FileMeta
-    stream: FileStream
+    stream: AsyncGenerator[bytes, Any]

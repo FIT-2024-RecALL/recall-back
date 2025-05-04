@@ -1,4 +1,3 @@
-from typing import Optional
 from datetime import datetime, timedelta, timezone
 from fastapi import Depends, Request, HTTPException, Response
 from jose import jwt, JWTError

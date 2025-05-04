@@ -12,5 +12,4 @@ class CardCreate(CamelCaseBaseModel):
 
 
 class Card(CardCreate, IsPublicModelMixin):
-    id: int
     owner_id: int

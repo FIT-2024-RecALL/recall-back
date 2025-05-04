@@ -1,4 +1,3 @@
-from typing import Optional
 from fastapi import APIRouter, Response
 
 from app.schemas import Collection, CollectionCreate, CollectionShort

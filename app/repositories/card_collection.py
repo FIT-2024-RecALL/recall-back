@@ -99,8 +99,7 @@ class CardCollectionRepository(BaseSQLAlchemyRepository):
                     .where(and_(
                         self.card_table.c.id == self.table.c.card_id,
                         self.table.c.collection_id == collection_id
-                    ))
-                    .values(is_public=True)
+                    )).values(is_public=True)
                     .returning(self.card_table.c[*IsPublicIdModel.fields()])
             )
             return [IsPublicIdModel(**elem) for elem in result.mappings().all()]
