@@ -20,7 +20,7 @@ class StorageService(BaseService):
         if file_type is None or file_ext is None or file_type not in get_allowed_types() or file_ext not in get_allowed_exts():
             raise HTTPException(status_code=409, detail="Invalid file type")
         try:
-            obj = minio.upload_file(file)
+            obj = await minio.upload_file(file)
         except ValueError as e:
             raise HTTPException(409, f"Failed to upload file: {str(e)}")
         return await self.uow.get_repository(FileRepository).create_one(
@@ -52,7 +52,7 @@ class StorageService(BaseService):
     @with_unit_of_work
     async def get_file(self, file_id: int, user_id: int | None) -> StreamingFile:
         file_meta = await self.get_file_meta(file_id, user_id)
-        stream = minio.get_file_stream(file_meta.filename)
+        stream = await minio.get_file_stream(file_meta.filename)
         if not stream:
             raise HTTPException(status_code=400, detail="Filed to get file")
         return StreamingFile(
@@ -68,8 +68,7 @@ class StorageService(BaseService):
         if file_meta.owner_id != user_id:
             raise HTTPException(status_code=401, detail="Only authorized owners can delete files")
         try:
-            minio.delete_file(file_meta.filename)
+            await minio.delete_file(file_meta.filename)
         except ValueError as e:
             raise HTTPException(404, f"Failed to delete file: {str(e)}")
         await self.uow.get_repository(FileRepository).delete_by_id(file_id) # TODO: Надо удостоверяться, что удаление из minio и БД происходит по ACID
-        

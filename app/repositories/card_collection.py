@@ -62,7 +62,6 @@ class CardCollectionRepository(BaseSQLAlchemyRepository):
             select(self.table.c.card_id).where(self.table.c.collection_id == collection_id)
         )
         return list(result.scalars().all())
-                
 
     async def get_card_collections(
             self, card_id: int, output_schema: Type[SchemaType]

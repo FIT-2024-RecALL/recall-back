@@ -1,68 +1,79 @@
 import os.path
-from typing import AsyncGenerator, Iterator, Any
+from typing import AsyncGenerator, Any
 from fastapi import UploadFile
-from minio import Minio, S3Error
-from minio.datatypes import Object, BaseHTTPResponse
-from minio.helpers import ObjectWriteResult
+from miniopy_async import Minio, S3Error
+from miniopy_async.helpers import ObjectWriteResult
+from miniopy_async.datatypes import ClientResponse, ClientSession, Object
 
 from .config import get_settings
 
 
-__all__ = ["FileStream", "is_file_uploaded", "get_file_stream", "get_files_list", "upload_file", "delete_file"]
+__all__ = ["FileStream", "is_bucket_available", "get_file_stream", "upload_file", "delete_file"]
 
 
 FileStream = AsyncGenerator[bytes, Any]
 
 
+__settings = get_settings()
+
 __storage = Minio(
-    get_settings().minio_url,
-    get_settings().minio.LOGIN,
-    get_settings().minio.PASSWORD,
+    __settings.minio_url,
+    __settings.minio.LOGIN,
+    __settings.minio.PASSWORD,
     secure=False
 )
 
 
-def is_file_uploaded(path_to_object: str) -> bool:
+async def is_bucket_available() -> bool:
     try:
-        return __storage.stat_object(get_settings().minio.BUCKET_NAME, path_to_object) is not None
-    except S3Error as e:
+        return await __storage.bucket_exists(__settings.minio.BUCKET_NAME)
+    except S3Error | ValueError | OSError:
         return False
-    
 
-def upload_file(file: UploadFile) -> ObjectWriteResult:
+
+async def get_same_name_files(prefix: str) -> list[Object]:
+    return await __storage.list_objects(__settings.minio.BUCKET_NAME, prefix)
+
+
+def is_file_in_list(full_path: str, files: list[Object]) -> bool:
+    return any(file.object_name == full_path for file in files)
+
+
+async def upload_file(file: UploadFile) -> ObjectWriteResult:
     full_path = file.filename
     name, extension = os.path.splitext(file.filename)
+    files = await get_same_name_files(name)
     index = 0
-    while is_file_uploaded(full_path):
+    while is_file_in_list(full_path, files):
         index += 1
-        full_path = f'{name}_{index}{extension}'
-    return __storage.put_object(
-        get_settings().minio.BUCKET_NAME,
+        full_path = f"{name}_{index}{extension}"
+    return await __storage.put_object(
+        __settings.minio.BUCKET_NAME,
         full_path, file.file, file.size
     )
 
 
-async def __file_stream_generator(file_response: BaseHTTPResponse) -> FileStream:
+async def __file_stream_generator(session: ClientSession, file_response: ClientResponse) -> FileStream:
     try:
-        for chunk in file_response.stream():
+        async for chunk, _ in file_response.content.iter_chunks():
             yield chunk
     finally:
+        file_response.release()
         file_response.close()
-        file_response.release_conn()
+        await session.close()
 
 
-def get_file_stream(full_path: str) -> FileStream | None:
+async def get_file_stream(full_path: str) -> FileStream | None:
     try:
-        file_response = __storage.get_object(get_settings().minio.BUCKET_NAME, full_path)
-        return __file_stream_generator(file_response)
+        session = ClientSession()
+        file_response = await __storage.get_object(__settings.minio.BUCKET_NAME, full_path, session)
+        return __file_stream_generator(session, file_response)
     except S3Error:
         return None
 
 
-def get_files_list(user_id: int) -> Iterator[Object]:
-    return __storage.list_objects(get_settings().minio.BUCKET_NAME, f'{user_id}/')
-
-
-def delete_file(full_path: str) -> bool:
-    __storage.remove_object(get_settings().minio.BUCKET_NAME, full_path)
-    return True
+async def delete_file(full_path: str) -> None:
+    try:
+        await __storage.remove_object(__settings.minio.BUCKET_NAME, full_path)
+    except S3Error as e:
+        raise ValueError(e.message)
