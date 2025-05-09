@@ -1,7 +1,5 @@
 import re
 
-from typing import Optional
-
 from fastapi import HTTPException
 
 from app.core import get_settings
@@ -9,7 +7,7 @@ from app.repositories import (
     CardCollectionRepository, UserRepository, 
     CardRepository, FileCardRepository
 )
-from app.schemas import Card, CardCreate, CollectionShort
+from app.schemas import Card, CardCreate, CollectionShort, PublicStatusMixin
 
 from .base import BaseService, with_unit_of_work
 
@@ -28,7 +26,7 @@ class CardService(BaseService):
         if not new_collections:
             raise HTTPException(status_code=409, detail="Invalid collections")
         await card_collection_repo.set_card_collection_connections(card_id, new_collections)
-        await card_collection_repo.refresh_card_publicity(card_id)
+        await card_collection_repo.refresh_card_publicity(card_id, PublicStatusMixin)
 
     @staticmethod
     async def __update_connections(
@@ -49,7 +47,7 @@ class CardService(BaseService):
             await card_collection_repo.set_card_collection_connections(card_id, new_collections)
             collections_changed = True
         if collections_changed:
-            await card_collection_repo.refresh_card_publicity(card_id)
+            await card_collection_repo.refresh_card_publicity(card_id, PublicStatusMixin)
 
     __PATTERN = rf"(?:{'|'.join(get_settings().get_api_hosts())})/storage/(\d+)"
     @staticmethod
@@ -124,5 +122,5 @@ class CardService(BaseService):
             raise HTTPException(status_code=401, detail="Only authorized owners can delete cards")
         file_ids = await file_card_repo.get_card_files_ids(card_id)
         await card_repo.delete_card(card_id)
-        await file_card_repo.refresh_files_publicity(file_ids)
+        await file_card_repo.refresh_files_publicity(file_ids, PublicStatusMixin)
 
