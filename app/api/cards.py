@@ -2,7 +2,7 @@ from fastapi import APIRouter, Response
 
 from app.schemas import Card, CardCreate, CollectionShort
 
-from .dependencies import CardServiceDep, IntListBody, UserIdDep
+from .dependencies import CardServiceDep, IntListBody, UserIdDep, UserIdSoftDep
 
 
 router = APIRouter(
@@ -12,8 +12,8 @@ router = APIRouter(
 
 
 @router.get("/{card_id}", response_model=Card)
-async def read_card(card_id: int, card_service: CardServiceDep):
-    return await card_service.get_card(card_id)
+async def read_card(card_id: int, user_id: UserIdSoftDep, card_service: CardServiceDep):
+    return await card_service.get_card(card_id, user_id)
 
 
 @router.get("/{card_id}/collections", response_model=list[CollectionShort])

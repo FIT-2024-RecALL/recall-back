@@ -1,6 +1,6 @@
 from pydantic import Field
 
-from .base import CamelCaseBaseModel
+from .base import CamelCaseBaseModel, PublicStatusMixin
 
 
 __all__ = ["Card", "CardCreate"]
@@ -11,6 +11,5 @@ class CardCreate(CamelCaseBaseModel):
     back_side: str = Field(min_length=1)
 
 
-class Card(CardCreate):
-    id: int
+class Card(CardCreate, PublicStatusMixin):
     owner_id: int

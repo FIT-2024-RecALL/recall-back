@@ -1,7 +1,7 @@
 from fastapi import HTTPException
 
 from app.core import get_password_hash, verify_password
-from app.repositories import UserRepository, CollectionRepository, CardRepository
+from app.repositories import UserRepository, CollectionRepository, CardRepository, FileRepository
 from app.schemas import CollectionShort, User, UserAuth, UserBase, UserCreate, UserDTO
 
 from .base import BaseService, with_unit_of_work
@@ -44,6 +44,14 @@ class UserService(BaseService):
         if not await self.uow.get_repository(UserRepository).exists_user_with_id(user_id):
             raise HTTPException(status_code=400)  ## ТУТ ДОЛЖНО БЫТЬ КАСТОМНОЕ ИСКЛЮЧЕНИЕ!
         return await self.uow.get_repository(CardRepository).get_owner_cards(user_id, limit, offset)
+
+    @with_unit_of_work
+    async def get_user_files(
+            self, user_id: int, offset: int = 0, limit: int | None = None
+    ) -> list[int]:
+        if not await self.uow.get_repository(UserRepository).exists_user_with_id(user_id):
+            raise HTTPException(status_code=400)  ## ТУТ ДОЛЖНО БЫТЬ КАСТОМНОЕ ИСКЛЮЧЕНИЕ!
+        return await self.uow.get_repository(FileRepository).get_by_owner(user_id, limit, offset)
 
     @with_unit_of_work
     async def update_profile(self, user_id: int, user_data: UserBase) -> User:
