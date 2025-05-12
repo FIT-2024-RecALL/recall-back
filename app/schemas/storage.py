@@ -2,7 +2,7 @@ from functools import cache
 from typing import AsyncGenerator, Any, Literal, get_args
 from pydantic import BaseModel
 
-from .base import CamelCaseBaseModel, IsPublicModelMixin
+from .base import CamelCaseBaseModel, PublicStatusMixin
 
 
 __all__ = ["get_allowed_types", "get_allowed_exts", "FileCreate", "FileMeta", "StreamingFile"]
@@ -35,7 +35,7 @@ class FileCreate(CamelCaseBaseModel):
     ext: AllowedExts
 
 
-class FileMeta(FileCreate, IsPublicModelMixin):
+class FileMeta(FileCreate, PublicStatusMixin):
     pass
 
 

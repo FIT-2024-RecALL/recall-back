@@ -3,7 +3,7 @@ from pydantic import BaseModel, ConfigDict
 from pydantic.alias_generators import to_camel
 
 
-__all__ = ["CamelCaseBaseModel", "PublicStatusMixin"] # IsPublicModelMixin, IsPublicIdModel
+__all__ = ["CamelCaseBaseModel", "PublicStatusMixin"] #IsPublicIdModel
 
 
 class CamelCaseBaseModel(BaseModel):
@@ -12,6 +12,7 @@ class CamelCaseBaseModel(BaseModel):
     @classmethod
     @cache
     def fields(cls) -> list[str]:
+        """Возвращает список названий полей модели для использования в запросах к базе данных."""
         return list(cls.model_fields.keys())
 
 
