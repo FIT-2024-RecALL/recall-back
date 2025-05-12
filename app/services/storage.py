@@ -11,7 +11,6 @@ __all__ = ["StorageService"]
 
 
 class StorageService(BaseService):
-
     @with_unit_of_work
     async def upload_file(self, user_id: int, file: UploadFile) -> FileMeta:
         if not await self.uow.get_repository(UserRepository).exists_user_with_id(user_id):
@@ -54,11 +53,8 @@ class StorageService(BaseService):
         file_meta = await self.get_file_meta(file_id, user_id)
         stream = await minio.get_file_stream(file_meta.filename)
         if not stream:
-            raise HTTPException(status_code=400, detail="Filed to get file")
-        return StreamingFile(
-            metadata=file_meta, 
-            stream=stream
-        )
+            raise HTTPException(status_code=400, detail="Failed to get file")
+        return StreamingFile(metadata=file_meta, stream=stream)
     
     @with_unit_of_work
     async def delete_file(self, file_id: int, user_id: int):
