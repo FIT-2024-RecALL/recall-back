@@ -1,7 +1,7 @@
 from typing import Optional
 from fastapi import HTTPException
 
-from app.schemas import Collection, CollectionCreate, CollectionShort
+from app.schemas import Collection, CollectionCreate, CollectionShort, PublicStatusMixin
 from app.repositories import (
     CardRepository, CardCollectionRepository, CollectionRepository,
     UserRepository, TrainRecordRepository, FileCardRepository
@@ -68,10 +68,10 @@ class CollectionService(BaseService):
         )
         card_collection_repo = self.uow.get_repository(CardCollectionRepository)
         for updated_card in await card_collection_repo.update_cards_publicity(
-            collection_id, is_public
+            collection_id, is_public, PublicStatusMixin
         ):
             await self.uow.get_repository(FileCardRepository).update_files_publicity(
-                updated_card.id, updated_card.is_public
+                updated_card.id, updated_card.is_public, PublicStatusMixin
             )
         return collection
 
@@ -88,9 +88,9 @@ class CollectionService(BaseService):
         if cards_without_collections := collection_cards.difference(cards_with_collections):
             await self.uow.get_repository(CardRepository).delete_cards(list(cards_without_collections))
         for card_id in cards_with_collections:
-            updated_card = await card_collection_repo.refresh_card_publicity(card_id)
+            updated_card = await card_collection_repo.refresh_card_publicity(card_id, PublicStatusMixin)
             await self.uow.get_repository(FileCardRepository).update_files_publicity(
-                updated_card.id, updated_card.is_public
+                updated_card.id, updated_card.is_public, PublicStatusMixin
             )
 
     @with_unit_of_work

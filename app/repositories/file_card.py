@@ -2,7 +2,7 @@ from sqlalchemy import and_, select, insert, update
 from typing import Type
 
 from app.db.models import FileCardTable, FileTable, CardTable
-from app.schemas import Card, IsPublicIdModel
+from app.schemas import Card, PublicStatusMixin
 
 from .base import BaseSQLAlchemyRepository, SchemaType
 
@@ -55,7 +55,7 @@ class FileCardRepository(BaseSQLAlchemyRepository):
             await self.refresh_files_publicity(deleted_file_ids)
         if not_inserted_file_ids := list(new_file_ids.difference(current_file_ids)):
             await self.__set_card_files_connections(card_id, not_inserted_file_ids)
-        await self.update_files_publicity(card_id, is_public)
+        await self.update_files_publicity(card_id, is_public, PublicStatusMixin)
 
     async def get_card_files_ids(self, card_id: int) -> list[int]:
         result = await self.connection.execute(
@@ -95,33 +95,40 @@ class FileCardRepository(BaseSQLAlchemyRepository):
                 return True
         return False
 
-    async def refresh_file_publicity(self, file_id: int) -> IsPublicIdModel:
+    async def refresh_file_publicity(
+            self, file_id: int, output_schema: Type[SchemaType]
+    ) -> SchemaType:
         is_public_new = await self.__is_file_public_by_cards(file_id)
         result = await self.connection.execute(
             update(self.file_table)
                 .where(self.file_table.c.id == file_id)
                 .values(is_public=is_public_new)
-                .returning(self.file_table.c[*IsPublicIdModel.fields()])
+                .returning(self.file_table.c[*output_schema.fields()])
         )
-        return IsPublicIdModel(**result.mappings().first())
+        return output_schema(**result.mappings().first())
 
-    async def refresh_files_publicity(self, file_ids: list[int]) -> list[IsPublicIdModel]:
-        return [await self.refresh_file_publicity(file_id) for file_id in file_ids]
+    async def refresh_files_publicity(
+            self, file_ids: list[int], output_schema: Type[SchemaType]
+    ) -> list[SchemaType]:
+        return [
+            await self.refresh_file_publicity(file_id, output_schema)
+            for file_id in file_ids
+        ]
     
     async def update_files_publicity(
-            self, card_id: int, is_public: bool
-    ) -> list[IsPublicIdModel]:
+            self, card_id: int, is_public: bool, output_schema: Type[SchemaType]
+    ) -> list[SchemaType]:
         if is_public:
             result = await self.connection.execute(
                 update(self.file_table)
                     .where(self.file_table.c.id == self.table.c.file_id)
                     .where(self.table.c.card_id == card_id)
                     .values(is_public=True)
-                .returning(self.file_table.c[*IsPublicIdModel.fields()])
+                .returning(self.file_table.c[*output_schema.fields()])
             )
-            return [IsPublicIdModel(**elem) for elem in result.mappings().all()]
+            return [output_schema(**elem) for elem in result.mappings().all()]
         else:
             return [
-                await self.refresh_file_publicity(file_id)
+                await self.refresh_file_publicity(file_id, output_schema)
                 for file_id in await self.get_card_files_ids(card_id)
             ]

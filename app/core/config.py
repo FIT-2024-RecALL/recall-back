@@ -131,5 +131,6 @@ class Settings(BaseSettings):
 __settings = Settings()
 
 
+@cache
 def get_settings() -> Settings:
     return __settings

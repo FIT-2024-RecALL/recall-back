@@ -1,9 +1,9 @@
 from functools import cache
-from typing import AsyncGenerator, Any, Literal, get_args
-from pydantic import BaseModel
+from typing import Literal, get_args
+from pydantic import BaseModel, ConfigDict
 
 from .base import CamelCaseBaseModel, PublicStatusMixin
-
+from app.core.minio import FileStream
 
 __all__ = ["get_allowed_types", "get_allowed_exts", "FileCreate", "FileMeta", "StreamingFile"]
 
@@ -41,5 +41,7 @@ class FileMeta(FileCreate, PublicStatusMixin):
 
 class StreamingFile(BaseModel):
     """Модель для потоковой передачи файла с метаданными. Не используется в ответах API."""
+    model_config = ConfigDict(arbitrary_types_allowed=True)
+
     metadata: FileMeta
-    stream: AsyncGenerator[bytes, Any]
+    stream: FileStream
