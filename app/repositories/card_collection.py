@@ -84,10 +84,8 @@ class CardCollectionRepository(BaseSQLAlchemyRepository):
     ) -> SchemaType:
         is_public_new = await self.__is_card_public_by_collections(card_id)
         result = await self.connection.execute(
-            update(self.card_table)
-                .where(self.card_table.c.id == card_id)
-                .values(is_public=is_public_new)
-                .returning(self.card_table.c[*output_schema.fields()])
+            update(self.card_table).where(self.card_table.c.id == card_id)
+            .values(is_public=is_public_new).returning(self.card_table.c[*output_schema.fields()])
         )
         return output_schema(**result.mappings().first())
     
@@ -104,8 +102,7 @@ class CardCollectionRepository(BaseSQLAlchemyRepository):
                     .returning(self.card_table.c[*output_schema.fields()])
             )
             return [output_schema(**elem) for elem in result.mappings().all()]
-        else:
-            return [
-                await self.refresh_card_publicity(card_id, output_schema)
-                for card_id in await self.get_collection_cards(collection_id)
-            ]
+        return [
+            await self.refresh_card_publicity(card_id, output_schema)
+            for card_id in await self.get_collection_cards(collection_id)
+        ]
