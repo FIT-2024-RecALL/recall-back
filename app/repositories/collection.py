@@ -31,13 +31,10 @@ class CollectionRepository(BaseSQLAlchemyRepository):
             self, user_id: int | None, output_schema: Type[SchemaType], limit: int, offset: int
     ) -> list[SchemaType]:
         result = await self.connection.execute(
-            select(self.table.c[*output_schema.fields()])
-                .where(
-                    or_(
-                        self.table.c.is_public.is_(True),
-                        self.table.c.owner_id == user_id
-                    )
-                ).limit(limit).offset(offset)
+            select(self.table.c[*output_schema.fields()]).where(or_(
+                self.table.c.is_public.is_(True),
+                self.table.c.owner_id == user_id
+            )).limit(limit).offset(offset)
         )
         return [output_schema(**elem) for elem in result.mappings().all()]
 

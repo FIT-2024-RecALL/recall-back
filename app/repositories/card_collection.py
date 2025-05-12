@@ -94,12 +94,10 @@ class CardCollectionRepository(BaseSQLAlchemyRepository):
     ) -> list[SchemaType]:
         if is_public:
             result = await self.connection.execute(
-                update(self.card_table)
-                    .where(and_(
-                        self.card_table.c.id == self.table.c.card_id,
-                        self.table.c.collection_id == collection_id
-                    )).values(is_public=True)
-                    .returning(self.card_table.c[*output_schema.fields()])
+                update(self.card_table).where(and_(
+                    self.card_table.c.id == self.table.c.card_id,
+                    self.table.c.collection_id == collection_id
+                )).values(is_public=True).returning(self.card_table.c[*output_schema.fields()])
             )
             return [output_schema(**elem) for elem in result.mappings().all()]
         return [
