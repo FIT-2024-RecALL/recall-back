@@ -1,4 +1,4 @@
-from sqlalchemy import and_, select, insert, update
+from sqlalchemy import and_, select, insert, update, func
 from typing import Type
 
 from app.db.models import FileCardTable, FileTable, CardTable
@@ -90,10 +90,12 @@ class FileCardRepository(BaseSQLAlchemyRepository):
         return [output_schema(**elem) for elem in result.mappings().all()]
     
     async def __is_file_public_by_cards(self, file_id: int) -> bool:
-        for card in await self.get_file_cards(file_id, Card):
-            if card.is_public:
-                return True
-        return False
+        result = await self.connection.execute(
+            select(func.bool_or(self.card_table.c.is_public))
+            .join(self.table, self.card_table.c.id == self.table.c.card_id)
+            .where(self.table.c.file_id == file_id)
+        )
+        return result.scalar_one()
 
     async def refresh_file_publicity(
             self, file_id: int, output_schema: Type[SchemaType]

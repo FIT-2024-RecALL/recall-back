@@ -1,4 +1,4 @@
-from sqlalchemy import and_, select, insert, update
+from sqlalchemy import and_, select, insert, update, func
 from typing import Type
 
 from app.db.models import CardCollectionTable, CollectionTable, CardTable
@@ -74,10 +74,12 @@ class CardCollectionRepository(BaseSQLAlchemyRepository):
         return [output_schema(**elem) for elem in result.mappings().all()]
     
     async def __is_card_public_by_collections(self, card_id: int) -> bool:
-        for collection in await self.get_card_collections(card_id, Collection):
-            if collection.is_public:
-                return True
-        return False
+        result = await self.connection.execute(
+            select(func.bool_or(self.collection_table.c.is_public))
+            .join(self.table, self.collection_table.c.id == self.table.c.collection_id)
+            .where(self.table.c.card_id == card_id)
+        )
+        return result.scalar_one()
 
     async def refresh_card_publicity(
             self, card_id: int, output_schema: Type[SchemaType]

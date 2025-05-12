@@ -31,7 +31,7 @@ class StorageService(BaseService):
                 filename=obj.object_name
             ).model_dump(),
             FileMeta
-        ) # TODO: Надо удостоверяться, что добавление в minio и БД происходит по ACID
+        )
     
     @with_unit_of_work
     async def get_file_meta(self, file_id: int, user_id: int | None) -> FileMeta:
@@ -71,4 +71,4 @@ class StorageService(BaseService):
             await minio.delete_file(file_meta.filename)
         except ValueError as e:
             raise HTTPException(404, f"Failed to delete file: {str(e)}")
-        await self.uow.get_repository(FileRepository).delete_by_id(file_id) # TODO: Надо удостоверяться, что удаление из minio и БД происходит по ACID
+        await self.uow.get_repository(FileRepository).delete_by_id(file_id)
