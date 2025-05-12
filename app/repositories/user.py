@@ -25,7 +25,8 @@ class UserRepository(BaseSQLAlchemyRepository):
 
     async def find_users_by_creds(self, filter_data: dict) -> list[int]:
         result = await self.connection.execute(
-            select(self.table.c.id).where(or_(
+            select(self.table.c.id)
+            .where(or_(
                 self.table.c.email == filter_data["email"],
                 self.table.c.nickname == filter_data["nickname"]
             ))

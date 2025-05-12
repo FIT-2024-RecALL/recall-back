@@ -42,6 +42,6 @@ class FileMeta(FileCreate, PublicStatusMixin):
 class StreamingFile(BaseModel):
     """Модель для потоковой передачи файла с метаданными. Не используется в ответах API."""
     model_config = ConfigDict(arbitrary_types_allowed=True)
-    
+
     metadata: FileMeta
     stream: FileStream

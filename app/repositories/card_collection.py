@@ -20,7 +20,7 @@ class CardCollectionRepository(BaseSQLAlchemyRepository):
     ) -> None:
         await self.connection.execute(
             insert(self.table),
-            [{"card_id": card_id, "collection_id": collection} for collection in collections],
+            [{"card_id": card_id, "collection_id": collection} for collection in collections]
         )
 
     async def unset_card_collection_connections(
@@ -32,7 +32,8 @@ class CardCollectionRepository(BaseSQLAlchemyRepository):
 
     async def fetch_card_collections(self, card_id: int) -> list[int]:
         result = await self.connection.execute(
-            select(self.table.c.collection_id).where(self.table.c.card_id == card_id)
+            select(self.table.c.collection_id)
+            .where(self.table.c.card_id == card_id)
         )
         return list(result.scalars().all())
 
@@ -42,7 +43,8 @@ class CardCollectionRepository(BaseSQLAlchemyRepository):
         которые имеют связь хотя бы с одной коллекцией в таблице CardCollectionTable.
         """
         result = await self.connection.execute(
-            select(self.table.c.card_id).where(self.table.c.card_id.in_(cards))
+            select(self.table.c.card_id)
+            .where(self.table.c.card_id.in_(cards))
         )
         return set(result.scalars().all())
 
@@ -50,7 +52,8 @@ class CardCollectionRepository(BaseSQLAlchemyRepository):
             self, owner_id: int, collections: list[int]
     ) -> list[int]:
         result = await self.connection.execute(
-            select(self.collection_table.c.id).where(and_(
+            select(self.collection_table.c.id)
+            .where(and_(
                 self.collection_table.c.id.in_(set(collections)),
                 self.collection_table.c.owner_id == owner_id
             ))
@@ -59,7 +62,8 @@ class CardCollectionRepository(BaseSQLAlchemyRepository):
 
     async def get_collection_cards(self, collection_id: int) -> list[int]:
         result = await self.connection.execute(
-            select(self.table.c.card_id).where(self.table.c.collection_id == collection_id)
+            select(self.table.c.card_id)
+            .where(self.table.c.collection_id == collection_id)
         )
         return list(result.scalars().all())
 
@@ -87,9 +91,9 @@ class CardCollectionRepository(BaseSQLAlchemyRepository):
         is_public_new = await self.__is_card_public_by_collections(card_id)
         result = await self.connection.execute(
             update(self.card_table)
-                .where(self.card_table.c.id == card_id)
-                .values(is_public=is_public_new)
-                .returning(self.card_table.c[*output_schema.fields()])
+            .where(self.card_table.c.id == card_id)
+            .values(is_public=is_public_new)
+            .returning(self.card_table.c[*output_schema.fields()])
         )
         return output_schema(**result.mappings().first())
     
@@ -99,15 +103,14 @@ class CardCollectionRepository(BaseSQLAlchemyRepository):
         if is_public:
             result = await self.connection.execute(
                 update(self.card_table)
-                    .where(and_(
-                        self.card_table.c.id == self.table.c.card_id,
-                        self.table.c.collection_id == collection_id
-                    )).values(is_public=True)
-                    .returning(self.card_table.c[*output_schema.fields()])
+                .where(and_(
+                    self.card_table.c.id == self.table.c.card_id,
+                    self.table.c.collection_id == collection_id
+                )).values(is_public=True)
+                .returning(self.card_table.c[*output_schema.fields()])
             )
             return [output_schema(**elem) for elem in result.mappings().all()]
-        else:
-            return [
-                await self.refresh_card_publicity(card_id, output_schema)
-                for card_id in await self.get_collection_cards(collection_id)
-            ]
+        return [
+            await self.refresh_card_publicity(card_id, output_schema)
+            for card_id in await self.get_collection_cards(collection_id)
+        ]

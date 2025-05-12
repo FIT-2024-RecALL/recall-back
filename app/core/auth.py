@@ -64,7 +64,7 @@ def get_profile_id(token: str | None = Depends(get_token)) -> int:
 def get_profile_id_soft(token: str | None = Depends(get_token)) -> int | None:
     """Возвращает `None`, если есть проблемы с токеном"""
     try:
-        return int(get_profile_id(token))
+        return get_profile_id(token)
     except HTTPException:
         return None
     

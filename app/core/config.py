@@ -65,7 +65,6 @@ class OllamaSettings(BaseSettings):
     PORT: int
 
 
-@cache
 class Settings(BaseSettings):
     auth: AuthSettings = AuthSettings()
     db: PostgreSettings = PostgreSettings()
@@ -127,13 +126,11 @@ class Settings(BaseSettings):
     @property
     def db_url_pysqlite(self) -> str:
         return "sqlite:///./sql_app.db"
-    
-    def __hash__(self):
-        return ''.__hash__()
 
 
 __settings = Settings()
 
 
+@cache
 def get_settings() -> Settings:
     return __settings

@@ -12,6 +12,7 @@ class CamelCaseBaseModel(BaseModel):
     @classmethod
     @cache
     def fields(cls) -> list[str]:
+        """Возвращает список названий полей модели для использования в запросах к базе данных."""
         return list(cls.model_fields.keys())
 
 

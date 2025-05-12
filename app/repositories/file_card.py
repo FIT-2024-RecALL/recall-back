@@ -19,8 +19,7 @@ class FileCardRepository(BaseSQLAlchemyRepository):
             self, card_id: int, file_ids: list[int]
     ) -> None:
         await self.connection.execute(
-            insert(self.table),
-            [{"card_id": card_id, "file_id": file_id} for file_id in file_ids],
+            insert(self.table), [{"card_id": card_id, "file_id": file_id} for file_id in file_ids]
         )
 
     async def __unset_card_files_connections(
@@ -34,7 +33,8 @@ class FileCardRepository(BaseSQLAlchemyRepository):
             self, owner_id: int, file_ids: list[int]
     ) -> list[int]:
         result = await self.connection.execute(
-            select(self.file_table.c.id).where(and_(
+            select(self.file_table.c.id)
+            .where(and_(
                 self.file_table.c.id.in_(set(file_ids)),
                 self.file_table.c.owner_id == owner_id
             ))
@@ -68,8 +68,8 @@ class FileCardRepository(BaseSQLAlchemyRepository):
     ) -> list[SchemaType]:
         result = await self.connection.execute(
             select(self.file_table.c[*output_schema.fields()])
-                .join(self.table, self.file_table.c.id == self.table.c.file_id)
-                .where(self.table.c.card_id == card_id)
+            .join(self.table, self.file_table.c.id == self.table.c.file_id)
+            .where(self.table.c.card_id == card_id)
         )
         return [output_schema(**elem) for elem in result.mappings().all()]
 
@@ -84,8 +84,8 @@ class FileCardRepository(BaseSQLAlchemyRepository):
     ) -> list[SchemaType]:
         result = await self.connection.execute(
             select(self.card_table.c[*output_schema.fields()])
-                .join(self.table, self.card_table.c.id == self.table.c.card_id)
-                .where(self.table.c.file_id == file_id)
+            .join(self.table, self.card_table.c.id == self.table.c.card_id)
+            .where(self.table.c.file_id == file_id)
         )
         return [output_schema(**elem) for elem in result.mappings().all()]
     
@@ -103,9 +103,9 @@ class FileCardRepository(BaseSQLAlchemyRepository):
         is_public_new = await self.__is_file_public_by_cards(file_id)
         result = await self.connection.execute(
             update(self.file_table)
-                .where(self.file_table.c.id == file_id)
-                .values(is_public=is_public_new)
-                .returning(self.file_table.c[*output_schema.fields()])
+            .where(self.file_table.c.id == file_id)
+            .values(is_public=is_public_new)
+            .returning(self.file_table.c[*output_schema.fields()])
         )
         return output_schema(**result.mappings().first())
 
@@ -113,8 +113,7 @@ class FileCardRepository(BaseSQLAlchemyRepository):
             self, file_ids: list[int], output_schema: Type[SchemaType]
     ) -> list[SchemaType]:
         return [
-            await self.refresh_file_publicity(file_id, output_schema) 
-            for file_id in file_ids
+            await self.refresh_file_publicity(file_id, output_schema) for file_id in file_ids
         ]
     
     async def update_files_publicity(
@@ -123,14 +122,13 @@ class FileCardRepository(BaseSQLAlchemyRepository):
         if is_public:
             result = await self.connection.execute(
                 update(self.file_table)
-                    .where(self.file_table.c.id == self.table.c.file_id)
-                    .where(self.table.c.card_id == card_id)
-                    .values(is_public=True)
+                .where(self.file_table.c.id == self.table.c.file_id)
+                .where(self.table.c.card_id == card_id)
+                .values(is_public=True)
                 .returning(self.file_table.c[*output_schema.fields()])
             )
             return [output_schema(**elem) for elem in result.mappings().all()]
-        else:
-            return [
-                await self.refresh_file_publicity(file_id, output_schema)
-                for file_id in await self.get_card_files_ids(card_id)
-            ]
+        return [
+            await self.refresh_file_publicity(file_id, output_schema)
+            for file_id in await self.get_card_files_ids(card_id)
+        ]
