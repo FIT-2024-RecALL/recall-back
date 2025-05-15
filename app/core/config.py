@@ -126,6 +126,9 @@ class Settings(BaseSettings):
     @property
     def db_url_pysqlite(self) -> str:
         return "sqlite:///./sql_app.db"
+    
+    def __hash__(self):
+        return ''.__hash__()
 
 
 __settings = Settings()
