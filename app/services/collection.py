@@ -57,7 +57,7 @@ class CollectionService(BaseService):
         )
     
     @with_unit_of_work
-    async def update_publicity(
+    async def update_collection_publicity(
             self, user_id: int, collection_id: int, is_public: bool
     ) -> Collection:
         collection_repo = self.uow.get_repository(CollectionRepository)
@@ -67,9 +67,10 @@ class CollectionService(BaseService):
             collection_id, {'is_public': is_public}, Collection
         )
         card_collection_repo = self.uow.get_repository(CardCollectionRepository)
-        for updated_card in await card_collection_repo.update_cards_publicity(
+        updated_cards = await card_collection_repo.update_cards_publicity(
             collection_id, is_public, PublicStatusMixin
-        ):
+        )
+        for updated_card in updated_cards:
             await self.uow.get_repository(FileCardRepository).update_files_publicity(
                 updated_card.id, updated_card.is_public, PublicStatusMixin
             )

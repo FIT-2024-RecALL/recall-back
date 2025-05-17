@@ -62,7 +62,7 @@ async def update_collection_publicity(
         user_id: UserIdDep, collection_id: int, is_public: bool,
         collection_service: CollectionServiceDep
 ) -> Collection:
-    return await collection_service.update_publicity(user_id, collection_id, is_public)
+    return await collection_service.update_collection_publicity(user_id, collection_id, is_public)
 
 
 @router.delete("/{collection_id}", response_class=Response)
