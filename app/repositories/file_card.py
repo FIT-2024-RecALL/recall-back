@@ -52,7 +52,7 @@ class FileCardRepository(BaseSQLAlchemyRepository):
         current_file_ids = set(await self.get_card_files_ids(card_id))
         if deleted_file_ids := list(current_file_ids.difference(new_file_ids)):
             await self.__unset_card_files_connections(card_id, deleted_file_ids)
-            await self.refresh_files_publicity(deleted_file_ids)
+            await self.refresh_files_publicity(deleted_file_ids, PublicStatusMixin)
         if not_inserted_file_ids := list(new_file_ids.difference(current_file_ids)):
             await self.__set_card_files_connections(card_id, not_inserted_file_ids)
         await self.update_files_publicity(card_id, is_public, PublicStatusMixin)

@@ -15,6 +15,9 @@ class FileRepository(BaseSQLAlchemyRepository):
     async def get_by_id(self, file_id, output_schema: Type[SchemaType]) -> SchemaType | None:
         return await self.get_one_or_none(self._item_id_filter(file_id), output_schema)
     
+    async def exists_by_id(self, file_id: int) -> bool:
+        return await self.exists(self.table.c.id == file_id)
+
     async def get_by_owner(self, owner_id: int, limit: int | None, offset: int) -> list[int]:
         query = select(self.table.c.id).where(self.table.c.owner_id == owner_id).offset(offset)
         if limit is not None:

@@ -7,7 +7,10 @@ from app.repositories import (
     CardCollectionRepository, UserRepository, 
     CardRepository, FileCardRepository
 )
-from app.schemas import Card, CardCreate, CollectionShort, PublicStatusMixin
+from app.schemas import (
+    Card, CardCreate, PublicStatusMixin, 
+    CollectionShort, FileMeta
+)
 
 from .base import BaseService, with_unit_of_work
 
@@ -91,6 +94,15 @@ class CardService(BaseService):
         card_collection_repo = self.uow.get_repository(CardCollectionRepository)
         return await card_collection_repo.get_card_collections(
             card_id, CollectionShort
+        )
+    
+    @with_unit_of_work
+    async def get_card_files(self, card_id: int, user_id: int) -> list[FileMeta]:
+        card = await self.get_card(card_id, user_id)
+        if card.owner_id != user_id:
+            raise HTTPException(status_code=401, detail="Only authorized owners can get card's files")
+        return await self.uow.get_repository(FileCardRepository).get_card_files(
+            card_id, FileMeta
         )
 
     @with_unit_of_work
