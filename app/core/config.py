@@ -55,6 +55,7 @@ class MinioSettings(BaseSettings):
     PORT: int
     LOGIN: str
     PASSWORD: str
+    MAX_FILE_MB_SIZE: int
 
 
 class OllamaSettings(BaseSettings):
@@ -104,6 +105,16 @@ class Settings(BaseSettings):
     def minio_url(self) -> str:
         """Hostname with port"""
         return f"{self.minio.HOSTNAME}:{self.minio.PORT}"
+    
+    @property
+    @cache
+    def max_file_bytes_size(self) -> int:
+        return self.minio.MAX_FILE_MB_SIZE * 1024 * 1024
+    
+    @property
+    @cache
+    def max_file_mb_size(self) -> int:
+        return self.minio.MAX_FILE_MB_SIZE
 
     @property
     @cache

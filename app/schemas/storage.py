@@ -33,6 +33,7 @@ class FileCreate(CamelCaseBaseModel):
     filename: str
     type: AllowedTypes
     ext: AllowedExts
+    size: int | None
 
 
 class FileMeta(FileCreate, PublicStatusMixin):

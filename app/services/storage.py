@@ -2,17 +2,18 @@ from fastapi import HTTPException, UploadFile
 
 from app.repositories import UserRepository, FileRepository, FileCardRepository
 from app.schemas import FileCreate, get_allowed_types, get_allowed_exts, FileMeta, StreamingFile
-from app.core import minio
+from app.core import minio, get_settings
 
 from .base import BaseService, with_unit_of_work
 
 
 __all__ = ["StorageService"]
 
-
 class StorageService(BaseService):
     @with_unit_of_work
     async def upload_file(self, user_id: int, file: UploadFile) -> FileMeta:
+        if file.size > get_settings().max_file_bytes_size:
+            raise HTTPException(status_code=413, detail=f"Max file's size is {get_settings().max_file_mb_size} MB")
         if not await self.uow.get_repository(UserRepository).exists_user_with_id(user_id):
             raise HTTPException(status_code=401, detail="Only authorized users can upload files")
         file_type, file_ext = file.content_type.split("/")
@@ -27,7 +28,8 @@ class StorageService(BaseService):
                 owner_id=user_id,
                 type=file_type,
                 ext=file_ext,
-                filename=obj.object_name
+                filename=obj.object_name,
+                size=file.size
             ).model_dump(),
             FileMeta
         )

@@ -19,5 +19,6 @@ FileTable = Table(
     Column("filename", String, index=True, nullable=False, unique=True),
     Column("type", file_types, nullable=False),
     Column("ext", file_exts, nullable=False),
+    Column("size", Integer, nullable=True, default=None),
     Column("is_public", Boolean, nullable=False, default=False)
 )
