@@ -49,14 +49,16 @@ class BaseSQLAlchemyRepository(BaseRepository):
 
     async def create_one(self, input_data: dict, output_schema: Type[SchemaType]) -> SchemaType:
         result = await self.connection.execute(
-            insert(self.table).values(**input_data)
+            insert(self.table)
+            .values(**input_data)
             .returning(self.table.c[*output_schema.fields()])
         )
         return output_schema(**result.mappings().first())
 
     async def get_one_or_none(self, filter_expr, output_schema: Type[SchemaType]) -> SchemaType | None:
         result = (await self.connection.execute(
-            select(self.table.c[*output_schema.fields()]).where(filter_expr)
+            select(self.table.c[*output_schema.fields()])
+            .where(filter_expr)
         )).mappings().first()
         return result and output_schema(**result)
 
@@ -64,7 +66,8 @@ class BaseSQLAlchemyRepository(BaseRepository):
             self, output_schema: Type[SchemaType], limit: int, offset: int
     ) -> list[SchemaType]:
         result = await self.connection.execute(
-            select(self.table.c[*output_schema.fields()]).limit(limit).offset(offset)
+            select(self.table.c[*output_schema.fields()])
+            .limit(limit).offset(offset)
         )
         return [output_schema(**elem) for elem in result.mappings().all()]
 
@@ -72,7 +75,9 @@ class BaseSQLAlchemyRepository(BaseRepository):
             self, filter_expr, update_values: dict, output_schema: Type[SchemaType]
     ) -> SchemaType:
         result = await self.connection.execute(
-            update(self.table).where(filter_expr).values(**update_values)
+            update(self.table)
+            .where(filter_expr)
+            .values(**update_values)
             .returning(self.table.c[*output_schema.fields()])
         )
         return output_schema(**result.mappings().first())
