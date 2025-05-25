@@ -83,7 +83,10 @@ class CardCollectionRepository(BaseSQLAlchemyRepository):
             .join(self.table, self.collection_table.c.id == self.table.c.collection_id)
             .where(self.table.c.card_id == card_id)
         )
-        return result.scalar_one()
+        result = result.scalar_one()
+        if result is None:
+            return False
+        return result
 
     async def refresh_card_publicity(
             self, card_id: int, output_schema: Type[SchemaType]
