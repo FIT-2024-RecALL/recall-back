@@ -1,4 +1,5 @@
 from enum import StrEnum
+from functools import cache
 from pydantic import SecretStr, BaseModel
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
@@ -54,6 +55,7 @@ class MinioSettings(BaseSettings):
     PORT: int
     LOGIN: str
     PASSWORD: str
+    MAX_FILE_MB_SIZE: int
 
 
 class OllamaSettings(BaseSettings):
@@ -69,6 +71,11 @@ class Settings(BaseSettings):
     db: PostgreSettings = PostgreSettings()
     minio: MinioSettings = MinioSettings()
     ollama: OllamaSettings = OllamaSettings()
+
+    @staticmethod
+    @cache
+    def get_api_hosts() -> list[str]:
+        return ['https://letsrecall.ru/api', 'http://letsrecall.ru/api', 'http://localhost:8000']
 
     @property
     def auth_algorithm(self) -> CryptoAlgorithm:
@@ -87,20 +94,34 @@ class Settings(BaseSettings):
         return self.auth.EXPIRE_HOURS
 
     @property
+    @cache
     def cookie_kwargs(self) -> CookieSettings:
         return CookieSettings(
             httponly=self.auth.HTTPONLY, secure=self.auth.SECURE, samesite=self.auth.SAMESITE
         )
 
     @property
+    @cache
     def minio_url(self) -> str:
         """Hostname with port"""
         return f"{self.minio.HOSTNAME}:{self.minio.PORT}"
+    
+    @property
+    @cache
+    def max_file_bytes_size(self) -> int:
+        return self.minio.MAX_FILE_MB_SIZE * 1024 * 1024
+    
+    @property
+    @cache
+    def max_file_mb_size(self) -> int:
+        return self.minio.MAX_FILE_MB_SIZE
 
     @property
+    @cache
     def ollama_url(self) -> str:
-        return f'http://{self.ollama.HOSTNAME}:{self.ollama.PORT}'
+        return f"http://{self.ollama.HOSTNAME}:{self.ollama.PORT}"
 
+    @cache
     def __create_postgres_dialect_url(self, dialect: str) -> str:
         return (f"postgresql+{dialect}://{self.db.USER}:{self.db.PASSWORD.get_secret_value()}"
                 f"@{self.db.HOST}:{self.db.HOST_PORT}/{self.db.DB}")
@@ -116,10 +137,14 @@ class Settings(BaseSettings):
     @property
     def db_url_pysqlite(self) -> str:
         return "sqlite:///./sql_app.db"
+    
+    def __hash__(self):
+        return ''.__hash__()
 
 
 __settings = Settings()
 
 
+@cache
 def get_settings() -> Settings:
     return __settings
