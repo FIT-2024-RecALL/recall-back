@@ -86,11 +86,17 @@ class CollectionService(BaseService):
         await collection_repo.delete_collection(collection_id)
         cards_with_collections = await (card_collection_repo
                                         .filter_cards_with_collection(collection_cards))
-        if cards_without_collections := collection_cards.difference(cards_with_collections):
-            await self.uow.get_repository(CardRepository).delete_cards(list(cards_without_collections))
+        cards_without_collections = collection_cards.difference(cards_with_collections)
+        file_card_repo = self.uow.get_repository(FileCardRepository)
+        for card_id in cards_without_collections:
+            files_ids = await file_card_repo.get_card_files_ids(card_id)
+            await self.uow.get_repository(CardRepository).delete_card(card_id)
+            await file_card_repo.refresh_files_publicity(
+                files_ids, PublicStatusMixin
+            )
         for card_id in cards_with_collections:
             updated_card = await card_collection_repo.refresh_card_publicity(card_id, PublicStatusMixin)
-            await self.uow.get_repository(FileCardRepository).update_files_publicity(
+            await file_card_repo.update_files_publicity(
                 updated_card.id, updated_card.is_public, PublicStatusMixin
             )
 

@@ -95,7 +95,10 @@ class FileCardRepository(BaseSQLAlchemyRepository):
             .join(self.table, self.card_table.c.id == self.table.c.card_id)
             .where(self.table.c.file_id == file_id)
         )
-        return result.scalar_one()
+        result = result.scalar_one()
+        if result is None:
+            return False
+        return result
 
     async def refresh_file_publicity(
             self, file_id: int, output_schema: Type[SchemaType]
