@@ -35,8 +35,9 @@ class UserDTO(CamelCaseBaseModel):
         mapping = {"password": "hashed_password"}
         result_fields = super().fields()
         for field, alias in mapping.items():
-            result_fields.remove(field)
-            result_fields.append(alias)
+            if field in result_fields: # КОСТЫЛЬ (который по идее можно удалить , ведь для password итак алиас есть), но пока что пускай будет
+                result_fields.remove(field)
+                result_fields.append(alias)
         return result_fields
 
     def table_dict(self):
