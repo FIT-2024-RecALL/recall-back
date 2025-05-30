@@ -69,9 +69,6 @@ poetry install
 fastapi dev app/main.py
 
 # or commercial development style
-# first approach
-python -m app.main
-#second approach
 uvicorn app.main:app --<your_flags>
 ```
 
