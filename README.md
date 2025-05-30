@@ -36,6 +36,8 @@ MINIO_PORT=<minio_port>
 MINIO_BUCKET_NAME=<bucket_name>
 MINIO_LOGIN=<backend_minio_user_login>
 MINIO_PASSWORD=<backend_minio_user_password>
+
+MINIO_MAX_FILE_MB_SIZE=<mb_integer_number>
 ```
 - `postgres.env`:
 ```conf
@@ -67,9 +69,6 @@ poetry install
 fastapi dev app/main.py
 
 # or commercial development style
-# first approach
-python -m app.main
-#second approach
 uvicorn app.main:app --<your_flags>
 ```
 

@@ -1,4 +1,4 @@
-from sqlalchemy import and_, select
+from sqlalchemy import select, and_, or_
 from typing import Type
 
 from app.db import CollectionTable
@@ -25,6 +25,18 @@ class CollectionRepository(BaseSQLAlchemyRepository):
         if limit is not None:
             query = query.limit(limit)
         result = await self.connection.execute(query)
+        return [output_schema(**elem) for elem in result.mappings().all()]
+
+    async def get_all_visible_collections(
+            self, user_id: int | None, output_schema: Type[SchemaType], limit: int, offset: int
+    ) -> list[SchemaType]:
+        result = await self.connection.execute(
+            select(self.table.c[*output_schema.fields()])
+            .where(or_(
+                self.table.c.is_public.is_(True),
+                self.table.c.owner_id == user_id
+            )).limit(limit).offset(offset)
+        )
         return [output_schema(**elem) for elem in result.mappings().all()]
 
     async def update_collection_by_id(

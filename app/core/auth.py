@@ -7,7 +7,7 @@ from .config import get_settings
 
 
 __all__ = ["get_password_hash", "verify_password", "get_expiration_datetime", "delete_cookie",
-           "create_access_token", "get_profile_id", "set_authentication_cookie"]
+           "create_access_token", "get_profile_id", "get_profile_id_soft", "set_authentication_cookie"]
 
 
 __pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
@@ -35,14 +35,17 @@ def create_access_token(user_id: int) -> str:
     )
 
 
-def get_token(request: Request) -> str:
+def get_token(request: Request) -> str | None:
     token = request.cookies.get(get_settings().access_token_key)
     if not token:
-        raise HTTPException(status_code=401, detail="Token not found")
+        return None
     return token
 
 
-def get_profile_id(token: str = Depends(get_token)) -> int:
+def get_profile_id(token: str | None = Depends(get_token)) -> int:
+    """Бросает исключение, если есть проблемы с токеном"""
+    if not token:
+        raise HTTPException(status_code=401, detail="This action requires authorization")
     try:
         payload = jwt.decode(
             token,
@@ -50,12 +53,21 @@ def get_profile_id(token: str = Depends(get_token)) -> int:
             algorithms=get_settings().auth_algorithm
         )
     except JWTError:
-        raise HTTPException(status_code=401, detail="Invalid or expired token")
+        raise HTTPException(status_code=401, detail="Your authorization is expired")
 
     user_id = payload.get('sub')
     if not user_id:
-        raise HTTPException(status_code=401, detail="Invalid or expired token")
+        raise HTTPException(status_code=401, detail="Your authorization is expired")
     return int(user_id)
+
+
+def get_profile_id_soft(token: str | None = Depends(get_token)) -> int | None:
+    """Возвращает `None`, если есть проблемы с токеном"""
+    try:
+        return get_profile_id(token)
+    except HTTPException:
+        return None
+    
 
 
 def set_authentication_cookie(response: Response, user_id: int) -> None:
