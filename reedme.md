@@ -4,15 +4,15 @@
 
 This document provides a high-level introduction to the RecALL backend system, a FastAPI-based flashcard and spaced repetition learning platform. It covers the system's purpose, key features, architectural approach, and core components. For detailed information about specific subsystems, see [Deployment and Infrastructure](docs/deployment.md), [Application Architecture](docs/architecture.md), [Core Domain Models](docs/core_domain_models.md), and [API Reference](docs/api_reference.md).
 
+## How to deploy or start the service
+
+For detailed information, see [Configration and Environment Setup](docs/configuration_environment_setup.md).
+
 ## System Description
 
 RecALL is a web-based learning platform backend that implements flashcard-style studying with spaced repetition algorithms and AI-powered feedback. The system enables users to create flashcards, organize them into collections, attach files, and track learning progress through scientifically-backed spaced repetition techniques.
 
 The platform supports both private learning and public content sharing, allowing users to create personal study materials or contribute to a shared knowledge base. AI integration via Ollama provides intelligent feedback and scoring during study sessions.
-
-## How to deploy or start the service
-
-For detailed information, see [Configration and Environment Setup ](docs/configuration_environment_setup.md).
 
 ## Key Features
 
@@ -45,15 +45,15 @@ The system is built on modern Python web technologies with a focus on type safet
 
 | Component | Technology | Purpose |
 | --- | --- | --- |
-| **Web Framework** | FastAPI | High-performance async API framework with automatic OpenAPI docs |
-| **Database ORM** | SQLAlchemy | Python SQL toolkit and ORM for database interactions |
-| **Data Validation** | Pydantic | Data validation and settings management used by FastAPI |
-| **Database** | PostgreSQL 17.0 | Primary relational database for application data |
-| **Object Storage** | MinIO | S3-compatible storage for file attachments |
-| **AI/ML** | Ollama | Local LLM server for AI feedback (llama3.1, mistral) |
+| **Web Framework** | [**FastAPI**](https://fastapi.tiangolo.com) | High-performance async API framework with automatic OpenAPI docs |
+| **Database ORM** | [SQLAlchemy](https://https://www.sqlalchemy.org/) | Python SQL toolkit and ORM for database interactions |
+| **Data Validation** | [Pydantic](https://docs.pydantic.dev) | Data validation and settings management used by FastAPI |
+| **Database** | [PostgreSQL 17.0](https://www.postgresql.org) | Primary relational database for application data |
+| **Object Storage** | [MinIO](https://min.io/docs/minio/linux/operations/installation.html) | S3-compatible storage for file attachments |
+| **Containerization** | [Docker Engine + Docker Compose](https://docs.docker.com/engine/install/) | Multi-service deployment orchestration |
+| **Package Management** | [Poetry](https://python-poetry.org/docs/#installation) | Python dependency management and packaging |
 | **Web Server** | Nginx | Reverse proxy with SSL termination |
-| **Containerization** | Docker + Docker Compose | Multi-service deployment orchestration |
-| **Package Management** | Poetry | Python dependency management and packaging |
+| **AI/ML** | Ollama | Local LLM server for AI feedback (llama3.1, mistral) |
 
 ## System Components
 
