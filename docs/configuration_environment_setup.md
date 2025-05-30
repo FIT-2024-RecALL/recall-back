@@ -2,8 +2,6 @@
 
 This document covers the environment configuration, dependency management, and setup procedures for the recall-back application. It details the required configuration files, environment variables, and setup processes for both local development and Docker deployment scenarios.
 
-For information about the application architecture and service layer setup, see [Application Architecture](https://deepwiki.com/FIT-2024-RecALL/recall-back/3-application-architecture). For deployment infrastructure details, see [Docker Compose Services](https://deepwiki.com/FIT-2024-RecALL/recall-back/2.1-docker-compose-services).
-
 ## Environment Configuration Files
 
 The application requires several environment configuration files located in the `config/` directory. These files configure authentication, database connections, object storage, and AI services.
@@ -89,11 +87,7 @@ The following environment variables must be set for Docker deployment:
 
 **Configuration File Structure**
 
-```
-Application ServicesDeployment ConfigurationRequired Configuration Filesauth.envJWT & Session Configpostgres.envDatabase Connectionminio-backend.envStorage Accessollama.envAI Service Configminio-server.envStorage ServerEnvironment VariablesVolume Paths & SSLFastAPI BackendMinIO StoragePostgreSQL DatabaseOllama LLM
-```
-
-Sources: [README.md18-57](https://github.com/FIT-2024-RecALL/recall-back/blob/fd0685d4/README.md#L18-L57) [compose.yaml67-153](https://github.com/FIT-2024-RecALL/recall-back/blob/fd0685d4/compose.yaml#L67-L153)
+![](.source/img_3.png)
 
 ## Python Dependencies and Poetry Setup
 
@@ -116,15 +110,8 @@ The project requires Python 3.11+ and uses these primary dependencies:
 
 ### Poetry Installation and Setup
 
-Poetry must be installed before setting up the development environment:
+For detailed information, see our [Poetry configuration Wiki Guide](https://github.com/FIT-2024-RecALL/recall-back/wiki/Poetry).
 
-```
-# Install Poetry (see official documentation)
-curl -sSL https://install.python-poetry.org | python3 -
-
-# Verify installation
-poetry --version
-```
 
 ### Development Environment Setup
 
@@ -149,11 +136,7 @@ poetry show  # List installed packages
 
 **Dependency Management Flow**
 
-```
-Development Commandspyproject.tomlDependency Specspoetry.lockLocked VersionsVirtual EnvironmentIsolated Pythonpoetry installpoetry shellpoetry add poetry update
-```
-
-Sources: [pyproject.toml1-29](https://github.com/FIT-2024-RecALL/recall-back/blob/fd0685d4/pyproject.toml#L1-L29) [README.md11-16](https://github.com/FIT-2024-RecALL/recall-back/blob/fd0685d4/README.md#L11-L16) [poetry.lock1-50](https://github.com/FIT-2024-RecALL/recall-back/blob/fd0685d4/poetry.lock#L1-L50)
+![](.source/img_4.png)
 
 ## Local Development Setup
 
@@ -192,22 +175,8 @@ fastapi dev app/main.py
 **Production-style execution:**
 
 ```
-# Method 1: Module execution
-python -m app.main
-
-# Method 2: Direct uvicorn
 uvicorn app.main:app --<your_flags>
 ```
-
-### Development Workflow
-
-**Local Development Setup Flow**
-
-```
-External ServicesNoYesNoYesStart DevelopmentPoetry Installed?Install PoetryCreate config/ directoryAdd .env filesauth.env, postgres.env, etc.poetry shellpoetry installExternal ServicesRunning?Start PostgreSQL,MinIO, Ollamafastapi dev app/main.pyDevelopment ReadyHot Reload EnabledPostgreSQL:5432MinIO:9000Ollama:11434
-```
-
-Sources: [README.md58-76](https://github.com/FIT-2024-RecALL/recall-back/blob/fd0685d4/README.md#L58-L76) [pyproject.toml9-24](https://github.com/FIT-2024-RecALL/recall-back/blob/fd0685d4/pyproject.toml#L9-L24)
 
 ## Docker Deployment Configuration
 
@@ -266,6 +235,8 @@ export POSTGRES_VOLUME_PATH=/path/to/postgres/data
 export OLLAMA_VOLUME_PATH=/path/to/ollama/models
 ```
 
+Either wrote `.env` file inside project directory with described variables
+
 2.  **Create configuration files** in `config/` directory
     
 3.  **Build and start services:**
@@ -287,11 +258,7 @@ docker compose run --rm certbot renew
 
 **Docker Service Dependencies**
 
-```
-Persistent StorageData ServicesApplication LayerFrontend LayerExternal TrafficInternet:80, :443nginxrecall-nginxReverse ProxycertbotSSL Managementfrontendrecall-frontend:8080backendrecall-backend:8000FastAPI Apppostgresrecall-postgres:5432miniorecall-minio:9000/:9001ollamarecall-ollama:11434minio-setuprecall-minio-setupInitializationollama-setuprecall-ollama-setupModel Setuprecall-minio-volume$MINIO_VOLUME_PATHrecall-pgdata-volume$POSTGRES_VOLUME_PATHrecall-ollama-volume$OLLAMA_VOLUME_PATHSSL Certificates$CERTBOT_PATH
-```
-
-Sources: [compose.yaml1-153](https://github.com/FIT-2024-RecALL/recall-back/blob/fd0685d4/compose.yaml#L1-L153) [README.md78-105](https://github.com/FIT-2024-RecALL/recall-back/blob/fd0685d4/README.md#L78-L105)
+![](.source/img_5.png)
 
 ## Service-Specific Configuration
 
@@ -300,15 +267,6 @@ Each service in the deployment stack requires specific configuration for optimal
 ### Backend Service Configuration
 
 The backend service uses these key configuration aspects:
-
-**Resource Limits:**
-
-```
-deploy:
-  resources:
-    limits:
-      memory: 8G
-```
 
 **Health Dependencies:**
 
@@ -353,8 +311,4 @@ healthcheck:
 
 **Service Initialization Flow**
 
-```
-Configuration FilesNoYesNoYesdocker compose upStart Core Servicespostgres, minio, ollamaHealth Checks Pass?Wait & RetryStart Setup Servicesminio-setup, ollama-setupminio-setupCreate buckets & usersollama-setupDownload & configure modelsSetup Complete?restart: on-failureStart Application Servicesbackend, frontendStart nginxReverse ProxyDeployment Readypostgres.envminio-server.envminio-backend.envollama.env
-```
-
-Sources: [compose.yaml44-135](https://github.com/FIT-2024-RecALL/recall-back/blob/fd0685d4/compose.yaml#L44-L135) [README.md94-105](https://github.com/FIT-2024-RecALL/recall-back/blob/fd0685d4/README.md#L94-L105)
+![](.source/img_6.png)
