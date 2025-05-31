@@ -8,7 +8,7 @@ The domain models are implemented as Pydantic schemas for API serialization/vali
 
 The recall-back platform is built around five primary domain entities that work together to enable spaced repetition learning:
 
-![](.source/img_12.png)
+![](resources/img_12.png)
 
 ## User Domain Model
 
@@ -37,7 +37,7 @@ The `Card` entity represents individual flashcards with front and back content. 
 
 ### Card Schema Structure
 
-![](.source/img_13.png)
+![](resources/img_13.png)
 
 ### Card Business Rules
 
@@ -74,7 +74,7 @@ The `File` entity manages multimedia attachments that can be associated with car
 
 The file system enforces strict type and extension validation:
 
-![](.source/img_14.png)
+![](resources/img_14.png)
 
 ### File Schema Structure
 
@@ -95,7 +95,7 @@ The `TrainRecord` entity implements the spaced repetition algorithm by tracking 
 
 ### Training Schema Components
 
-![](.source/img_15.png)
+![](resources/img_15.png)
 
 ### Spaced Repetition Implementation
 
@@ -110,7 +110,7 @@ The `TrainRecord` entity implements the spaced repetition algorithm by tracking 
 
 The domain models form a cohesive system where users create and organize content for spaced repetition learning:
 
-![](.source/img_16.png)
+![](resources/img_16.png)
 
 ### Visibility and Access Control
 

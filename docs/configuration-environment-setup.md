@@ -87,7 +87,7 @@ The following environment variables must be set for Docker deployment:
 
 **Configuration File Structure**
 
-![](.source/img_3.png)
+![](resources/img_3.png)
 
 ## Python Dependencies and Poetry Setup
 
@@ -136,7 +136,7 @@ poetry show  # List installed packages
 
 **Dependency Management Flow**
 
-![](.source/img_4.png)
+![](resources/img_4.png)
 
 ## Local Development Setup
 
@@ -258,7 +258,7 @@ docker compose run --rm certbot renew
 
 **Docker Service Dependencies**
 
-![](.source/img_5.png)
+![](resources/img_5.png)
 
 ## Service-Specific Configuration
 
@@ -311,4 +311,4 @@ healthcheck:
 
 **Service Initialization Flow**
 
-![](.source/img_6.png)
+![](resources/img_6.png)

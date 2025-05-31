@@ -8,7 +8,7 @@ The recall-back application follows a clean layered architecture pattern with cl
 
 ### High-Level Architecture Diagram
 
-![](.source/img_7.png)
+![](resources/img_7.png)
 
 ## Application Initialization and Lifecycle
 
@@ -42,7 +42,7 @@ The `@with_unit_of_work` decorator in `app/services/base.py` ensures that servic
 
 The repository layer provides data access abstraction through the repository pattern. `BaseSQLAlchemyRepository` implements common CRUD operations that are inherited by domain-specific repositories.
 
-![](.source/img_8.png)
+![](resources/img_8.png)
 
 Each repository class sets a `table` class variable to specify which database table it operates on, as seen in `app/repositories/user.py` and `app/repositories/train_record.py`.
 
@@ -52,7 +52,7 @@ The `UnitOfWork` class implements transaction management using SQLAlchemy's asyn
 
 ### Unit of Work Transaction Flow
 
-![](.source/img_9.png)
+![](resources/img_9.png)
 
 The connection is stored in a `ContextVar` at `app/db/unit_of_work.py` to maintain transaction isolation across async operations. Repository instances are created on-demand through `get_repository()`.
 
@@ -62,7 +62,7 @@ A typical API request flows through all architectural layers, with dependency in
 
 ### Complete Request Flow Example
 
-![](.source/img_10.png)
+![](resources/img_10.png)
 
 This flow demonstrates how a training record creation request at `app/api/train_records.py` flows through the service method at `app/services/train_record.py` and ultimately executes database operations through repositories.
 

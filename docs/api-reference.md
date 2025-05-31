@@ -6,11 +6,11 @@ This document provides a complete reference for all REST API endpoints in the Re
 
 The API is organized into modular routers, each handling a specific domain of functionality. All routers use dependency injection for service access and authentication.
 
-![](.source/img_17.png)
+![](resources/img_17.png)
 
 The API uses a two-tier authentication system with required and optional authentication dependencies.
 
-![](.source/img_18.png)
+![](resources/img_18.png)
 
 ## Common Request Patterns
 
