@@ -54,10 +54,6 @@ services:
         condition: service_healthy
     networks:
       - dev
-    deploy:
-      resources:
-        limits:
-          memory: 8G
   minio-setup:
     container_name: recall-minio-setup
     depends_on:
