@@ -2,11 +2,11 @@
 
 ## Purpose and Scope
 
-This document provides a high-level introduction to the RecALL backend system, a FastAPI-based flashcard and spaced repetition learning platform. It covers the system's purpose, key features, architectural approach, and core components. For detailed information about specific subsystems, see [Deployment](docs/configuration_environment_setup.md), [Application Architecture](docs/architecture.md), [Core Domain Models](docs/core_domain_models.md), and [API Reference](docs/api_reference.md).
+This document provides a high-level introduction to the RecALL backend system, a FastAPI-based flashcard and spaced repetition learning platform. It covers the system's purpose, key features, architectural approach, and core components. For detailed information about specific subsystems, see [Deployment](docs/configuration-environment-setup.md), [Application Architecture](docs/architecture.md), [Core Domain Models](docs/core-domain-models.md), and [API Reference](docs/api-reference.md).
 
 ## How to deploy or start the service
 
-For detailed information, see [Configration and Environment Setup](docs/configuration_environment_setup.md).
+For detailed information, see [Configration and Environment Setup](docs/configuration-environment-setup.md).
 
 ## System Description
 
