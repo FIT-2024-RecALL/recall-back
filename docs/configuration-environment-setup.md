@@ -12,7 +12,7 @@ The application requires several environment configuration files located in the 
 
 The `auth.env` file configures JWT authentication and session management:
 
-```
+```config
 SECRET_KEY=<secret_key_for_encrypting>
 ALGORITHM=<encrypting_algorithm: e.g. HS256>
 ACCESS_TOKEN_KEY=<title_of_cookie_token_attribute>
@@ -117,20 +117,20 @@ For detailed information, see our [Poetry configuration Wiki Guide](https://gith
 
 1.  **Create and activate virtual environment:**
 
-```
+```bash
 cd <path_to_the_project>
 poetry shell
 ```
 
 2.  **Install dependencies:**
 
-```
+```bash
 poetry install
 ```
 
 3.  **Verify installation:**
 
-```
+```bash
 poetry show  # List installed packages
 ```
 
@@ -153,7 +153,7 @@ Local development setup enables running the FastAPI application directly without
 
 1.  **Create configuration directory:**
 
-```
+```bash
 mkdir config
 ```
 
@@ -168,13 +168,13 @@ The application can be started using several methods:
 
 **Development mode with hot reload:**
 
-```
+```bash
 fastapi dev app/main.py
 ```
 
 **Production-style execution:**
 
-```
+```bash
 uvicorn app.main:app --<your_flags>
 ```
 
@@ -204,7 +204,7 @@ The Docker Compose configuration defines these services:
 
 **Volume Mounting:**
 
-```
+```yaml
 volumes:
   recall-minio-volume:
     driver_opts:
@@ -227,7 +227,7 @@ volumes:
 
 1.  **Prepare environment variables:**
 
-```
+```bash
 export CERTBOT_PATH=/path/to/certificates
 export RECALL_FRONTEND_PATH=/path/to/frontend
 export MINIO_VOLUME_PATH=/path/to/minio/storage
@@ -242,13 +242,13 @@ Either wrote `.env` file inside project directory with described variables
 3.  **Build and start services:**
     
 
-```
+```bash
 docker compose up --build
 ```
 
 4.  **SSL certificate setup (if needed):**
 
-```
+```bash
 # Initial certificate creation
 docker compose run --rm certbot certonly --webroot --webroot-path /var/www/certbot/ -d <domain.addr>
 
@@ -277,7 +277,7 @@ The backend service uses these key configuration aspects:
 
 **Health Check:**
 
-```
+```yaml
 healthcheck:
   test: "pg_isready -U backend -d recall_db"
   interval: 3s
