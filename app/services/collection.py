@@ -1,4 +1,3 @@
-from typing import Optional
 from fastapi import HTTPException
 
 from app.schemas import Collection, CollectionCreate, CollectionShort, PublicStatusMixin

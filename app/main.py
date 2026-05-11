@@ -1,7 +1,6 @@
 from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-import uvicorn
 
 from app.api import all_routers
 from app.core import load_model, unload_model, is_bucket_available
@@ -31,3 +30,13 @@ app.add_middleware(
 
 for router in all_routers:
     app.include_router(router)
+
+
+@app.get("/health")
+async def health_check():
+    return {"status": "healthy"}
+
+
+@app.get("/")
+async def root():
+    return {"message": "Welcome to RecAll API"}

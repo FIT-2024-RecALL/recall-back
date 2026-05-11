@@ -1,4 +1,4 @@
-from sqlalchemy import and_, select, delete, update, exists
+from sqlalchemy import and_, select
 from typing import Type
 
 from app.db import CardTable
