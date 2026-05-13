@@ -2,7 +2,7 @@ from sqlalchemy import and_, select, insert, update, func
 from typing import Type
 
 from app.db.models import FileCardTable, FileTable, CardTable
-from app.schemas import Card, PublicStatusMixin
+from app.schemas import PublicStatusMixin
 
 from .base import BaseSQLAlchemyRepository, SchemaType
 

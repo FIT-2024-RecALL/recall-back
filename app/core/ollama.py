@@ -1,4 +1,4 @@
-from ollama import AsyncClient, ShowResponse
+from ollama import AsyncClient
 
 from app.schemas import AIFeedback
 
